@@ -26,6 +26,25 @@
       font-size: 0.875rem;
       margin-top: 0.25rem;
     }
+    
+    /* Prevent background color changes on focus and autofill */
+    input, select, textarea {
+      background-color: #121212 !important;
+      color: white !important;
+    }
+    
+    input:focus, select:focus, textarea:focus {
+      background-color: #121212 !important;
+      color: white !important;
+    }
+    
+    input:-webkit-autofill,
+    input:-webkit-autofill:hover,
+    input:-webkit-autofill:focus,
+    input:-webkit-autofill:active {
+      -webkit-box-shadow: 0 0 0 30px #121212 inset !important;
+      -webkit-text-fill-color: white !important;
+    }
   </style>
 </head>
 <body class="bg-custom-dark text-white font-sans min-h-screen flex items-center justify-center p-6">
@@ -35,11 +54,11 @@
     <!-- Step 1 -->
     <div class="step" id="step1">
       <label class="block mb-2 text-sm">What's your name? <span class="text-red-400">*</span></label>
-      <input type="text" id="name" required class="w-full p-3 rounded bg-custom-dark text-white border border-gray-600 focus:outline-none focus:border-custom-primary focus:ring-1 focus:ring-custom-primary" />
+      <input type="text" id="name" required class="w-full p-3 rounded bg-custom-dark text-white border border-gray-600 focus:outline-none" />
       <div id="name-error" class="error-message hidden">Please enter your name</div>
 
       <label class="block mt-4 mb-2 text-sm">How old are you? <span class="text-red-400">*</span></label>
-      <input type="text" id="age" required placeholder="Enter your age" class="w-full p-3 rounded bg-custom-dark text-white border border-gray-600 focus:outline-none focus:border-custom-primary focus:ring-1 focus:ring-custom-primary" />
+      <input type="text" id="age" required placeholder="Enter your age" class="w-full p-3 rounded bg-custom-dark text-white border border-gray-600 focus:outline-none" />
       <div id="age-error" class="error-message hidden">Please enter a valid age (13-120)</div>
 
       <button onclick="nextStep()" class="mt-6 bg-custom-accent text-black px-6 py-2 rounded-full hover:bg-yellow-400 transition">Next</button>
@@ -48,7 +67,7 @@
     <!-- Step 2 -->
     <div class="step hidden" id="step2">
       <label class="block mb-2 text-sm">What's your primary goal? <span class="text-red-400">*</span></label>
-      <select id="goal" required class="w-full p-3 rounded bg-custom-dark text-white border border-gray-600 focus:outline-none focus:border-custom-primary focus:ring-1 focus:ring-custom-primary">
+      <select id="goal" required class="w-full p-3 rounded bg-custom-dark text-white border border-gray-600 focus:outline-none">
         <option value="">Select your goal</option>
         <option value="lose-weight">Lose Weight</option>
         <option value="build-muscle">Build Muscle</option>
@@ -58,7 +77,7 @@
       <div id="goal-error" class="error-message hidden">Please select your primary goal</div>
 
       <label class="block mt-4 mb-2 text-sm">Any dietary preferences?</label>
-      <input type="text" id="diet" placeholder="e.g., vegetarian, low sodium" class="w-full p-3 rounded bg-custom-dark text-white border border-gray-600 focus:outline-none focus:border-custom-primary focus:ring-1 focus:ring-custom-primary" />
+      <input type="text" id="diet" placeholder="e.g., vegetarian, low sodium" class="w-full p-3 rounded bg-custom-dark text-white border border-gray-600 focus:outline-none" />
 
       <button onclick="prevStep()" class="mt-6 mr-2 bg-custom-secondary text-black px-6 py-2 rounded-full hover:bg-cyan-400 transition">Back</button>
       <button onclick="nextStep()" class="mt-6 bg-custom-accent text-black px-6 py-2 rounded-full hover:bg-yellow-400 transition">Next</button>
@@ -67,16 +86,17 @@
     <!-- Step 3 -->
     <div class="step hidden" id="step3">
       <label class="block mb-2 text-sm">Any current health conditions?</label>
-      <textarea id="conditions" rows="3" placeholder="e.g., diabetes, heart condition, none" class="w-full p-3 rounded bg-custom-dark text-white border border-gray-600 focus:outline-none focus:border-custom-primary focus:ring-1 focus:ring-custom-primary"></textarea>
+      <textarea id="conditions" rows="3" placeholder="e.g., diabetes, heart condition, none" class="w-full p-3 rounded bg-custom-dark text-white border border-gray-600 focus:outline-none"></textarea>
 
       <div id="senior-extra" class="mt-4 hidden">
         <label class="block mb-2 text-sm">For seniors: Any specific concerns?</label>
-        <select id="senior-concerns" class="w-full p-3 rounded bg-custom-dark text-white border border-gray-600 focus:outline-none focus:border-custom-primary focus:ring-1 focus:ring-custom-primary">
+        <select id="senior-concerns" class="w-full p-3 rounded bg-custom-dark text-white border border-gray-600 focus:outline-none">
           <option value="">Select concern (optional)</option>
           <option value="bone-joint">Bone/Joint Pain</option>
           <option value="heart">Heart Issues</option>
           <option value="eye">Eye Health</option>
           <option value="digestion">Digestion & Energy</option>
+          <option value="other">Other</option>
         </select>
       </div>
 
