@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FitLife Dashboard</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css"/>
+  <style>
+    .bg-custom-dark { background-color: #121212; }
+    .bg-custom-surface { background-color: #1E1E1E; }
+    .bg-custom-primary { background-color: #62E0A1; }
+    .bg-custom-secondary { background-color: #36CFFF; }
+    .bg-custom-accent { background-color: #F2B33D; }
+    .text-custom-primary { color: #62E0A1; }
+    .text-custom-secondary { color: #36CFFF; }
+    .text-custom-accent { color: #F2B33D; }
+    .border-custom-surface { border-color: #1E1E1E; }
+  </style>
+</head>
+<body class="bg-custom-dark text-white font-sans">
+  <div class="flex min-h-screen p-4">
+    <!-- Sidebar -->
+    <aside class="flex flex-col bg-custom-surface w-20 md:w-48 p-4 rounded-2xl">
+      <div class="flex items-center space-x-3 bg-custom-dark p-2 rounded-lg">
+        <img src="" alt="Profile" class="rounded-md w-10 h-10" />
+        <div class="hidden md:block text-xs text-gray-300">
+          <p class="font-normal">Nitish</p>
+        </div>
+      </div>
+      <nav class="flex flex-col space-y-2 text-sm mt-6">
+        <button class="flex items-center space-x-2 bg-custom-primary text-black px-3 py-2 rounded-full">
+          <i class="fas fa-calendar-alt"></i>
+          <span class="hidden md:inline">Schedule</span>
+        </button>
+        <button class="flex items-center space-x-2 hover:bg-custom-dark px-3 py-2 rounded-full">
+          <i class="fas fa-dumbbell"></i>
+          <span class="hidden md:inline">Workouts</span>
+        </button>
+        <button class="flex items-center space-x-2 hover:bg-custom-dark px-3 py-2 rounded-full">
+          <i class="fas fa-utensils"></i>
+          <span class="hidden md:inline">Nutrition</span>
+        </button>
+        <button class="flex items-center space-x-2 hover:bg-custom-dark px-3 py-2 rounded-full">
+          <i class="fas fa-users"></i>
+          <span class="hidden md:inline">Trainers</span>
+        </button>
+        <button class="flex items-center space-x-2 hover:bg-custom-dark px-3 py-2 rounded-full">
+          <i class="fas fa-clipboard-list"></i>
+          <span class="hidden md:inline">Meal Plans</span>
+        </button>
+      </nav>
+      <div class="mt-auto pt-8 space-y-2">
+        <button class="flex items-center space-x-2 hover:bg-custom-dark px-3 py-2 rounded-full">
+          <i class="fas fa-cog"></i>
+          <span class="hidden md:inline">Preferences</span>
+        </button>
+        <button class="flex items-center space-x-2 hover:bg-custom-dark px-3 py-2 rounded-full">
+          <i class="fas fa-sign-out-alt"></i>
+          <span class="hidden md:inline">Sign out</span>
+        </button>
+      </div>
+    </aside>
+
+    <!-- Main Dashboard -->
+    <main class="flex-1 bg-custom-surface p-6 ml-4 rounded-2xl space-y-6">
+      <p class="text-xs text-gray-400">Home / Dashboard</p>
+
+      <!-- Welcome -->
+      <section class="bg-custom-primary text-black p-6 rounded-xl">
+        <div class="flex items-center space-x-4">
+          <div class="bg-custom-dark text-custom-primary rounded-full w-10 h-10 flex items-center justify-center">
+            <i class="fas fa-smile"></i>
+          </div>
+          <div class="text-sm">
+            <p class="font-bold">Welcome, Nitish!</p>
+            <p class="text-xs">Today is Monday, January 12. You have 3 workouts scheduled, your next meal prep is in 2 hours, and you need to drink 1 liter more water today. Keep pushing!</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Stats -->
+      <section class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div class="bg-custom-dark rounded-xl p-4 text-center">
+          <div class="bg-custom-primary text-black rounded-full w-8 h-8 flex items-center justify-center mx-auto">
+            <i class="fas fa-running"></i>
+          </div>
+          <p class="text-sm">Steps</p>
+          <p class="text-lg font-bold">5,432</p>
+        </div>
+        <div class="bg-custom-dark rounded-xl p-4 text-center">
+          <div class="bg-custom-secondary text-black rounded-full w-8 h-8 flex items-center justify-center mx-auto">
+            <i class="fas fa-smile-beam"></i>
+          </div>
+          <p class="text-sm">Mood</p>
+          <p class="text-lg font-bold">Motivated</p>
+        </div>
+        <div class="bg-custom-dark rounded-xl p-4 text-center">
+          <div class="bg-custom-accent text-black rounded-full w-8 h-8 flex items-center justify-center mx-auto">
+            <i class="fas fa-fire"></i>
+          </div>
+          <p class="text-sm">Calories Burnt</p>
+          <p class="text-lg font-bold">450 kcal</p>
+        </div>
+      </section>
+
+      <!-- Goals and Sleep -->
+      <section class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div class="bg-custom-dark p-4 rounded-xl col-span-2 relative">
+          <p class="font-semibold text-sm mb-2">Diet Goals</p>
+          <div class="flex space-x-2 overflow-x-auto scrollbar-thin">
+            <span class="w-8 h-8 bg-custom-primary text-black rounded-full flex items-center justify-center text-xs">1500</span>
+            <span class="w-8 h-8 bg-custom-primary text-black rounded-full flex items-center justify-center text-xs">1800</span>
+            <span class="w-8 h-8 bg-custom-secondary text-black rounded-full flex items-center justify-center text-xs">2000</span>
+            <span class="w-8 h-8 bg-custom-accent text-black rounded-full flex items-center justify-center text-xs">2200</span>
+            <span class="w-8 h-8 bg-custom-accent text-black rounded-full flex items-center justify-center text-xs">2500</span>
+          </div>
+          <div class="absolute top-2 right-2 text-[10px] bg-custom-primary text-black px-2 py-1 rounded border border-custom-surface">UPGRADE PLAN</div>
+        </div>
+
+        <div class="bg-custom-dark p-4 rounded-xl space-y-3">
+          <p class="font-semibold text-sm">Sleep Analysis</p>
+          <div class="flex items-center space-x-3">
+            <div class="bg-custom-primary w-8 h-8 rounded-full text-black flex items-center justify-center">
+              <i class="fas fa-bed text-xs"></i>
+            </div>
+            <div>
+              <p class="text-xs">Deep Sleep</p>
+              <p class="text-sm font-bold">30%</p>
+            </div>
+          </div>
+          <div class="flex items-center space-x-3">
+            <div class="bg-custom-secondary w-8 h-8 rounded-full text-black flex items-center justify-center">
+              <i class="fas fa-wind text-xs"></i>
+            </div>
+            <div>
+              <p class="text-xs">Light Sleep</p>
+              <p class="text-sm font-bold">50%</p>
+            </div>
+          </div>
+          <div class="flex items-center space-x-3">
+            <div class="bg-custom-accent w-8 h-8 rounded-full text-black flex items-center justify-center">
+              <i class="fas fa-eye text-xs"></i>
+            </div>
+            <div>
+              <p class="text-xs">Awake</p>
+              <p class="text-sm font-bold">20%</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Calorie Intake -->
+      <section class="bg-custom-dark p-4 rounded-xl">
+        <p class="font-semibold text-sm mb-2">Calorie Intake</p>
+        <div class="grid grid-cols-4 text-xs mb-2">
+          <div></div>
+          <div class="text-center font-semibold">Total</div>
+          <div class="text-center font-semibold">Goal</div>
+          <div class="text-center font-semibold">Left</div>
+        </div>
+        <div class="text-xs mb-1 flex justify-between">
+          <span>Calories</span><span>2200</span><span>2000</span><span>-200</span>
+        </div>
+        <div class="h-1 bg-gray-700 rounded-full">
+          <div class="h-1 bg-custom-primary rounded-full w-[90%]"></div>
+        </div>
+        <div class="text-xs mt-2 mb-1 flex justify-between">
+          <span>Proteins</span><span>150</span><span>200</span><span>70</span>
+        </div>
+        <div class="h-1 bg-gray-700 rounded-full">
+          <div class="h-1 bg-custom-secondary rounded-full w-[75%]"></div>
+        </div>
+        <div class="text-xs mt-2 mb-1 flex justify-between">
+          <span>Carbohydrates</span><span>250</span><span>300</span><span>15</span>
+        </div>
+        <div class="h-1 bg-gray-700 rounded-full">
+          <div class="h-1 bg-custom-accent rounded-full w-[83%]"></div>
+        </div>
+      </section>
+    </main>
+
+    <!-- Right Sidebar -->
+    <aside class="bg-custom-surface w-64 p-4 ml-4 rounded-2xl flex flex-col">
+      <div class="flex justify-end mb-4">
+        <button class="bg-custom-accent w-8 h-8 rounded-full flex items-center justify-center text-black">
+          <i class="fas fa-bell"></i>
+        </button>
+      </div>
+      <div class="bg-custom-primary text-black p-4 rounded-xl text-center">
+        <img src="https://storage.googleapis.com/a1aa/image/d2cfe623-1544-4224-2da4-46a005423708.jpg" alt="profile" class="rounded-xl w-16 h-16 mx-auto mb-2" />
+        <p class="font-bold">Nitish</p>
+        <p class="text-xs">Male, 20 years old</p>
+        <hr class="my-2 border-gray-500" />
+        <div class="grid grid-cols-3 text-xs">
+          <div><p class="font-semibold">Height</p><p>177 cm</p></div>
+          <div><p class="font-semibold">Weight</p><p>60 kg</p></div>
+          <div><p class="font-semibold">Diet</p><p>Balanced</p></div>
+        </div>
+      </div>
+
+      <!-- Dates -->
+      <div class="flex justify-between mt-6 mb-4 text-xs">
+        <div class="text-center">27<br><span class="text-[9px]">Mon</span></div>
+        <div class="text-center">28<br><span class="text-[9px]">Tue</span></div>
+        <div class="bg-custom-accent text-black w-8 h-8 rounded-full flex items-center justify-center flex-col">
+          29<br><span class="text-[9px]">Wed</span>
+        </div>
+        <div class="text-center">30<br><span class="text-[9px]">Thu</span></div>
+        <div class="text-center">31<br><span class="text-[9px]">Fri</span></div>
+      </div>
+
+      <!-- Events -->
+      <div class="space-y-2 text-xs">
+        <p class="font-semibold">Upcoming</p>
+        <div class="flex items-center space-x-2">
+          <div class="bg-custom-primary text-black rounded-full w-8 h-8 flex items-center justify-center">
+            <i class="fas fa-dumbbell"></i>
+          </div>
+          <p>Strength training</p>
+        </div>
+        <div class="flex items-center space-x-2">
+          <div class="bg-custom-secondary text-black rounded-full w-8 h-8 flex items-center justify-center">
+            <i class="fas fa-utensils"></i>
+          </div>
+          <p>Meal prep</p>
+        </div>
+        <div class="flex items-center space-x-2">
+          <div class="bg-custom-accent text-black rounded-full w-8 h-8 flex items-center justify-center">
+            <i class="fas fa-briefcase-medical"></i>
+          </div>
+          <p>Health check</p>
+        </div>
+      </div>
+
+      <button class="mt-auto bg-custom-accent text-black py-2 rounded-full text-xs font-semibold mt-6">Edit Plan</button>
+    </aside>
+  </div>
+</body>
+</html>

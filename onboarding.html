@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>FitLife - Onboarding</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    .bg-custom-dark { background-color: #121212; }
+    .bg-custom-surface { background-color: #1E1E1E; }
+    .bg-custom-primary { background-color: #62E0A1; }
+    .bg-custom-secondary { background-color: #36CFFF; }
+    .bg-custom-accent { background-color: #F2B33D; }
+    .text-custom-primary { color: #62E0A1; }
+    .text-custom-secondary { color: #36CFFF; }
+    .text-custom-accent { color: #F2B33D; }
+    .border-custom-surface { border-color: #1E1E1E; }
+    
+    .input-error {
+      border-color: #ef4444 !important;
+      box-shadow: 0 0 0 1px #ef4444;
+    }
+    
+    .error-message {
+      color: #ef4444;
+      font-size: 0.875rem;
+      margin-top: 0.25rem;
+    }
+  </style>
+</head>
+<body class="bg-custom-dark text-white font-sans min-h-screen flex items-center justify-center p-6">
+  <div class="bg-custom-surface p-8 rounded-xl w-full max-w-xl shadow-lg space-y-6">
+    <h2 class="text-2xl font-bold text-center text-custom-primary">Let's build your fitness plan</h2>
+
+    <!-- Step 1 -->
+    <div class="step" id="step1">
+      <label class="block mb-2 text-sm">What's your name? <span class="text-red-400">*</span></label>
+      <input type="text" id="name" required class="w-full p-3 rounded bg-custom-dark text-white border border-gray-600 focus:outline-none focus:border-custom-primary focus:ring-1 focus:ring-custom-primary" />
+      <div id="name-error" class="error-message hidden">Please enter your name</div>
+
+      <label class="block mt-4 mb-2 text-sm">How old are you? <span class="text-red-400">*</span></label>
+      <input type="text" id="age" required placeholder="Enter your age" class="w-full p-3 rounded bg-custom-dark text-white border border-gray-600 focus:outline-none focus:border-custom-primary focus:ring-1 focus:ring-custom-primary" />
+      <div id="age-error" class="error-message hidden">Please enter a valid age (13-120)</div>
+
+      <button onclick="nextStep()" class="mt-6 bg-custom-accent text-black px-6 py-2 rounded-full hover:bg-yellow-400 transition">Next</button>
+    </div>
+
+    <!-- Step 2 -->
+    <div class="step hidden" id="step2">
+      <label class="block mb-2 text-sm">What's your primary goal? <span class="text-red-400">*</span></label>
+      <select id="goal" required class="w-full p-3 rounded bg-custom-dark text-white border border-gray-600 focus:outline-none focus:border-custom-primary focus:ring-1 focus:ring-custom-primary">
+        <option value="">Select your goal</option>
+        <option value="lose-weight">Lose Weight</option>
+        <option value="build-muscle">Build Muscle</option>
+        <option value="stay-active">Stay Active</option>
+        <option value="improve-health">Improve Health</option>
+      </select>
+      <div id="goal-error" class="error-message hidden">Please select your primary goal</div>
+
+      <label class="block mt-4 mb-2 text-sm">Any dietary preferences?</label>
+      <input type="text" id="diet" placeholder="e.g., vegetarian, low sodium" class="w-full p-3 rounded bg-custom-dark text-white border border-gray-600 focus:outline-none focus:border-custom-primary focus:ring-1 focus:ring-custom-primary" />
+
+      <button onclick="prevStep()" class="mt-6 mr-2 bg-custom-secondary text-black px-6 py-2 rounded-full hover:bg-cyan-400 transition">Back</button>
+      <button onclick="nextStep()" class="mt-6 bg-custom-accent text-black px-6 py-2 rounded-full hover:bg-yellow-400 transition">Next</button>
+    </div>
+
+    <!-- Step 3 -->
+    <div class="step hidden" id="step3">
+      <label class="block mb-2 text-sm">Any current health conditions?</label>
+      <textarea id="conditions" rows="3" placeholder="e.g., diabetes, heart condition, none" class="w-full p-3 rounded bg-custom-dark text-white border border-gray-600 focus:outline-none focus:border-custom-primary focus:ring-1 focus:ring-custom-primary"></textarea>
+
+      <div id="senior-extra" class="mt-4 hidden">
+        <label class="block mb-2 text-sm">For seniors: Any specific concerns?</label>
+        <select id="senior-concerns" class="w-full p-3 rounded bg-custom-dark text-white border border-gray-600 focus:outline-none focus:border-custom-primary focus:ring-1 focus:ring-custom-primary">
+          <option value="">Select concern (optional)</option>
+          <option value="bone-joint">Bone/Joint Pain</option>
+          <option value="heart">Heart Issues</option>
+          <option value="eye">Eye Health</option>
+          <option value="digestion">Digestion & Energy</option>
+        </select>
+      </div>
+
+      <button onclick="prevStep()" class="mt-6 mr-2 bg-custom-secondary text-black px-6 py-2 rounded-full hover:bg-cyan-400 transition">Back</button>
+      <button onclick="submitForm()" class="mt-6 bg-custom-primary text-black px-6 py-2 rounded-full hover:bg-green-300 transition">Finish</button>
+    </div>
+
+    <!-- Confirmation -->
+    <div id="confirmation" class="hidden text-center">
+      <div class="w-16 h-16 bg-custom-primary rounded-full mx-auto mb-4 flex items-center justify-center">
+        <span class="text-2xl">✓</span>
+      </div>
+      <h3 class="text-xl font-semibold text-custom-primary">You're all set, <span id="userName"></span>!</h3>
+      <p class="mt-2 text-gray-400">Your personalized plan will be ready on the dashboard.</p>
+      <button onclick="window.location.href='trainer-interaction.html'" class="mt-6 bg-custom-accent text-black px-6 py-2 rounded-full hover:bg-yellow-400 transition">Continue to Trainer</button>
+    </div>
+  </div>
+
+  <script>
+    let step = 1;
+    let userData = {};
+
+    function validateStep1() {
+      const name = document.getElementById("name").value.trim();
+      const age = document.getElementById("age").value;
+      let isValid = true;
+
+      // Clear previous errors
+      document.getElementById("name-error").classList.add("hidden");
+      document.getElementById("age-error").classList.add("hidden");
+      document.getElementById("name").classList.remove("input-error");
+      document.getElementById("age").classList.remove("input-error");
+
+      // Validate name
+      if (!name) {
+        document.getElementById("name-error").classList.remove("hidden");
+        document.getElementById("name").classList.add("input-error");
+        isValid = false;
+      }
+
+      // Validate age
+      const ageNum = parseInt(age);
+      if (!age || isNaN(ageNum) || ageNum < 13 || ageNum > 120) {
+        document.getElementById("age-error").classList.remove("hidden");
+        document.getElementById("age").classList.add("input-error");
+        isValid = false;
+      }
+
+      return isValid;
+    }
+
+    function validateStep2() {
+      const goal = document.getElementById("goal").value;
+      let isValid = true;
+
+      // Clear previous errors
+      document.getElementById("goal-error").classList.add("hidden");
+      document.getElementById("goal").classList.remove("input-error");
+
+      // Validate goal
+      if (!goal) {
+        document.getElementById("goal-error").classList.remove("hidden");
+        document.getElementById("goal").classList.add("input-error");
+        isValid = false;
+      }
+
+      return isValid;
+    }
+
+    function nextStep() {
+      let canProceed = false;
+
+      if (step === 1) {
+        canProceed = validateStep1();
+        if (canProceed) {
+          // Store user data
+          userData.name = document.getElementById("name").value.trim();
+          userData.age = parseInt(document.getElementById("age").value);
+        }
+      } else if (step === 2) {
+        canProceed = validateStep2();
+        if (canProceed) {
+          // Store user data
+          userData.goal = document.getElementById("goal").value;
+          userData.diet = document.getElementById("diet").value.trim();
+          
+          // Check if user is senior (45+) and show extra options
+          if (userData.age >= 45) {
+            document.getElementById("senior-extra").classList.remove("hidden");
+          } else {
+            document.getElementById("senior-extra").classList.add("hidden");
+          }
+        }
+      }
+
+      if (canProceed) {
+        document.getElementById(`step${step}`).classList.add("hidden");
+        step++;
+        document.getElementById(`step${step}`).classList.remove("hidden");
+      }
+    }
+
+    function prevStep() {
+      document.getElementById(`step${step}`).classList.add("hidden");
+      step--;
+      document.getElementById(`step${step}`).classList.remove("hidden");
+    }
+
+    function submitForm() {
+      // Store final data
+      userData.conditions = document.getElementById("conditions").value.trim();
+      userData.seniorConcerns = document.getElementById("senior-concerns").value;
+
+      // Hide all steps and show confirmation
+      document.querySelectorAll(".step").forEach(el => el.classList.add("hidden"));
+      document.getElementById("userName").innerText = userData.name || "Friend";
+      document.getElementById("confirmation").classList.remove("hidden");
+
+      // Log user data (for debugging)
+      console.log("User Data:", userData);
+    }
+
+    // Add Enter key support for inputs
+    document.addEventListener('DOMContentLoaded', function() {
+      const inputs = document.querySelectorAll('input, select');
+      inputs.forEach(input => {
+        input.addEventListener('keypress', function(e) {
+          if (e.key === 'Enter') {
+            nextStep();
+          }
+        });
+      });
+    });
+  </script>
+</body>
+</html>
