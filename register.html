@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Register – FitLife</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    input::placeholder {
+      color: #999;
+      opacity: 0.5;
+    }
+
+    input, select, textarea {
+      background-color: #121212 !important;
+      color: white !important;
+    }
+
+    input:focus, select:focus, textarea:focus {
+      background-color: #121212 !important;
+      color: white !important;
+    }
+
+    input:-webkit-autofill,
+    input:-webkit-autofill:hover,
+    input:-webkit-autofill:focus,
+    input:-webkit-autofill:active {
+      -webkit-box-shadow: 0 0 0 30px #121212 inset !important;
+      -webkit-text-fill-color: white !important;
+    }
+  </style>
+</head>
+<body class="bg-[#121212] text-white flex items-center justify-center min-h-screen p-6 font-sans">
+  <div class="w-full max-w-md bg-[#1E1E1E] rounded-xl shadow-xl p-8 space-y-6">
+    <div class="space-y-2 text-center">
+      <h2 class="text-2xl font-bold text-[#62E0A1]">Create Account</h2>
+      <p class="text-sm text-gray-400">Join FitLife to start your wellness journey</p>
+    </div>
+
+    <form id="registerForm" class="space-y-5">
+      <div>
+        <label class="block text-sm mb-1">Name</label>
+        <input type="text" placeholder="Full Name" class="w-full p-3 rounded-xl bg-[#121212] text-white placeholder-gray-500 border border-gray-600 focus:outline-none" required />
+      </div>
+      <div>
+        <label class="block text-sm mb-1">Email</label>
+        <input type="email" placeholder="you@example.com" class="w-full p-3 rounded-xl bg-[#121212] text-white placeholder-gray-500 border border-gray-600 focus:outline-none" required />
+      </div>
+      <div>
+        <label class="block text-sm mb-1">Password</label>
+        <div class="relative">
+          <input type="password" id="password" placeholder="••••••••" class="w-full p-3 pr-12 rounded-xl bg-[#121212] text-white placeholder-gray-500 border border-gray-600 focus:outline-none" required />
+          <button type="button" onclick="togglePassword()" class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-white">
+            <svg id="eye-icon" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <button type="submit" class="w-full bg-[#F2B33D] text-black font-medium py-3 rounded-xl hover:bg-yellow-400 transition">
+        Register
+      </button>
+    </form>
+
+    <!-- Divider -->
+    <div class="text-center text-sm text-gray-400 mt-4 mb-2">Or sign up with</div>
+
+    <!-- OAuth Icons Row -->
+    <div class="flex justify-center gap-4">
+      <button class="w-10 h-10 rounded-full bg-gray-500 hover:bg-[#DB4437] flex items-center justify-center transition">
+        <img src="https://img.icons8.com/ios-filled/20/ffffff/google-logo.png" alt="Google" class="w-5 h-5" />
+      </button>
+
+      <button class="w-10 h-10 rounded-full bg-gray-500 hover:bg-[#1877F2] flex items-center justify-center transition">
+        <img src="https://img.icons8.com/ios-filled/20/ffffff/facebook-new.png" alt="Facebook" class="w-5 h-5" />
+      </button>
+      <button class="w-10 h-10 rounded-full bg-gray-500 hover:bg-gray-700 flex items-center justify-center transition">
+        <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24">
+          <circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/>
+        </svg>
+      </button>
+    </div>
+
+    <p class="text-sm text-center text-gray-400">
+      Already have an account? <a href="login.html" class="text-[#36CFFF] hover:underline">Login here</a>
+    </p>
+  </div>
+
+  <script>
+    function togglePassword() {
+      const passwordInput = document.getElementById('password');
+      const eyeIcon = document.getElementById('eye-icon');
+
+      if (passwordInput.type === 'password') {
+        passwordInput.type = 'text';
+        eyeIcon.innerHTML = `
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7
+            a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878
+            l4.242 4.242M9.878 9.878L3 3m6.878 6.878L21 21"/>`;
+      } else {
+        passwordInput.type = 'password';
+        eyeIcon.innerHTML = `
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0
+            8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7
+            -4.477 0-8.268-2.943-9.542-7z"/>`;
+      }
+    }
+
+    document.getElementById('registerForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      window.location.href = "welcome.html";
+
+    });
+  </script>
+</body>
+</html>

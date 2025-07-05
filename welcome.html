@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>You're All Set – FitLife</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-[#121212] text-white flex items-center justify-center min-h-screen p-6 font-sans">
+  <div class="max-w-md w-full text-center space-y-6 bg-[#1E1E1E] p-8 rounded-xl shadow-xl">
+    <h2 class="text-3xl font-bold text-[#62E0A1]">🎉 You’re All Set!</h2>
+    <p class="text-sm text-gray-400">Your account has been created successfully.</p>
+    <p class="text-sm text-gray-400">We’re redirecting you to personalize your fitness & wellness plan...</p>
+    <div class="w-full h-2 bg-gray-700 rounded-full overflow-hidden">
+      <div id="progress" class="h-full bg-[#F2B33D] w-0 transition-all duration-1000"></div>
+    </div>
+    <p class="text-xs text-gray-500">Redirecting to onboarding in <span id="countdown">3</span> seconds...</p>
+  </div>
+
+  <script>
+    let seconds = 3;
+    const countdownEl = document.getElementById('countdown');
+    const progressEl = document.getElementById('progress');
+
+    const interval = setInterval(() => {
+      seconds--;
+      countdownEl.textContent = seconds;
+      progressEl.style.width = `${((3 - seconds) / 3) * 100}%`;
+
+      if (seconds === 0) {
+        clearInterval(interval);
+        window.location.href = "onboarding.html";
+      }
+    }, 1000);
+  </script>
+</body>
+</html>
