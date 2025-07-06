@@ -205,6 +205,27 @@
     </aside>
   </div>
 
+  <!-- Reusable AI Assistant -->
+<div id="ai-assistant-include"></div>
+<script>
+  fetch('ai-assistant.html')
+    .then(res => res.text())
+    .then(html => {
+      document.getElementById('ai-assistant-include').innerHTML = html;
+      // Run any scripts in the loaded HTML
+      const scripts = document.getElementById('ai-assistant-include').querySelectorAll('script');
+      scripts.forEach(oldScript => {
+        const newScript = document.createElement('script');
+        if (oldScript.src) {
+          newScript.src = oldScript.src;
+        } else {
+          newScript.textContent = oldScript.textContent;
+        }
+        document.body.appendChild(newScript);
+      });
+    });
+</script>
+
   <!-- JavaScript for add/remove -->
   <script>
     document.getElementById("addExerciseBtn").addEventListener("click", function () {
