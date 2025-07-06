@@ -20,116 +20,115 @@
   <body class="bg-custom-dark text-white font-sans">
 
     <!-- 🔝 Navigation Bar -->
-    <header class="flex items-center justify-between p-6 bg-custom-surface">
-      <div class="text-xl font-bold text-white">FitLife</div>
+    <header class="flex items-center justify-between p-6 bg-custom-surface shadow-lg sticky top-0 z-50">
+      <div class="flex items-center space-x-3">
+        <span class="text-xl font-bold text-white tracking-wide">FitLife</span>
+      </div>
       <nav class="space-x-6">
-        <a href="#" class="hover:text-gray-300">Home</a>
-        <a href="#" class="hover:text-gray-300">Workouts</a>
-        <a href="#" class="hover:text-gray-300">Nutrition</a>
-        <a href="login.html" class="bg-green-400 text-black px-4 py-2 rounded-full font-semibold hover:bg-green-300 transition">Get Started</a>
+        <a href="#" class="hover:text-custom-primary transition">Home</a>
+        <a href="#" class="hover:text-custom-primary transition">Workouts</a>
+        <a href="#" class="hover:text-custom-primary transition">Nutrition</a>
+        <a href="login.html" class="bg-custom-primary text-black px-4 py-2 rounded-full font-semibold hover:bg-custom-accent transition">Get Started</a>
       </nav>
     </header>
 
     <!-- 🏋️ Hero Section -->
-    <section class="relative h-[calc(90vh-20px)] bg-cover bg-center mt-4" style="background-image: url('images/Untitled design.png');">
-      <div class="absolute bottom-16 left-8 space-y-4">
-        <h1 class="text-4xl font-extrabold text-white drop-shadow-lg">Personalized fitness & nutrition</h1>
+    <section class="relative h-[calc(90vh-20px)] bg-cover bg-center mt-4 rounded-3xl overflow-hidden shadow-xl" style="background-image: linear-gradient(90deg,rgba(18,18,18,0.85) 60%,rgba(98,224,161,0.12)), url('images/Untitled design.png');">
+      <div class="absolute bottom-16 left-8 space-y-6 max-w-xl">
+        <h1 class="text-5xl md:text-6xl font-extrabold text-white drop-shadow-lg leading-tight">Personalized fitness & nutrition</h1>
         <p class="text-2xl font-semibold text-white drop-shadow-lg">
           <span class="text-custom-primary">FitLife</span> tailors your plan to your <span class="text-custom-primary">unique goals.</span>
         </p>
-        <a href="login.html" class="bg-white text-black px-5 py-2 rounded-full font-medium inline-block hover:bg-gray-100 transition">Get My Plan</a>
+        <a href="login.html" class="bg-white text-black px-7 py-3 rounded-full font-bold inline-block hover:bg-custom-primary hover:text-white shadow-lg transition">Get My Plan</a>
+      </div>
+      <div class="absolute right-8 bottom-8 hidden md:block">
       </div>
     </section>
 
     <!-- ✨ Feature Highlights -->
-    <section class="grid md:grid-cols-3 gap-6 p-8 bg-custom-dark">
-      <div class="bg-custom-surface p-6 rounded-lg text-center shadow-md hover:shadow-lg transition">
-        <img src="images/1.jpg" alt="" class="rounded-xl w-full mb-6" />
-        <h3 class="font-bold text-lg mb-3 text-white">AI Workout Planner.</h3>
-        <p class="text-base text-gray-400 break-words">Build strength, improve endurance, or slim down — your smart trainer adapts every set to your personal fitness level and goals..</p>
+    <section class="grid md:grid-cols-3 gap-8 p-10 bg-custom-dark max-w-7xl mx-auto">
+      <div class="bg-custom-surface p-8 rounded-2xl text-center shadow-lg hover:scale-105 hover:shadow-2xl transition">
+        <img src="images/1.jpg" alt="" class="rounded-xl w-full mb-6 shadow-md" />
+        <h3 class="font-bold text-xl mb-3 text-custom-primary">AI Workout Planner</h3>
+        <p class="text-base text-gray-400 break-words">Build strength, improve endurance, or slim down — your smart trainer adapts every set to your personal fitness level and goals.</p>
       </div>
-      <div class="bg-custom-surface p-6 rounded-lg text-center shadow-md hover:shadow-lg transition">
-        <img src="images/2.jpg" alt="" class="rounded-xl w-full mb-6" />
-        <h3 class="font-bold text-lg mb-3 text-white">Nutrition Guidance.</h3>
+      <div class="bg-custom-surface p-8 rounded-2xl text-center shadow-lg hover:scale-105 hover:shadow-2xl transition">
+        <img src="images/2.jpg" alt="" class="rounded-xl w-full mb-6 shadow-md" />
+        <h3 class="font-bold text-xl mb-3 text-custom-secondary">Nutrition Guidance</h3>
         <p class="text-base text-gray-400 break-words">Eat for your body, not someone else's. Get personalized meal suggestions based on your health conditions, goals, and preferences.</p>
       </div>
-      <div class="bg-custom-surface p-6 rounded-lg text-center shadow-md hover:shadow-lg transition">
-        <img src="images/3.jpg" alt="" class="rounded-xl w-full mb-6" />
-        <h3 class="font-bold text-lg mb-3 text-white">Chat Support.</h3>
+      <div class="bg-custom-surface p-8 rounded-2xl text-center shadow-lg hover:scale-105 hover:shadow-2xl transition">
+        <img src="images/3.jpg" alt="" class="rounded-xl w-full mb-6 shadow-md" />
+        <h3 class="font-bold text-xl mb-3 text-custom-accent">Chat Support</h3>
         <p class="text-base text-gray-400 break-words">Got a question? Your AI assistant is here 24/7 to help with workouts, diets, fitness myths, and motivation.</p>
       </div>
     </section>
-    <section class="bg-[#1E1E1E] py-16 px-6 text-white">
+
+    <!-- 👵 Healthy Aging Section -->
+    <section class="bg-[#1E1E1E] py-16 px-6 text-white rounded-3xl shadow-inner mt-10">
       <div class="max-w-6xl mx-auto">
         <h2 class="text-3xl font-bold text-[#62E0A1] mb-6 text-center">Healthy Aging with FitLife</h2>
         <p class="text-center text-gray-300 max-w-2xl mx-auto mb-12">
           FitLife empowers older adults to stay active, eat smart, and live stronger. From bone-health nutrition to gentle yoga, everything is personalized.
         </p>
-    
         <div class="grid md:grid-cols-3 gap-8">
           <!-- Card 1 -->
-          <div class="bg-[#121212] p-6 rounded-xl text-center shadow-md">
+          <div class="bg-[#121212] p-6 rounded-xl text-center shadow-md hover:scale-105 transition">
             <img src="https://img.icons8.com/color/96/elderly-person.png" class="mx-auto mb-4 w-16 h-16" />
             <h3 class="text-lg font-semibold text-[#F2B33D]">Joint & Bone Nutrition</h3>
             <p class="text-gray-400 mt-2 text-sm">Personalized diets rich in calcium and vitamin D for stronger bones and joints.</p>
           </div>
-    
           <!-- Card 2 -->
-          <div class="bg-[#121212] p-6 rounded-xl text-center shadow-md">
+          <div class="bg-[#121212] p-6 rounded-xl text-center shadow-md hover:scale-105 transition">
             <img src="https://img.icons8.com/color/96/yoga.png" class="mx-auto mb-4 w-16 h-16" />
             <h3 class="text-lg font-semibold text-[#36CFFF]">Senior Yoga Plans</h3>
             <p class="text-gray-400 mt-2 text-sm">Gentle yoga routines to improve flexibility, balance, and mindfulness.</p>
           </div>
-    
           <!-- Card 3 -->
-          <div class="bg-[#121212] p-6 rounded-xl text-center shadow-md">
+          <div class="bg-[#121212] p-6 rounded-xl text-center shadow-md hover:scale-105 transition">
             <img src="https://img.icons8.com/color/96/vegetarian-food.png" class="mx-auto mb-4 w-16 h-16" />
             <h3 class="text-lg font-semibold text-[#62E0A1]">Whole-Body Nutrition</h3>
             <p class="text-gray-400 mt-2 text-sm">
               Personalized food plans for optimal bone strength, heart health, vision, digestion, and cognitive wellness — all tailored for aging bodies.
             </p>
           </div>
-          
         </div>
-    
         <div class="text-center mt-12">
-          <a href="#" class="bg-[#F2B33D] text-black font-semibold px-6 py-3 rounded-full hover:bg-yellow-400 transition">
+          <a href="#" class="bg-[#F2B33D] text-black font-semibold px-6 py-3 rounded-full hover:bg-yellow-400 transition shadow-lg">
             Explore Senior Wellness Plans
           </a>
         </div>
       </div>
     </section>
-    
 
-    <!-- 💬 Testimonial -->
     <!-- 💬 Testimonial Carousel -->
-<section class="text-center px-6 py-16 bg-custom-surface mt-10">
-  <div id="testimonial-carousel" class="relative max-w-2xl mx-auto">
-    <blockquote class="testimonial-slide text-xl font-semibold leading-relaxed text-white" style="display: block;">
-      "Your future self will thank you for starting today. Every small win matters."
-      <br />
-      <span class="block text-sm text-custom-primary mt-8">FitLife Team</span>
-    </blockquote>
-    <blockquote class="testimonial-slide text-xl font-semibold leading-relaxed text-white" style="display: none;">
-      "Consistency is the key to progress. Trust the process and keep moving forward."
-      <br />
-      <span class="block text-sm text-custom-secondary mt-8">Coach Alex</span>
-    </blockquote>
-    <blockquote class="testimonial-slide text-xl font-semibold leading-relaxed text-white" style="display: none;">
-      "A healthy outside starts from the inside. Nourish your body and mind."
-      <br />
-      <span class="block text-sm text-custom-accent mt-8">Nutritionist Sam</span>
-    </blockquote>
-    <div class="flex justify-center mt-6 space-x-2" id="testimonial-dots">
-      <span class="dot w-3 h-3 rounded-full bg-custom-primary inline-block"></span>
-      <span class="dot w-3 h-3 rounded-full bg-gray-600 inline-block"></span>
-      <span class="dot w-3 h-3 rounded-full bg-gray-600 inline-block"></span>
-    </div>
-  </div>
-</section>
+    <section class="text-center px-6 py-16 bg-custom-surface mt-10 rounded-3xl shadow-lg max-w-4xl mx-auto">
+      <div id="testimonial-carousel" class="relative max-w-2xl mx-auto">
+        <blockquote class="testimonial-slide text-xl font-semibold leading-relaxed text-white" style="display: block;">
+          "Your future self will thank you for starting today. Every small win matters."
+          <br />
+          <span class="block text-sm text-custom-primary mt-8">FitLife Team</span>
+        </blockquote>
+        <blockquote class="testimonial-slide text-xl font-semibold leading-relaxed text-white" style="display: none;">
+          "Consistency is the key to progress. Trust the process and keep moving forward."
+          <br />
+          <span class="block text-sm text-custom-secondary mt-8">Coach Alex</span>
+        </blockquote>
+        <blockquote class="testimonial-slide text-xl font-semibold leading-relaxed text-white" style="display: none;">
+          "A healthy outside starts from the inside. Nourish your body and mind."
+          <br />
+          <span class="block text-sm text-custom-accent mt-8">Nutritionist Sam</span>
+        </blockquote>
+        <div class="flex justify-center mt-6 space-x-2" id="testimonial-dots">
+          <span class="dot w-3 h-3 rounded-full bg-custom-primary inline-block cursor-pointer"></span>
+          <span class="dot w-3 h-3 rounded-full bg-gray-600 inline-block cursor-pointer"></span>
+          <span class="dot w-3 h-3 rounded-full bg-gray-600 inline-block cursor-pointer"></span>
+        </div>
+      </div>
+    </section>
 
     <!-- 🔚 Footer -->
-    <footer class="grid md:grid-cols-4 gap-8 p-8 bg-custom-dark text-sm text-gray-400 mt-12 mb-12">
+    <footer class="grid md:grid-cols-4 gap-8 p-8 bg-custom-dark text-sm text-gray-400 mt-12 mb-12 rounded-3xl max-w-7xl mx-auto shadow-inner">
       <div>
         <h4 class="text-white font-bold mb-2">FitLife</h4>
         <p>AI-powered fitness and nutrition platform tailored to your unique needs.</p>
@@ -146,10 +145,10 @@
       <div>
         <h4 class="text-white font-bold mb-2">Connect</h4>
         <div class="space-x-3 text-lg">
-          <a href="#"><img src="images/icons8-instagram-50.png" alt="Instagram" class="inline w-6 h-6 rounded" /></a>
-          <a href="#"><img src="images/icons8-youtube-50.png" alt="YouTube" class="inline w-6 h-6 rounded" /></a>
-          <a href="#"><img src="images/icons8-x-30.png" alt="X" class="inline w-6 h-6 rounded" /></a>
-          <a href="#"><img src="images/icons8-mail-50.png" alt="Mail" class="inline w-6 h-6 rounded" /></a>
+          <a href="#"><img src="images/icons8-instagram-50.png" alt="Instagram" class="inline w-6 h-6 rounded hover:scale-110 transition" /></a>
+          <a href="#"><img src="images/icons8-youtube-50.png" alt="YouTube" class="inline w-6 h-6 rounded hover:scale-110 transition" /></a>
+          <a href="#"><img src="images/icons8-x-30.png" alt="X" class="inline w-6 h-6 rounded hover:scale-110 transition" /></a>
+          <a href="#"><img src="images/icons8-mail-50.png" alt="Mail" class="inline w-6 h-6 rounded hover:scale-110 transition" /></a>
         </div>
       </div>
       <div>
@@ -158,6 +157,30 @@
         <p class="mt-1">© 2025 FitLife<br>All rights reserved.</p>
       </div>
     </footer>
-    <script src="homepage.js"></script>
+    <script>
+      // Testimonial carousel logic (auto-rotate and click)
+      const slides = document.querySelectorAll('.testimonial-slide');
+      const dots = document.querySelectorAll('.dot');
+      let idx = 0;
+      function showSlide(i) {
+        slides.forEach((slide, j) => {
+          slide.style.display = i === j ? 'block' : 'none';
+          dots[j].className = 'dot w-3 h-3 rounded-full inline-block cursor-pointer ' + (i === j ? 'bg-custom-primary' : 'bg-gray-600');
+        });
+      }
+      function nextSlide() {
+        idx = (idx + 1) % slides.length;
+        showSlide(idx);
+      }
+      let autoSlide = setInterval(nextSlide, 5000);
+      dots.forEach((dot, i) => {
+        dot.addEventListener('click', () => {
+          idx = i;
+          showSlide(idx);
+          clearInterval(autoSlide);
+          autoSlide = setInterval(nextSlide, 5000);
+        });
+      });
+    </script>
   </body>
 </html>
