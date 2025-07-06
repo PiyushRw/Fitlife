@@ -414,6 +414,8 @@
         isValid = validateStep2();
       } else if (currentStep === 3) {
         isValid = validateSeniorExtra();
+      } else if (currentStep === 4) {
+        isValid = validateStep3();
       }
 
       if (!isValid) return;
@@ -472,14 +474,14 @@
       if (senior) {
         // 4 steps: 1,2,3(senior),4
         if (currentStep === 1) percent = 0;
-        else if (currentStep === 2) percent = 33;
-        else if (currentStep === 3) percent = 66;
-        else if (currentStep === 4) percent = 100;
+        else if (currentStep === 2) percent = 25;
+        else if (currentStep === 3) percent = 50;
+        else if (currentStep === 4) percent = 75;
       } else {
         // 3 steps: 1,2,4
         if (currentStep === 1) percent = 0;
-        else if (currentStep === 2) percent = 50;
-        else if (currentStep === 4) percent = 100;
+        else if (currentStep === 2) percent = 33;
+        else if (currentStep === 4) percent = 66;
       }
       progressBar.style.width = `${percent}%`;
     }
