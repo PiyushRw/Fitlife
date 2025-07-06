@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Personalized Nutrition for Every Body</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .dark-gradient-bg {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+        }
+        .card-hover {
+            transition: all 0.3s ease;
+        }
+        .card-hover:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        }
+        .filter-active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            transform: scale(1.05);
+        }
+        .glass-effect {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .glow-effect {
+            box-shadow: 0 0 20px rgba(102, 126, 234, 0.3);
+        }
+        .animate-pulse-slow {
+            animation: pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+    </style>
+</head>
+<body class="bg-gray-900 text-gray-100 min-h-screen">
+    <!-- Header -->
+    <header class="dark-gradient-bg text-white py-12 relative overflow-hidden">
+        <div class="absolute inset-0 bg-black opacity-20"></div>
+        <div class="container mx-auto px-4 relative z-10">
+            <div class="text-center">
+                <div class="inline-block p-4 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 mb-6 glow-effect">
+                    <i class="fas fa-leaf text-4xl text-white"></i>
+                </div>
+                <h1 class="text-5xl font-bold mb-4 bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
+                    Personalized Nutrition for Every Body
+                </h1>
+                <p class="text-xl opacity-90 max-w-3xl mx-auto leading-relaxed">
+                    Tell us what you want to achieve — whether you're building muscle, improving bone health, managing diabetes, or simply aging gracefully — and we'll guide your nutrition journey.
+                </p>
+                <div class="mt-8 flex justify-center space-x-4">
+                    <div class="flex items-center space-x-2 bg-white bg-opacity-10 rounded-full px-4 py-2">
+                        <i class="fas fa-star text-yellow-400"></i>
+                        <span class="text-sm">AI-Powered</span>
+                    </div>
+                    <div class="flex items-center space-x-2 bg-white bg-opacity-10 rounded-full px-4 py-2">
+                        <i class="fas fa-heart text-red-400"></i>
+                        <span class="text-sm">Personalized</span>
+                    </div>
+                    <div class="flex items-center space-x-2 bg-white bg-opacity-10 rounded-full px-4 py-2">
+                        <i class="fas fa-shield-alt text-green-400"></i>
+                        <span class="text-sm">Health-Focused</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Enhanced Focus Categories -->
+    <div class="container mx-auto px-4 py-12">
+        <div class="text-center mb-12">
+            <h2 class="text-4xl font-bold mb-4 bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
+                Choose Your Focus
+            </h2>
+            <p class="text-gray-400 text-lg max-w-2xl mx-auto">
+                Select your health goals and we'll create a personalized nutrition plan just for you
+            </p>
+        </div>
+        
+        <!-- Goal-Based Filters -->
+        <div class="mb-12">
+            <div class="text-center mb-8">
+                <h3 class="text-2xl font-semibold text-white mb-2">Goal-Based Nutrition</h3>
+                <p class="text-gray-400">What do you want to achieve?</p>
+            </div>
+            <div class="grid grid-cols-2 md:grid-cols-5 gap-6">
+                <button class="filter-btn group relative overflow-hidden rounded-xl p-6 text-center transition-all duration-300 bg-gray-800 hover:bg-gray-700 border border-gray-700 hover:border-blue-500" data-category="goal" data-value="weight-loss">
+                    <div class="absolute inset-0 bg-gradient-to-r from-red-500 to-pink-500 opacity-0 group-hover:opacity-10 transition-opacity"></div>
+                    <div class="relative z-10">
+                        <div class="w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-r from-red-500 to-pink-500 flex items-center justify-center group-hover:scale-110 transition-transform">
+                            <i class="fas fa-weight text-2xl text-white"></i>
+                        </div>
+                        <p class="text-sm font-medium text-white">Weight Loss</p>
+                        <p class="text-xs text-gray-400 mt-1">Shed pounds healthily</p>
+                    </div>
+                </button>
+                <button class="filter-btn group relative overflow-hidden rounded-xl p-6 text-center transition-all duration-300 bg-gray-800 hover:bg-gray-700 border border-gray-700 hover:border-blue-500" data-category="goal" data-value="muscle-gain">
+                    <div class="absolute inset-0 bg-gradient-to-r from-blue-500 to-cyan-500 opacity-0 group-hover:opacity-10 transition-opacity"></div>
+                    <div class="relative z-10">
+                        <div class="w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-r from-blue-500 to-cyan-500 flex items-center justify-center group-hover:scale-110 transition-transform">
+                            <i class="fas fa-dumbbell text-2xl text-white"></i>
+                        </div>
+                        <p class="text-sm font-medium text-white">Muscle Gain</p>
+                        <p class="text-xs text-gray-400 mt-1">Build strength</p>
+                    </div>
+                </button>
+                <button class="filter-btn group relative overflow-hidden rounded-xl p-6 text-center transition-all duration-300 bg-gray-800 hover:bg-gray-700 border border-gray-700 hover:border-blue-500" data-category="goal" data-value="energy">
+                    <div class="absolute inset-0 bg-gradient-to-r from-yellow-500 to-orange-500 opacity-0 group-hover:opacity-10 transition-opacity"></div>
+                    <div class="relative z-10">
+                        <div class="w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-r from-yellow-500 to-orange-500 flex items-center justify-center group-hover:scale-110 transition-transform">
+                            <i class="fas fa-bolt text-2xl text-white"></i>
+                        </div>
+                        <p class="text-sm font-medium text-white">Maintain Energy</p>
+                        <p class="text-xs text-gray-400 mt-1">Stay energized</p>
+                    </div>
+                </button>
+                <button class="filter-btn group relative overflow-hidden rounded-xl p-6 text-center transition-all duration-300 bg-gray-800 hover:bg-gray-700 border border-gray-700 hover:border-blue-500" data-category="goal" data-value="sleep">
+                    <div class="absolute inset-0 bg-gradient-to-r from-indigo-500 to-purple-500 opacity-0 group-hover:opacity-10 transition-opacity"></div>
+                    <div class="relative z-10">
+                        <div class="w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-r from-indigo-500 to-purple-500 flex items-center justify-center group-hover:scale-110 transition-transform">
+                            <i class="fas fa-moon text-2xl text-white"></i>
+                        </div>
+                        <p class="text-sm font-medium text-white">Improve Sleep</p>
+                        <p class="text-xs text-gray-400 mt-1">Better rest</p>
+                    </div>
+                </button>
+                <button class="filter-btn group relative overflow-hidden rounded-xl p-6 text-center transition-all duration-300 bg-gray-800 hover:bg-gray-700 border border-gray-700 hover:border-blue-500" data-category="goal" data-value="balanced">
+                    <div class="absolute inset-0 bg-gradient-to-r from-green-500 to-emerald-500 opacity-0 group-hover:opacity-10 transition-opacity"></div>
+                    <div class="relative z-10">
+                        <div class="w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-r from-green-500 to-emerald-500 flex items-center justify-center group-hover:scale-110 transition-transform">
+                            <i class="fas fa-balance-scale text-2xl text-white"></i>
+                        </div>
+                        <p class="text-sm font-medium text-white">Balanced Diet</p>
+                        <p class="text-xs text-gray-400 mt-1">Overall wellness</p>
+                    </div>
+                </button>
+            </div>
+        </div>
+
+        <!-- Condition-Based Filters -->
+        <div class="mb-12">
+            <div class="text-center mb-8">
+                <h3 class="text-2xl font-semibold text-white mb-2">Health Conditions</h3>
+                <p class="text-gray-400">Target specific health needs</p>
+            </div>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
+                <button class="filter-btn group relative overflow-hidden rounded-xl p-6 text-center transition-all duration-300 bg-gray-800 hover:bg-gray-700 border border-gray-700 hover:border-blue-500" data-category="condition" data-value="bone-health">
+                    <div class="absolute inset-0 bg-gradient-to-r from-orange-500 to-red-500 opacity-0 group-hover:opacity-10 transition-opacity"></div>
+                    <div class="relative z-10">
+                        <div class="w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-r from-orange-500 to-red-500 flex items-center justify-center group-hover:scale-110 transition-transform">
+                            <i class="fas fa-bone text-2xl text-white"></i>
+                        </div>
+                        <p class="text-sm font-medium text-white">Bone Health</p>
+                        <p class="text-xs text-gray-400 mt-1">Calcium & Vitamin D</p>
+                    </div>
+                </button>
+                <button class="filter-btn group relative overflow-hidden rounded-xl p-6 text-center transition-all duration-300 bg-gray-800 hover:bg-gray-700 border border-gray-700 hover:border-blue-500" data-category="condition" data-value="eye-health">
+                    <div class="absolute inset-0 bg-gradient-to-r from-purple-500 to-pink-500 opacity-0 group-hover:opacity-10 transition-opacity"></div>
+                    <div class="relative z-10">
+                        <div class="w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 flex items-center justify-center group-hover:scale-110 transition-transform">
+                            <i class="fas fa-eye text-2xl text-white"></i>
+                        </div>
+                        <p class="text-sm font-medium text-white">Eye Health</p>
+                        <p class="text-xs text-gray-400 mt-1">Vision support</p>
+                    </div>
+                </button>
+                <button class="filter-btn group relative overflow-hidden rounded-xl p-6 text-center transition-all duration-300 bg-gray-800 hover:bg-gray-700 border border-gray-700 hover:border-blue-500" data-category="condition" data-value="heart-health">
+                    <div class="absolute inset-0 bg-gradient-to-r from-red-500 to-pink-500 opacity-0 group-hover:opacity-10 transition-opacity"></div>
+                    <div class="relative z-10">
+                        <div class="w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-r from-red-500 to-pink-500 flex items-center justify-center group-hover:scale-110 transition-transform">
+                            <i class="fas fa-heart text-2xl text-white"></i>
+                        </div>
+                        <p class="text-sm font-medium text-white">Heart Health</p>
+                        <p class="text-xs text-gray-400 mt-1">Omega-3 & Low Sodium</p>
+                    </div>
+                </button>
+                <button class="filter-btn group relative overflow-hidden rounded-xl p-6 text-center transition-all duration-300 bg-gray-800 hover:bg-gray-700 border border-gray-700 hover:border-blue-500" data-category="condition" data-value="diabetes">
+                    <div class="absolute inset-0 bg-gradient-to-r from-blue-500 to-cyan-500 opacity-0 group-hover:opacity-10 transition-opacity"></div>
+                    <div class="relative z-10">
+                        <div class="w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-r from-blue-500 to-cyan-500 flex items-center justify-center group-hover:scale-110 transition-transform">
+                            <i class="fas fa-capsules text-2xl text-white"></i>
+                        </div>
+                        <p class="text-sm font-medium text-white">Diabetes Friendly</p>
+                        <p class="text-xs text-gray-400 mt-1">Blood sugar control</p>
+                    </div>
+                </button>
+                <button class="filter-btn group relative overflow-hidden rounded-xl p-6 text-center transition-all duration-300 bg-gray-800 hover:bg-gray-700 border border-gray-700 hover:border-blue-500" data-category="condition" data-value="senior-wellness">
+                    <div class="absolute inset-0 bg-gradient-to-r from-gray-500 to-blue-500 opacity-0 group-hover:opacity-10 transition-opacity"></div>
+                    <div class="relative z-10">
+                        <div class="w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-r from-gray-500 to-blue-500 flex items-center justify-center group-hover:scale-110 transition-transform">
+                            <i class="fas fa-user-plus text-2xl text-white"></i>
+                        </div>
+                        <p class="text-sm font-medium text-white">Senior Wellness</p>
+                        <p class="text-xs text-gray-400 mt-1">Healthy aging</p>
+                    </div>
+                </button>
+                <button class="filter-btn group relative overflow-hidden rounded-xl p-6 text-center transition-all duration-300 bg-gray-800 hover:bg-gray-700 border border-gray-700 hover:border-blue-500" data-category="condition" data-value="pcos">
+                    <div class="absolute inset-0 bg-gradient-to-r from-pink-500 to-rose-500 opacity-0 group-hover:opacity-10 transition-opacity"></div>
+                    <div class="relative z-10">
+                        <div class="w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-r from-pink-500 to-rose-500 flex items-center justify-center group-hover:scale-110 transition-transform">
+                            <i class="fas fa-female text-2xl text-white"></i>
+                        </div>
+                        <p class="text-sm font-medium text-white">PCOS Support</p>
+                        <p class="text-xs text-gray-400 mt-1">Hormonal balance</p>
+                    </div>
+                </button>
+                <button class="filter-btn group relative overflow-hidden rounded-xl p-6 text-center transition-all duration-300 bg-gray-800 hover:bg-gray-700 border border-gray-700 hover:border-blue-500" data-category="condition" data-value="thyroid">
+                    <div class="absolute inset-0 bg-gradient-to-r from-teal-500 to-cyan-500 opacity-0 group-hover:opacity-10 transition-opacity"></div>
+                    <div class="relative z-10">
+                        <div class="w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-r from-teal-500 to-cyan-500 flex items-center justify-center group-hover:scale-110 transition-transform">
+                            <i class="fas fa-gland text-2xl text-white"></i>
+                        </div>
+                        <p class="text-sm font-medium text-white">Thyroid Support</p>
+                        <p class="text-xs text-gray-400 mt-1">Metabolic health</p>
+                    </div>
+                </button>
+                <button class="filter-btn group relative overflow-hidden rounded-xl p-6 text-center transition-all duration-300 bg-gray-800 hover:bg-gray-700 border border-gray-700 hover:border-blue-500" data-category="condition" data-value="joint-pain">
+                    <div class="absolute inset-0 bg-gradient-to-r from-green-500 to-emerald-500 opacity-0 group-hover:opacity-10 transition-opacity"></div>
+                    <div class="relative z-10">
+                        <div class="w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-r from-green-500 to-emerald-500 flex items-center justify-center group-hover:scale-110 transition-transform">
+                            <i class="fas fa-hand-holding-medical text-2xl text-white"></i>
+                        </div>
+                        <p class="text-sm font-medium text-white">Joint Pain</p>
+                        <p class="text-xs text-gray-400 mt-1">Anti-inflammatory</p>
+                    </div>
+                </button>
+            </div>
+        </div>
+
+        <!-- Lifestyle Filters -->
+        <div class="mb-12">
+            <div class="text-center mb-8">
+                <h3 class="text-2xl font-semibold text-white mb-2">Lifestyle Preferences</h3>
+                <p class="text-gray-400">Match your dietary choices</p>
+            </div>
+            <div class="grid grid-cols-2 md:grid-cols-5 gap-6">
+                <button class="filter-btn group relative overflow-hidden rounded-xl p-6 text-center transition-all duration-300 bg-gray-800 hover:bg-gray-700 border border-gray-700 hover:border-blue-500" data-category="lifestyle" data-value="vegetarian">
+                    <div class="absolute inset-0 bg-gradient-to-r from-green-500 to-emerald-500 opacity-0 group-hover:opacity-10 transition-opacity"></div>
+                    <div class="relative z-10">
+                        <div class="w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-r from-green-500 to-emerald-500 flex items-center justify-center group-hover:scale-110 transition-transform">
+                            <i class="fas fa-carrot text-2xl text-white"></i>
+                        </div>
+                        <p class="text-sm font-medium text-white">Vegetarian</p>
+                        <p class="text-xs text-gray-400 mt-1">Plant-based</p>
+                    </div>
+                </button>
+                <button class="filter-btn group relative overflow-hidden rounded-xl p-6 text-center transition-all duration-300 bg-gray-800 hover:bg-gray-700 border border-gray-700 hover:border-blue-500" data-category="lifestyle" data-value="vegan">
+                    <div class="absolute inset-0 bg-gradient-to-r from-green-600 to-teal-500 opacity-0 group-hover:opacity-10 transition-opacity"></div>
+                    <div class="relative z-10">
+                        <div class="w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-r from-green-600 to-teal-500 flex items-center justify-center group-hover:scale-110 transition-transform">
+                            <i class="fas fa-seedling text-2xl text-white"></i>
+                        </div>
+                        <p class="text-sm font-medium text-white">Vegan</p>
+                        <p class="text-xs text-gray-400 mt-1">100% plant-based</p>
+                    </div>
+                </button>
+                <button class="filter-btn group relative overflow-hidden rounded-xl p-6 text-center transition-all duration-300 bg-gray-800 hover:bg-gray-700 border border-gray-700 hover:border-blue-500" data-category="lifestyle" data-value="high-protein">
+                    <div class="absolute inset-0 bg-gradient-to-r from-orange-500 to-red-500 opacity-0 group-hover:opacity-10 transition-opacity"></div>
+                    <div class="relative z-10">
+                        <div class="w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-r from-orange-500 to-red-500 flex items-center justify-center group-hover:scale-110 transition-transform">
+                            <i class="fas fa-egg text-2xl text-white"></i>
+                        </div>
+                        <p class="text-sm font-medium text-white">High Protein</p>
+                        <p class="text-xs text-gray-400 mt-1">Muscle building</p>
+                    </div>
+                </button>
+                <button class="filter-btn group relative overflow-hidden rounded-xl p-6 text-center transition-all duration-300 bg-gray-800 hover:bg-gray-700 border border-gray-700 hover:border-blue-500" data-category="lifestyle" data-value="gluten-free">
+                    <div class="absolute inset-0 bg-gradient-to-r from-yellow-600 to-orange-500 opacity-0 group-hover:opacity-10 transition-opacity"></div>
+                    <div class="relative z-10">
+                        <div class="w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-r from-yellow-600 to-orange-500 flex items-center justify-center group-hover:scale-110 transition-transform">
+                            <i class="fas fa-wheat-awn text-2xl text-white"></i>
+                        </div>
+                        <p class="text-sm font-medium text-white">Gluten-Free</p>
+                        <p class="text-xs text-gray-400 mt-1">Celiac friendly</p>
+                    </div>
+                </button>
+                <button class="filter-btn group relative overflow-hidden rounded-xl p-6 text-center transition-all duration-300 bg-gray-800 hover:bg-gray-700 border border-gray-700 hover:border-blue-500" data-category="lifestyle" data-value="intermittent-fasting">
+                    <div class="absolute inset-0 bg-gradient-to-r from-purple-500 to-indigo-500 opacity-0 group-hover:opacity-10 transition-opacity"></div>
+                    <div class="relative z-10">
+                        <div class="w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-r from-purple-500 to-indigo-500 flex items-center justify-center group-hover:scale-110 transition-transform">
+                            <i class="fas fa-clock text-2xl text-white"></i>
+                        </div>
+                        <p class="text-sm font-medium text-white">Intermittent Fasting</p>
+                        <p class="text-xs text-gray-400 mt-1">Time-restricted eating</p>
+                    </div>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Generate Plan Button -->
+    <div class="container mx-auto px-4 mb-12">
+        <div class="text-center">
+            <button onclick="generateNutritionPlan()" class="group relative overflow-hidden bg-gradient-to-r from-blue-600 to-purple-600 text-white px-12 py-6 rounded-2xl text-xl font-semibold hover:from-blue-700 hover:to-purple-700 transition-all duration-300 shadow-2xl hover:shadow-blue-500/25">
+                <div class="absolute inset-0 bg-gradient-to-r from-blue-400 to-purple-400 opacity-0 group-hover:opacity-20 transition-opacity"></div>
+                <div class="relative z-10 flex items-center justify-center">
+                    <i class="fas fa-magic mr-3 text-2xl group-hover:rotate-12 transition-transform"></i>
+                    Generate My Personalized Nutrition Plan
+                </div>
+            </button>
+        </div>
+    </div>
+
+    <!-- Results Section -->
+    <div id="results-section" class="container mx-auto px-4 mb-12 hidden">
+        <div class="bg-gray-800 rounded-2xl shadow-2xl p-8 border border-gray-700">
+            <h2 class="text-3xl font-bold text-white mb-8 text-center bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
+                Your Personalized Nutrition Plan
+            </h2>
+            <div id="nutrition-results" class="space-y-8">
+                <!-- Results will be populated here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer with AI Assistant Chat -->
+    <footer class="bg-gray-900 border-t border-gray-800">
+        <div class="container mx-auto px-4 py-8">
+            <!-- AI Assistant Chat -->
+            <div class="bg-gray-800 rounded-2xl shadow-2xl p-6 mb-8 border border-gray-700">
+                <div class="flex items-center mb-6">
+                    <div class="w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center mr-4 glow-effect">
+                        <i class="fas fa-robot text-white text-lg"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-semibold text-white">AI Nutrition Assistant</h3>
+                        <p class="text-gray-400">Ask me anything about nutrition and health goals</p>
+                    </div>
+                </div>
+                <div id="chat-messages" class="space-y-4 mb-6 max-h-80 overflow-y-auto bg-gray-900 rounded-lg p-4 border border-gray-700">
+                    <div class="flex items-start">
+                        <div class="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center mr-3 mt-1">
+                            <i class="fas fa-robot text-white text-xs"></i>
+                        </div>
+                        <div class="bg-blue-900 rounded-lg p-3 max-w-sm border border-blue-700">
+                            <p class="text-base text-blue-100 leading-relaxed">I can recommend meals for stronger bones, better vision, weight loss, senior wellness, or custom diets. What would you like to focus on?</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="flex space-x-3">
+                    <input type="text" id="chat-input" placeholder="Type your health goal or condition..." 
+                           class="flex-1 bg-gray-700 border border-gray-600 rounded-lg px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    <button onclick="sendMessage()" class="bg-gradient-to-r from-blue-500 to-purple-600 text-white px-6 py-3 rounded-lg hover:opacity-90 transition-opacity">
+                        <i class="fas fa-paper-plane"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Footer Info -->
+            <div class="text-center text-gray-400">
+                <p>&copy; 2024 Personalized Nutrition. Built with ❤️ for better health.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="config.js"></script>
+    <script src="script.js"></script>
+</body>
+</html> 
