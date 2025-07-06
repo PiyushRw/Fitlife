@@ -7,6 +7,19 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
+      @keyframes fade-in-down {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.animate-fade-in-down {
+  animation: fade-in-down 1s ease-out;
+}
       .bg-custom-dark { background-color: #121212; }
       .bg-custom-surface { background-color: #1E1E1E; }
       .bg-custom-primary { background-color: #62E0A1; }
@@ -20,31 +33,29 @@
   </head>
   <body class="bg-custom-dark text-white font-sans">
 
-    <!-- 🔝 Navigation Bar -->
-    <header class="flex items-center justify-between p-6 bg-custom-surface shadow-lg sticky top-0 z-50">
-      <div class="flex items-center space-x-3">
-        <span class="text-xl font-bold text-white tracking-wide">FitLife</span>
-      </div>
-      <nav class="space-x-6">
-        <a href="#" class="hover:text-custom-primary transition">Home</a>
-        <a href="#" class="hover:text-custom-primary transition">Workouts</a>
-        <a href="#" class="hover:text-custom-primary transition">Nutrition</a>
-        <a href="login.html" class="bg-custom-primary text-black px-4 py-2 rounded-full font-semibold hover:bg-custom-accent transition">Get Started</a>
-      </nav>
-    </header>
+  <!-- 🔝 Navigation Bar -->
+<header class="flex items-center justify-between p-6 bg-custom-surface shadow-lg sticky top-0 z-50">
+  <div class="flex items-center space-x-3">
+    <span class="text-3xl font-extrabold bg-gradient-to-r from-[#62E0A1] to-[#36CFFF] text-transparent bg-clip-text drop-shadow-md tracking-wider animate-pulse">FitLife</span>
+  </div>
+  <nav class="space-x-6 text-lg">
+    <a href="#" class="hover:text-custom-primary transition">Home</a>
+    <a href="#" class="hover:text-custom-primary transition">Workouts</a>
+    <a href="#" class="hover:text-custom-primary transition">Nutrition</a>
+    <a href="login.html" class="bg-gradient-to-r from-[#62E0A1] to-[#F2B33D] text-black px-5 py-2 rounded-full font-semibold hover:scale-105 transition shadow-md">Get Started</a>
+  </nav>
+</header>
 
-    <!-- 🏋️ Hero Section -->
-    <section class="relative h-[calc(90vh-20px)] bg-cover bg-center mt-4 rounded-3xl overflow-hidden shadow-xl" style="background-image: linear-gradient(90deg,rgba(18,18,18,0.85) 60%,rgba(98,224,161,0.12)), url('images/Untitled design.png');">
-      <div class="absolute bottom-16 left-8 space-y-6 max-w-xl">
-        <h1 class="text-5xl md:text-6xl font-extrabold text-white drop-shadow-lg leading-tight">Personalized fitness & nutrition</h1>
-        <p class="text-2xl font-semibold text-white drop-shadow-lg">
-          <span class="text-custom-primary">FitLife</span> tailors your plan to your <span class="text-custom-primary">unique goals.</span>
-        </p>
-        <a href="login.html" class="bg-white text-black px-7 py-3 rounded-full font-bold inline-block hover:bg-custom-primary hover:text-white shadow-lg transition">Get My Plan</a>
-      </div>
-      <div class="absolute right-8 bottom-8 hidden md:block">
-      </div>
-    </section>
+<!-- 🏋️ Hero Section -->
+<section class="relative h-[90vh] bg-cover bg-center mt-6 rounded-3xl overflow-hidden shadow-xl" style="background-image: linear-gradient(90deg,rgba(18,18,18,0.85) 60%,rgba(98,224,161,0.12)), url('images/Untitled design.png');">
+  <div class="absolute bottom-16 left-8 space-y-6 max-w-xl animate-fade-in-down">
+    <h1 class="text-5xl md:text-6xl font-extrabold text-white drop-shadow-lg leading-tight">Personalized fitness & nutrition</h1>
+    <p class="text-2xl font-semibold text-white drop-shadow-lg">
+      <span class="text-custom-primary">FitLife</span> tailors your plan to your <span class="text-custom-primary">unique goals.</span>
+    </p>
+    <a href="login.html" class="bg-gradient-to-r from-white to-[#62E0A1] text-black px-7 py-3 rounded-full font-bold inline-block hover:from-[#36CFFF] hover:to-[#F2B33D] hover:text-white transition-all duration-300 shadow-lg">Get My Plan</a>
+  </div>
+</section>
 
     <!-- ✨ Feature Highlights -->
     <section class="grid md:grid-cols-3 gap-8 p-10 bg-custom-dark max-w-7xl mx-auto my-20">
