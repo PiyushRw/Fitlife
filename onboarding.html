@@ -241,6 +241,36 @@
         <div id="workoutType-error" class="error-message hidden"></div>
         <div class="flex justify-between mt-6">
           <button type="button" onclick="previousStep()" class="bg-gray-600 text-white px-6 py-2 rounded-full hover:bg-gray-500 transition">Back</button>
+          <button type="button" onclick="nextStep()" class="bg-[#F2B33D] text-black px-6 py-2 rounded-full hover:bg-yellow-400 transition">Next</button>
+        </div>
+      </div>
+
+      <!-- Step 5: Dietary Preferences -->
+      <div class="step hidden" id="step4">
+        <label class="block mb-2 text-sm">Any dietary preferences?</label>
+        <div class="dropdown-container">
+          <button type="button" class="dropdown-button" onclick="toggleDropdown('dietaryPreferences')">
+            <span id="dietaryPreferences-display">Select dietary preference</span>
+            <span class="text-gray-400">⌄</span>
+          </button>
+          <div id="dietaryPreferences-dropdown" class="dropdown-options hidden">
+            <div class="dropdown-option" onclick="selectDropdownOption('dietaryPreferences', 'None')">None</div>
+            <div class="dropdown-option" onclick="selectDropdownOption('dietaryPreferences', 'Vegetarian')">Vegetarian</div>
+            <div class="dropdown-option" onclick="selectDropdownOption('dietaryPreferences', 'Vegan')">Vegan</div>
+            <div class="dropdown-option" onclick="selectDropdownOption('dietaryPreferences', 'Gluten-free')">Gluten-free</div>
+            <div class="dropdown-option" onclick="selectDropdownOption('dietaryPreferences', 'Dairy-free')">Dairy-free</div>
+            <div class="dropdown-option" onclick="selectDropdownOption('dietaryPreferences', 'Low-carb')">Low-carb</div>
+            <div class="dropdown-option" onclick="selectDropdownOption('dietaryPreferences', 'Keto')">Keto</div>
+            <div class="dropdown-option" onclick="selectDropdownOption('dietaryPreferences', 'Other')">Other</div>
+          </div>
+        </div>
+        <div id="dietaryPreferences-error" class="error-message hidden"></div>
+
+        <input id="otherDietaryPreferences" type="text" placeholder="Please specify..." class="mt-3 w-full p-3 rounded-xl border border-gray-600 hidden">
+        <div id="otherDietaryPreferences-error" class="error-message hidden"></div>
+
+        <div class="flex justify-between mt-6">
+          <button type="button" onclick="previousStep()" class="bg-gray-600 text-white px-6 py-2 rounded-full hover:bg-gray-500 transition">Back</button>
           <button type="button" onclick="finish()" class="bg-[#F2B33D] text-black px-6 py-2 rounded-full hover:bg-yellow-400 transition">Finish</button>
         </div>
       </div>
@@ -293,6 +323,13 @@
         document.getElementById('otherHealthFocus').classList.remove('hidden');
       } else if (id === 'healthFocus') {
         document.getElementById('otherHealthFocus').classList.add('hidden');
+      }
+      
+      // Handle "Other" option for dietary preferences
+      if (id === 'dietaryPreferences' && value === 'Other') {
+        document.getElementById('otherDietaryPreferences').classList.remove('hidden');
+      } else if (id === 'dietaryPreferences') {
+        document.getElementById('otherDietaryPreferences').classList.add('hidden');
       }
     }
 
@@ -406,6 +443,31 @@
       }
     }
 
+    function validateStep4() {
+      const dietaryPreferences = dropdownValues.dietaryPreferences;
+      if (!dietaryPreferences) {
+        showError("dietaryPreferences-error", "Please select your dietary preference");
+        return false;
+      } else {
+        hideError("dietaryPreferences-error");
+      }
+
+      // If "Other" is selected, validate the text input
+      if (dietaryPreferences === "Other") {
+        const otherDietaryPreferences = document.getElementById("otherDietaryPreferences").value.trim();
+        if (!otherDietaryPreferences) {
+          showError("otherDietaryPreferences-error", "Please specify your dietary preference");
+          return false;
+        } else {
+          hideError("otherDietaryPreferences-error");
+        }
+      } else {
+        hideError("otherDietaryPreferences-error");
+      }
+
+      return true;
+    }
+
     function nextStep() {
       let isValid = false;
 
@@ -418,6 +480,8 @@
         isValid = validateSeniorExtra();
       } else if (currentStep === 4) {
         isValid = validateStep3();
+      } else if (currentStep === 5) {
+        isValid = validateStep4();
       }
 
       if (!isValid) return;
@@ -442,6 +506,10 @@
         document.getElementById("senior-extra").classList.add("hidden");
         document.getElementById("step3").classList.remove("hidden");
         currentStep = 4;
+      } else if (currentStep === 4) {
+        document.getElementById("step3").classList.add("hidden");
+        document.getElementById("step4").classList.remove("hidden");
+        currentStep = 5;
       }
       updateProgress();
     }
@@ -466,6 +534,10 @@
           document.getElementById("step2").classList.remove("hidden");
           currentStep = 2;
         }
+      } else if (currentStep === 5) {
+        document.getElementById("step4").classList.add("hidden");
+        document.getElementById("step3").classList.remove("hidden");
+        currentStep = 4;
       }
       updateProgress();
     }
@@ -474,24 +546,26 @@
       const senior = isSenior();
       let percent = 0;
       if (senior) {
-        // 4 steps: 1,2,3(senior),4
+        // 5 steps: 1,2,3(senior),4,5
+        if (currentStep === 1) percent = 0;
+        else if (currentStep === 2) percent = 20;
+        else if (currentStep === 3) percent = 40;
+        else if (currentStep === 4) percent = 60;
+        else if (currentStep === 5) percent = 80;
+      } else {
+        // 4 steps: 1,2,4,5
         if (currentStep === 1) percent = 0;
         else if (currentStep === 2) percent = 25;
-        else if (currentStep === 3) percent = 50;
-        else if (currentStep === 4) percent = 75;
-      } else {
-        // 3 steps: 1,2,4
-        if (currentStep === 1) percent = 0;
-        else if (currentStep === 2) percent = 33;
-        else if (currentStep === 4) percent = 66;
+        else if (currentStep === 4) percent = 50;
+        else if (currentStep === 5) percent = 75;
       }
       progressBar.style.width = `${percent}%`;
     }
 
     function finish() {
-      if (!validateStep3()) return;
+      if (!validateStep4()) return;
       
-      document.getElementById("step3").classList.add("hidden");
+      document.getElementById("step4").classList.add("hidden");
       document.getElementById("completed").classList.remove("hidden");
       progressBar.style.width = "100%";
       setTimeout(() => {
