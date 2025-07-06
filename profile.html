@@ -86,12 +86,14 @@
 
       <!-- Stats -->
       <section class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <!-- Workout Streak / Consistency Tracker -->
         <div class="bg-custom-dark rounded-xl p-4 text-center">
           <div class="bg-custom-primary text-black rounded-full w-8 h-8 flex items-center justify-center mx-auto">
-            <i class="fas fa-running"></i>
+            <i class="fas fa-bolt"></i>
           </div>
-          <p class="text-sm">Steps</p>
-          <p class="text-lg font-bold">5,432</p>
+          <p class="text-sm">Workout Streak</p>
+          <p class="text-lg font-bold"><span id="workoutStreakValue">7</span> days</p>
+          <p class="text-xs text-custom-primary mt-1" id="consistencyText">🔥 Consistent! Keep your streak alive.</p>
         </div>
         <div class="bg-custom-dark rounded-xl p-4 text-center">
           <div class="bg-custom-secondary text-black rounded-full w-8 h-8 flex items-center justify-center mx-auto">
@@ -122,7 +124,7 @@
           </div>
           <div>
             <p class="font-semibold text-sm">AI Health Score</p>
-            <p class="text-xs text-gray-400">Composite: sleep, water, mood, steps</p>
+            <p class="text-xs text-gray-400">Composite: sleep, water, mood, <span class="font-semibold">workout streak</span></p>
             <p class="text-xs" id="healthScoreStatus">Great! Keep it up.</p>
           </div>
         </div>
@@ -137,7 +139,7 @@
         </div>
       </section>
 
-      <!-- Goals and Sleep -->
+      <!-- Goals and Recovery -->
       <section class="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div class="bg-custom-dark p-4 rounded-xl col-span-2 relative">
           <div class="flex items-center justify-between mb-2">
@@ -160,10 +162,11 @@
           </div>
         </div>
 
+        <!-- Recovery Status / Muscle Recovery -->
         <div class="bg-custom-dark p-4 rounded-xl space-y-3">
           <div class="flex items-center mb-1">
-            <p class="font-semibold text-sm mr-2">Sleep Analysis</p>
-            <span class="ml-1 text-xs text-gray-400 cursor-pointer" title="More deep sleep = better recovery">
+            <p class="font-semibold text-sm mr-2">Recovery Status</p>
+            <span class="ml-1 text-xs text-gray-400 cursor-pointer" title="Good recovery = better muscle growth and performance">
               <i class="fas fa-info-circle"></i>
             </span>
           </div>
@@ -172,27 +175,36 @@
               <i class="fas fa-bed text-xs"></i>
             </div>
             <div>
-              <p class="text-xs">Deep Sleep</p>
-              <p class="text-sm font-bold">30% <span class="text-[10px] text-gray-400">(Yesterday: 28%)</span></p>
+              <p class="text-xs">Rest</p>
+              <p class="text-sm font-bold" id="restScore">8 hrs <span class="text-[10px] text-gray-400">(Goal: 7+ hrs)</span></p>
             </div>
           </div>
           <div class="flex items-center space-x-3">
             <div class="bg-custom-secondary w-8 h-8 rounded-full text-black flex items-center justify-center">
-              <i class="fas fa-wind text-xs"></i>
+              <i class="fas fa-drumstick-bite text-xs"></i>
             </div>
             <div>
-              <p class="text-xs">Light Sleep</p>
-              <p class="text-sm font-bold">50% <span class="text-[10px] text-gray-400">(Week Avg: 52%)</span></p>
+              <p class="text-xs">Protein Intake</p>
+              <p class="text-sm font-bold" id="proteinScore">120g <span class="text-[10px] text-gray-400">(Goal: 100g+)</span></p>
             </div>
           </div>
           <div class="flex items-center space-x-3">
             <div class="bg-custom-accent w-8 h-8 rounded-full text-black flex items-center justify-center">
-              <i class="fas fa-eye text-xs"></i>
+              <i class="fas fa-heartbeat text-xs"></i>
+            </div>
+           
+          <div class="flex items-center space-x-3">
+            <div class="bg-custom-dark w-8 h-8 rounded-full text-custom-accent flex items-center justify-center border border-custom-accent">
+              <i class="fas fa-tired text-xs"></i>
             </div>
             <div>
-              <p class="text-xs">Awake</p>
-              <p class="text-sm font-bold">20% <span class="text-[10px] text-gray-400">(Yesterday: 20%)</span></p>
+              <p class="text-xs">Soreness</p>
+              <p class="text-sm font-bold" id="sorenessScore">Low <span class="text-[10px] text-gray-400">(Self-reported)</span></p>
             </div>
+          </div>
+          <div class="mt-2 text-xs text-custom-primary">
+            <i class="fas fa-check-circle"></i>
+            <span id="recoverySummary">Recovery optimal! Ready for next workout.</span>
           </div>
         </div>
       </section>
@@ -311,16 +323,18 @@
     // --- AI Health Score Widget Logic ---
     function updateHealthScore() {
       // Example calculation using dummy values
-      // In real app, fetch actual values for sleep, water, mood, steps
-      let sleep = 80; // out of 100
+      // In real app, fetch actual values for water, mood, workout streak
       let water = 70; // out of 100
-      let steps = 85; // out of 100
+      // Replace steps with workout streak consistency (simulate out of 100)
+      let streak = parseInt(document.getElementById('workoutStreakValue').textContent) || 0;
+      let streakScore = Math.min(100, streak * 10); // e.g., 7 days = 70/100
       let moodVal = document.getElementById('moodSelector').value;
       let mood = 0;
       if (moodVal === 'happy') mood = 90;
       else if (moodVal === 'neutral') mood = 70;
       else mood = 50;
-      let score = Math.round((sleep + water + steps + mood) / 4);
+      // Remove sleep from calculation
+      let score = Math.round((water + streakScore + mood) / 3);
 
       // Color: green >75, yellow 50-75, red <50
       let circle = document.getElementById('healthScoreCircle');
@@ -335,7 +349,22 @@
         status.textContent = "Doing okay, but there's room for improvement.";
       } else {
         circle.className = "w-16 h-16 rounded-full flex items-center justify-center text-2xl font-bold text-white bg-red-500 transition-colors";
-        status.textContent = "Needs work! Focus on sleep, water, and mood.";
+        status.textContent = "Needs work! Focus on water, mood, and consistency.";
+      }
+    }
+
+    // Optionally, you can add a function to update the consistency text
+    function updateConsistencyText() {
+      const streak = parseInt(document.getElementById('workoutStreakValue').textContent) || 0;
+      const text = document.getElementById('consistencyText');
+      if (streak >= 7) {
+        text.textContent = "🔥 Consistent! Keep your streak alive.";
+      } else if (streak >= 3) {
+        text.textContent = "👏 Good job! Try to reach a week streak.";
+      } else if (streak > 0) {
+        text.textContent = "👍 Getting started! Build your streak.";
+      } else {
+        text.textContent = "Start your streak today!";
       }
     }
 
@@ -356,10 +385,33 @@
       }
     }
 
+    // --- Recovery Status Logic ---
+    function updateRecoveryStatus() {
+      // Dummy values for demonstration
+      const rest = 8; // hours
+      const protein = 120; // grams
+      const sleep = "Good";
+      const soreness = "Low";
+
+      document.getElementById('restScore').innerHTML = rest + " hrs <span class=\"text-[10px] text-gray-400\">(Goal: 7+ hrs)</span>";
+      document.getElementById('proteinScore').innerHTML = protein + "g <span class=\"text-[10px] text-gray-400\">(Goal: 100g+)</span>";
+      document.getElementById('sleepScore').innerHTML = sleep + " <span class=\"text-[10px] text-gray-400\">(Last night)</span>";
+      document.getElementById('sorenessScore').innerHTML = soreness + " <span class=\"text-[10px] text-gray-400\">(Self-reported)</span>";
+
+      // Simple logic for summary
+      let summary = "Recovery optimal! Ready for next workout.";
+      if (rest < 7 || protein < 100 || sleep !== "Good" || soreness !== "Low") {
+        summary = "Recovery incomplete. Focus on rest, protein, and recovery.";
+      }
+      document.getElementById('recoverySummary').textContent = summary;
+    }
+
     // Initialize on load
     window.onload = function() {
       updateHealthScore();
       updateMoodCorrelation();
+      updateConsistencyText();
+      updateRecoveryStatus();
     };
   </script>
 </body>
