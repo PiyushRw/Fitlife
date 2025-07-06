@@ -1,0 +1,57 @@
+<!-- Floating AI Assistant Button & Chat -->
+<div id="aiAssistantBtn" class="fixed bottom-8 right-8 z-50">
+  <button class="bg-custom-accent text-black rounded-full w-14 h-14 flex items-center justify-center shadow-lg hover:scale-105 transition">
+    <i class="fas fa-robot text-2xl"></i>
+  </button>
+</div>
+<div id="aiChatPopup" class="fixed bottom-28 right-8 z-50 w-80 bg-custom-surface rounded-2xl shadow-2xl border border-custom-surface hidden flex-col">
+  <div class="flex items-center justify-between p-4 bg-custom-accent rounded-t-2xl">
+    <span class="font-bold text-black"><i class="fas fa-robot mr-2"></i>AI Assistant</span>
+    <button id="closeAiChat" class="text-black hover:text-gray-700"><i class="fas fa-times"></i></button>
+  </div>
+  <div id="aiChatMessages" class="p-4 h-56 overflow-y-auto text-xs space-y-2 bg-custom-surface text-white">
+    <div class="text-gray-400">How can I help you with your workout today?</div>
+  </div>
+  <form id="aiChatForm" class="flex border-t border-gray-700">
+    <input id="aiChatInput" type="text" placeholder="Ask something..." class="flex-1 bg-transparent px-3 py-2 text-white focus:outline-none" autocomplete="off" />
+    <button type="submit" class="bg-custom-primary text-black px-4 rounded-r-2xl hover:bg-custom-secondary transition"><i class="fas fa-paper-plane"></i></button>
+  </form>
+</div>
+
+<script>
+  // Wait for DOM in case of dynamic include
+  setTimeout(() => {
+    const aiBtn = document.getElementById('aiAssistantBtn');
+    const aiPopup = document.getElementById('aiChatPopup');
+    const closeAi = document.getElementById('closeAiChat');
+    const aiForm = document.getElementById('aiChatForm');
+    const aiInput = document.getElementById('aiChatInput');
+    const aiMessages = document.getElementById('aiChatMessages');
+
+    if (!aiBtn) return;
+
+    aiBtn.addEventListener('click', () => aiPopup.classList.toggle('hidden'));
+    closeAi.addEventListener('click', () => aiPopup.classList.add('hidden'));
+
+    aiForm.addEventListener('submit', function(e) {
+      e.preventDefault();
+      const userMsg = aiInput.value.trim();
+      if (!userMsg) return;
+      // Show user message
+      const userDiv = document.createElement('div');
+      userDiv.className = "text-right";
+      userDiv.innerHTML = `<span class="bg-custom-primary text-black px-2 py-1 rounded-lg inline-block">${userMsg}</span>`;
+      aiMessages.appendChild(userDiv);
+      aiMessages.scrollTop = aiMessages.scrollHeight;
+      aiInput.value = "";
+
+      // Simulate AI reply
+      setTimeout(() => {
+        const aiDiv = document.createElement('div');
+        aiDiv.innerHTML = `<span class="bg-custom-surface border border-custom-primary text-custom-primary px-2 py-1 rounded-lg inline-block">I'm here to help! (AI response placeholder)</span>`;
+        aiMessages.appendChild(aiDiv);
+        aiMessages.scrollTop = aiMessages.scrollHeight;
+      }, 800);
+    });
+  }, 100);
+</script>
