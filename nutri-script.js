@@ -557,6 +557,15 @@ Make sure the meals are:
                 throw new Error('Invalid meal data structure');
             }
             
+            // Ensure each meal has a unique image based on its name if missing or fallback
+            parsedData.meals = parsedData.meals.map(meal => {
+                if (!meal.image || meal.image.includes('photo-1517686469429-8bdb88b9f907')) {
+                    const encodedName = encodeURIComponent(meal.name || 'food');
+                    meal.image = `https://source.unsplash.com/400x300/?food,${encodedName}`;
+                }
+                return meal;
+            });
+            
             return parsedData;
         } catch (error) {
             console.error('JSON parsing error:', error);
@@ -655,18 +664,18 @@ function displayAINutritionPlan(nutritionPlan, focusArea) {
     
     nutritionPlan.meals.forEach(meal => {
         html += `
-            <div class="bg-gray-800 rounded-xl shadow-2xl overflow-hidden card-hover border border-gray-700">
+            <div class="bg-gray-800 rounded-xl shadow-2xl overflow-hidden card-hover border border-gray-700 flex flex-col">
                 <div class="relative h-48 bg-gray-700">
                     <img src="${meal.image}" alt="${meal.name}" class="w-full h-full object-cover" onerror="this.src='https://images.unsplash.com/photo-1517686469429-8bdb88b9f907?w=400&h=300&fit=crop'">
                     <div class="absolute top-3 right-3 bg-green-500 text-white px-3 py-1 rounded-full text-xs font-medium">
                         ${meal.benefits[0] || 'Healthy'}
                     </div>
                 </div>
-                <div class="p-6">
-                    <h4 class="font-semibold text-white mb-3 text-lg">${meal.name}</h4>
+                <div class="p-6 flex flex-col gap-4">
+                    <h4 class="font-semibold text-white mb-3 text-lg break-words">${meal.name}</h4>
                     <div class="flex flex-wrap gap-2 mb-4">
                         ${meal.benefits.map(benefit => 
-                            `<span class="bg-green-900 text-green-300 text-xs px-3 py-1 rounded-full border border-green-700">${benefit}</span>`
+                            `<span class="bg-green-900 text-green-300 text-xs px-3 py-1 rounded-full border border-green-700 break-words">${benefit}</span>`
                         ).join('')}
                     </div>
                     <div class="grid grid-cols-4 gap-3 mb-4 text-center text-sm">
@@ -674,9 +683,9 @@ function displayAINutritionPlan(nutritionPlan, focusArea) {
                             <div class="font-semibold text-blue-300">${meal.macros.calories}</div>
                             <div class="text-xs text-gray-400">kcal</div>
                         </div>
-                        <div class="bg-red-900 rounded-lg p-3 border border-red-700">
-                            <div class="font-semibold text-red-300">${meal.macros.protein}g</div>
-                            <div class="text-xs text-gray-400">Protein</div>
+                        <div class="bg-red-900 rounded-lg p-3 border border-red-700 flex flex-col items-center justify-center min-h-[48px]">
+                            <div class="font-semibold text-red-300 break-words leading-tight">${meal.macros.protein}g</div>
+                            <div class="text-xs text-gray-400 break-words leading-tight">Protein</div>
                         </div>
                         <div class="bg-yellow-900 rounded-lg p-3 border border-yellow-700">
                             <div class="font-semibold text-yellow-300">${meal.macros.fat}g</div>
@@ -687,8 +696,8 @@ function displayAINutritionPlan(nutritionPlan, focusArea) {
                             <div class="text-xs text-gray-400">Carbs</div>
                         </div>
                     </div>
-                    <div class="bg-gray-700 rounded-lg p-4 border border-gray-600">
-                        <p class="text-xs text-gray-300"><strong class="text-blue-400">AI Tip:</strong> ${meal.tips}</p>
+                    <div class="bg-gray-700 rounded-lg p-4 border border-gray-600 mt-2">
+                        <p class="text-xs text-gray-300 break-words"><strong class="text-blue-400">AI Tip:</strong> ${meal.tips}</p>
                     </div>
                 </div>
             </div>
