@@ -19,6 +19,19 @@
   </style>
 </head>
 <body class="bg-custom-dark text-white font-sans">
+  <!-- 🔝 Navigation Bar -->
+  <header id="main-navbar" class="flex items-center justify-between px-6 sm:px-10 py-4 bg-[#1E1E1E] shadow-md sticky top-0 z-50 rounded-b-xl">
+    <div class="flex items-center space-x-3">
+      <div class="text-3xl font-extrabold bg-gradient-to-r from-[#62E0A1] to-[#36CFFF] text-transparent bg-clip-text drop-shadow-md tracking-wider animate-pulse">FitLife</div>
+    </div>
+    <nav class="space-x-6 text-lg">
+      <a href="HomePage.html" class="hover:text-custom-primary transition">Home</a>
+      <a href="profile.html" class="hover:text-custom-primary transition border-b-2 border-[#24d0a4] pb-1">Profile</a>
+      <a href="contact.html" class="hover:text-custom-primary transition">Contact</a>
+      <a href="ai-companion-page.html" class="hover:text-custom-primary transition">AI Companion</a>
+      <a href="login.html" class="bg-gradient-to-r from-[#62E0A1] to-[#F2B33D] text-black px-5 py-2 rounded-full font-semibold hover:scale-105 transition shadow-md">Get Started</a>
+    </nav>
+  </header>
   <div class="flex min-h-screen p-4">
     <!-- Sidebar -->
     <aside class="flex flex-col bg-custom-surface w-20 md:w-48 p-4 rounded-2xl">
@@ -42,20 +55,20 @@
           <i class="fas fa-dumbbell"></i>
           <span class="hidden md:inline">Workouts</span>
         </a>
-        <button class="flex items-center space-x-2 hover:bg-custom-dark px-3 py-2 rounded-full">
+        <a href="nutrition.html" class="flex items-center space-x-2 hover:bg-custom-dark px-3 py-2 rounded-full">
           <i class="fas fa-utensils"></i>
           <span class="hidden md:inline">Nutrition</span>
-        </button>
+        </a>
       </nav>
       <div class="mt-auto pt-8 space-y-2">
-        <button class="flex items-center space-x-2 hover:bg-custom-dark px-3 py-2 rounded-full">
+        <a href="preference.html" class="flex items-center space-x-2 hover:bg-custom-dark px-3 py-2 rounded-full">
           <i class="fas fa-cog"></i>
           <span class="hidden md:inline">Preferences</span>
-        </button>
-        <button class="flex items-center space-x-2 hover:bg-custom-dark px-3 py-2 rounded-full">
+        </a>
+        <a href="signout.html" class="flex items-center space-x-2 hover:bg-custom-dark px-3 py-2 rounded-full">
           <i class="fas fa-sign-out-alt"></i>
           <span class="hidden md:inline">Sign out</span>
-        </button>
+        </a>
       </div>
     </aside>
 
@@ -404,6 +417,25 @@
       updateConsistencyText();
       updateRecoveryStatus();
     };
+  </script>
+  <div id="ai-assistant-include"></div>
+  <script>
+    fetch('ai-assistant.html')
+      .then(res => res.text())
+      .then(html => {
+        document.getElementById('ai-assistant-include').innerHTML = html;
+        // Run any scripts in the loaded HTML
+        const scripts = document.getElementById('ai-assistant-include').querySelectorAll('script');
+        scripts.forEach(oldScript => {
+          const newScript = document.createElement('script');
+          if (oldScript.src) {
+            newScript.src = oldScript.src;
+          } else {
+            newScript.textContent = oldScript.textContent;
+          }
+          document.body.appendChild(newScript);
+        });
+      });
   </script>
 </body>
 </html>

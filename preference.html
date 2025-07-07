@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Preferences - FitLife</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css"/>
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+    }
+    .bg-custom-dark { background-color: #121212; }
+    .bg-custom-surface { background-color: #1E1E1E; }
+    .bg-custom-primary { background-color: #62E0A1; }
+    .text-custom-primary { color: #62E0A1; }
+    
+    /* Remove spinner from number inputs */
+    input[type="number"]::-webkit-outer-spin-button,
+    input[type="number"]::-webkit-inner-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+    
+    input[type="number"] {
+      appearance: textfield;
+      -moz-appearance: textfield;
+    }
+
+    /* Custom dropdown styles */
+    .dropdown-container { 
+      position: relative;
+    }
+    
+    .dropdown-button {
+      width: 100%;
+      padding: 0.5rem 0;
+      background-color: transparent;
+      color: white;
+      border: none;
+      border-bottom: 1px solid #6b7280;
+      text-align: left;
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.875rem;
+    }
+    
+    .dropdown-button:hover {
+      border-bottom-color: #62E0A1;
+    }
+    
+    .dropdown-button:focus {
+      outline: none;
+      border-bottom-color: #62E0A1;
+    }
+    
+    .dropdown-options {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      right: 0;
+      background-color: #1e1e1e;
+      border: 1px solid #4b5563;
+      border-radius: 0.5rem;
+      margin-top: 0.25rem;
+      max-height: 200px;
+      overflow-y: auto;
+      z-index: 1000;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+    }
+    
+    .dropdown-option {
+      padding: 0.75rem;
+      cursor: pointer;
+      border-radius: 0.25rem;
+      margin: 0.25rem;
+      transition: background-color 0.2s;
+      font-size: 0.875rem;
+    }
+    
+    .dropdown-option:hover {
+      background-color: #2a2a2a;
+    }
+    
+    .dropdown-option.selected {
+      background-color: #62E0A1;
+      color: #000;
+    }
+    
+    /* Custom scrollbar styling for dropdowns */
+    .dropdown-options::-webkit-scrollbar {
+      width: 8px;
+    }
+    
+    .dropdown-options::-webkit-scrollbar-track {
+      background: #1e1e1e;
+      border-radius: 4px;
+    }
+    
+    .dropdown-options::-webkit-scrollbar-thumb {
+      background: #4b5563;
+      border-radius: 4px;
+    }
+    
+    .dropdown-options::-webkit-scrollbar-thumb:hover {
+      background: #6b7280;
+    }
+    
+    /* Firefox scrollbar styling */
+    .dropdown-options {
+      scrollbar-width: thin;
+      scrollbar-color: #4b5563 #1e1e1e;
+    }
+    
+    /* Prevent background color changes on input focus/autofill */
+    input[type="text"], input[type="number"] {
+      background-color: transparent !important;
+      color: white !important;
+      -webkit-text-fill-color: white !important;
+    }
+    
+    input[type="text"]:focus, input[type="number"]:focus {
+      background-color: transparent !important;
+      color: white !important;
+      -webkit-text-fill-color: white !important;
+    }
+    
+    input[type="text"]:-webkit-autofill,
+    input[type="text"]:-webkit-autofill:hover,
+    input[type="text"]:-webkit-autofill:focus,
+    input[type="text"]:-webkit-autofill:active,
+    input[type="number"]:-webkit-autofill,
+    input[type="number"]:-webkit-autofill:hover,
+    input[type="number"]:-webkit-autofill:focus,
+    input[type="number"]:-webkit-autofill:active {
+      -webkit-box-shadow: 0 0 0 30px transparent inset !important;
+      -webkit-text-fill-color: white !important;
+      background-color: transparent !important;
+      color: white !important;
+    }
+    
+    /* Override any Tailwind classes */
+    .bg-transparent {
+      background-color: transparent !important;
+    }
+    
+    /* Specific override for the name input */
+    #name {
+      background-color: transparent !important;
+      color: white !important;
+      -webkit-text-fill-color: white !important;
+    }
+    
+    #name:focus {
+      background-color: transparent !important;
+      color: white !important;
+      -webkit-text-fill-color: white !important;
+    }
+
+    /* Autofill override for Chrome/Edge */
+    input:-webkit-autofill,
+    input:-webkit-autofill:focus,
+    input:-webkit-autofill:hover,
+    input:-webkit-autofill:active {
+      -webkit-box-shadow: 0 0 0 1000px #121212 inset !important;
+      box-shadow: 0 0 0 1000px #121212 inset !important;
+      -webkit-text-fill-color: #fff !important;
+      color: #fff !important;
+      background-color: #121212 !important;
+      transition: background-color 5000s ease-in-out 0s;
+    }
+    
+    /* Ensure AI Assistant uses default styling */
+    #ai-assistant-include * {
+      font-family: inherit !important;
+    }
+    
+    #ai-assistant-include input {
+      background-color: transparent !important;
+      color: white !important;
+      -webkit-text-fill-color: white !important;
+    }
+    
+    #ai-assistant-include button {
+      background-color: #F2B33D !important;
+      color: black !important;
+    }
+  </style>
+</head>
+<body class="bg-custom-dark text-white font-sans">
+
+  <!-- 🔝 Navigation Bar -->
+  <header id="main-navbar" class="flex items-center justify-between px-6 sm:px-10 py-4 bg-[#1E1E1E] shadow-md sticky top-0 z-50 rounded-b-xl">
+    <div class="flex items-center space-x-3">
+      <div class="text-3xl font-extrabold bg-gradient-to-r from-[#62E0A1] to-[#36CFFF] text-transparent bg-clip-text drop-shadow-md tracking-wider animate-pulse">FitLife</div>
+    </div>
+    <nav class="space-x-6 text-lg">
+      <a href="HomePage.html" class="hover:text-custom-primary transition">Home</a>
+      <a href="profile.html" class="hover:text-custom-primary transition border-b-2 border-[#24d0a4] pb-1">Profile</a>
+      <a href="contact.html" class="hover:text-custom-primary transition">Contact</a>
+      <a href="ai-companion-page.html" class="hover:text-custom-primary transition">AI Companion</a>
+      <a href="login.html" class="bg-gradient-to-r from-[#62E0A1] to-[#F2B33D] text-black px-5 py-2 rounded-full font-semibold hover:scale-105 transition shadow-md">Get Started</a>
+    </nav>
+  </header>
+
+  <div class="flex min-h-screen p-4">
+    <!-- Sidebar -->
+    <aside class="flex flex-col bg-custom-surface w-20 md:w-48 p-4 rounded-2xl">
+      <div class="flex items-center space-x-3 bg-custom-dark p-2 rounded-lg">
+        <div class="relative">
+          <img id="sidebarProfilePic" src="https://storage.googleapis.com/a1aa/image/d2cfe623-1544-4224-2da4-46a005423708.jpg" alt="Profile" class="rounded-md w-10 h-10" />
+          <button title="Edit Profile Picture" class="absolute bottom-0 right-0 bg-custom-primary text-black rounded-full w-5 h-5 flex items-center justify-center text-xs border border-white">
+            <i class="fas fa-edit"></i>
+          </button>
+        </div>
+        <div class="hidden md:block text-xs text-gray-300">
+          <p class="font-normal">Nitish</p>
+        </div>
+      </div>
+      <nav class="flex flex-col space-y-2 text-sm mt-6">
+        <a href="profile.html" class="flex items-center space-x-2 hover:bg-custom-dark px-3 py-2 rounded-full">
+          <i class="fas fa-calendar-alt"></i>
+          <span class="hidden md:inline">Schedule</span>
+        </a>
+        <a href="workout.html" class="flex items-center space-x-2 hover:bg-custom-dark px-3 py-2 rounded-full">
+          <i class="fas fa-dumbbell"></i>
+          <span class="hidden md:inline">Workouts</span>
+        </a>
+        <a href="nutrition.html" class="flex items-center space-x-2 hover:bg-custom-dark px-3 py-2 rounded-full">
+          <i class="fas fa-utensils"></i>
+          <span class="hidden md:inline">Nutrition</span>
+        </a>
+      </nav>
+      <div class="mt-auto pt-8 space-y-2">
+        <button class="flex items-center space-x-2 bg-custom-primary text-black px-3 py-2 rounded-full">
+          <i class="fas fa-cog"></i>
+          <span class="hidden md:inline">Preferences</span>
+        </button>
+        <a href="signout.html" class="flex items-center space-x-2 hover:bg-custom-dark px-3 py-2 rounded-full">
+          <i class="fas fa-sign-out-alt"></i>
+          <span class="hidden md:inline">Sign out</span>
+        </a>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-1 bg-custom-surface p-6 ml-4 rounded-2xl">
+      <h1 class="text-2xl font-bold text-custom-primary mb-6">Preferences</h1>
+
+      <!-- Profile Photo -->
+      <div class="mb-8">
+        <label class="block text-sm font-medium text-gray-300 mb-3">Profile Photo</label>
+        <div class="flex items-center gap-6">
+          <img id="profilePreview" src="https://storage.googleapis.com/a1aa/image/d2cfe623-1544-4224-2da4-46a005423708.jpg" alt="Profile" class="w-24 h-24 rounded-full border-2 border-custom-primary object-cover shadow-lg"/>
+          <div class="flex flex-col gap-2">
+            <input type="file" id="profilePhoto" accept="image/*" class="text-sm bg-transparent border-0 p-0 file:bg-custom-primary file:text-black file:border-0 file:rounded-full file:px-4 file:py-2 file:font-medium file:cursor-pointer file:hover:bg-green-300 file:transition-colors text-transparent"/>
+            <p class="text-xs text-gray-400">Click to upload a new photo</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Editable Fields -->
+      <form id="preferencesForm" class="space-y-8">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-8">
+          <!-- Name -->
+          <div class="space-y-2">
+            <label class="block text-sm font-medium text-gray-300">Name</label>
+            <input type="text" id="name" class="w-full bg-transparent border-b border-gray-500 focus:outline-none focus:border-custom-primary text-sm p-2 transition-colors" style="background-color: transparent !important; color: white !important; -webkit-text-fill-color: white !important;"/>
+          </div>
+          
+          <!-- Age Range -->
+          <div class="space-y-2">
+            <label class="block text-sm font-medium text-gray-300">Select your age range</label>
+            <div class="dropdown-container">
+              <button type="button" class="dropdown-button" onclick="toggleDropdown('age')">
+                <span id="age-display">Select age range</span>
+                <span class="text-gray-400">⌄</span>
+              </button>
+              <div id="age-dropdown" class="dropdown-options hidden">
+                <div class="dropdown-option" onclick="selectDropdownOption('age', 'Under 18')">Under 18</div>
+                <div class="dropdown-option" onclick="selectDropdownOption('age', '18–30')">18–30</div>
+                <div class="dropdown-option" onclick="selectDropdownOption('age', '31–45')">31–45</div>
+                <div class="dropdown-option" onclick="selectDropdownOption('age', '46–60')">46–60</div>
+                <div class="dropdown-option" onclick="selectDropdownOption('age', '60+')">60+</div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Weight -->
+          <div class="space-y-2">
+            <label class="block text-sm font-medium text-gray-300">Weight (kg)</label>
+            <input type="number" id="weight" class="w-full bg-transparent border-b border-gray-500 focus:outline-none focus:border-custom-primary text-sm p-2 transition-colors"/>
+          </div>
+          
+          <!-- Height -->
+          <div class="space-y-2">
+            <label class="block text-sm font-medium text-gray-300">Height (cm)</label>
+            <input type="number" id="height" class="w-full bg-transparent border-b border-gray-500 focus:outline-none focus:border-custom-primary text-sm p-2 transition-colors"/>
+          </div>
+          
+          <!-- Primary Goal -->
+          <div class="space-y-2">
+            <label class="block text-sm font-medium text-gray-300">What's your primary goal?</label>
+            <div class="dropdown-container">
+              <button type="button" class="dropdown-button" onclick="toggleDropdown('goal')">
+                <span id="goal-display">Select goal</span>
+                <span class="text-gray-400">⌄</span>
+              </button>
+              <div id="goal-dropdown" class="dropdown-options hidden">
+                <div class="dropdown-option" onclick="selectDropdownOption('goal', 'Lose weight')">Lose weight</div>
+                <div class="dropdown-option" onclick="selectDropdownOption('goal', 'Gain muscle')">Gain muscle</div>
+                <div class="dropdown-option" onclick="selectDropdownOption('goal', 'Improve flexibility')">Improve flexibility</div>
+                <div class="dropdown-option" onclick="selectDropdownOption('goal', 'Stay active')">Stay active</div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Workout Type -->
+          <div class="space-y-2">
+            <label class="block text-sm font-medium text-gray-300">Preferred type of workout</label>
+            <div class="dropdown-container">
+              <button type="button" class="dropdown-button" onclick="toggleDropdown('workout')">
+                <span id="workout-display">Select workout type</span>
+                <span class="text-gray-400">⌄</span>
+              </button>
+              <div id="workout-dropdown" class="dropdown-options hidden">
+                <div class="dropdown-option" onclick="selectDropdownOption('workout', 'Calisthenics')">Calisthenics</div>
+                <div class="dropdown-option" onclick="selectDropdownOption('workout', 'Yoga')">Yoga</div>
+                <div class="dropdown-option" onclick="selectDropdownOption('workout', 'Weight training')">Weight training</div>
+                <div class="dropdown-option" onclick="selectDropdownOption('workout', 'Mixed')">Mixed</div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Dietary Preferences -->
+          <div class="space-y-2">
+            <label class="block text-sm font-medium text-gray-300">Any dietary preferences?</label>
+            <div class="dropdown-container">
+              <button type="button" class="dropdown-button" onclick="toggleDropdown('diet')">
+                <span id="diet-display">Select dietary preference</span>
+                <span class="text-gray-400">⌄</span>
+              </button>
+              <div id="diet-dropdown" class="dropdown-options hidden">
+                <div class="dropdown-option" onclick="selectDropdownOption('diet', 'None')">None</div>
+                <div class="dropdown-option" onclick="selectDropdownOption('diet', 'Vegetarian')">Vegetarian</div>
+                <div class="dropdown-option" onclick="selectDropdownOption('diet', 'Vegan')">Vegan</div>
+                <div class="dropdown-option" onclick="selectDropdownOption('diet', 'Gluten-free')">Gluten-free</div>
+                <div class="dropdown-option" onclick="selectDropdownOption('diet', 'Dairy-free')">Dairy-free</div>
+                <div class="dropdown-option" onclick="selectDropdownOption('diet', 'Low-carb')">Low-carb</div>
+                <div class="dropdown-option" onclick="selectDropdownOption('diet', 'Keto')">Keto</div>
+                <div class="dropdown-option" onclick="selectDropdownOption('diet', 'Other')">Other</div>
+              </div>
+              <input id="otherDietaryPreferences" type="text" placeholder="Please specify..." class="w-full bg-transparent border-b border-gray-500 focus:outline-none focus:border-custom-primary text-sm p-2 transition-colors hidden"/>
+            </div>
+          </div>
+          
+          <!-- Health Focus -->
+          <div class="space-y-2">
+            <label class="block text-sm font-medium text-gray-300">Do you have concerns about any of the following?</label>
+            <div class="dropdown-container">
+              <button type="button" class="dropdown-button" onclick="toggleDropdown('healthFocus')">
+                <span id="healthFocus-display">Select health focus</span>
+                <span class="text-gray-400">⌄</span>
+              </button>
+              <div id="healthFocus-dropdown" class="dropdown-options hidden">
+                <div class="dropdown-option" onclick="selectDropdownOption('healthFocus', 'Bone strength')">Bone strength</div>
+                <div class="dropdown-option" onclick="selectDropdownOption('healthFocus', 'Eye health')">Eye health</div>
+                <div class="dropdown-option" onclick="selectDropdownOption('healthFocus', 'Joint mobility')">Joint mobility</div>
+                <div class="dropdown-option" onclick="selectDropdownOption('healthFocus', 'Cholesterol/Blood pressure')">Cholesterol/Blood pressure</div>
+                <div class="dropdown-option" onclick="selectDropdownOption('healthFocus', 'Other')">Other</div>
+              </div>
+              <input id="otherHealthFocus" type="text" placeholder="Please specify..." class="w-full bg-transparent border-b border-gray-500 focus:outline-none focus:border-custom-primary text-sm p-2 transition-colors hidden"/>
+            </div>
+          </div>
+          
+          <!-- Health Concerns -->
+          <div class="space-y-2">
+            <label class="block text-sm font-medium text-gray-300">Health Concerns (if any)</label>
+            <input type="text" id="concerns" class="w-full bg-transparent border-b border-gray-500 focus:outline-none focus:border-custom-primary text-sm p-2 transition-colors"/>
+          </div>
+        </div>
+
+        <div class="flex justify-center pt-6">
+          <button type="submit" class="bg-custom-primary text-black px-8 py-3 rounded-full font-semibold hover:scale-105 transition shadow-lg hover:shadow-xl">
+            Save Changes
+          </button>
+        </div>
+      </form>
+    </main>
+  </div>
+
+  <script>
+    const fields = ["name", "age", "weight", "height", "goal", "workout", "diet", "concerns", "healthFocus", "otherHealthFocus", "otherDietaryPreferences"];
+    const form = document.getElementById("preferencesForm");
+    const profilePhoto = document.getElementById("profilePhoto");
+    const profilePreview = document.getElementById("profilePreview");
+    let dropdownValues = {};
+
+    // Close dropdowns when clicking outside
+    document.addEventListener('click', function(event) {
+      const dropdowns = document.querySelectorAll('.dropdown-options');
+      dropdowns.forEach(dropdown => {
+        if (!dropdown.contains(event.target) && !event.target.classList.contains('dropdown-button')) {
+          dropdown.classList.add('hidden');
+        }
+      });
+    });
+
+    function toggleDropdown(id) {
+      const dropdown = document.getElementById(id + '-dropdown');
+      const allDropdowns = document.querySelectorAll('.dropdown-options');
+      
+      // Close all other dropdowns
+      allDropdowns.forEach(d => {
+        if (d !== dropdown) {
+          d.classList.add('hidden');
+        }
+      });
+      
+      dropdown.classList.toggle('hidden');
+    }
+
+    function selectDropdownOption(id, value) {
+      // Close dropdown immediately for all selections
+      document.getElementById(id + '-dropdown').classList.add('hidden');
+      
+      if (value === 'Other') {
+        // Replace dropdown with text input
+        const dropdownContainer = document.querySelector(`#${id}-dropdown`).parentElement;
+        const dropdownButton = document.getElementById(id + '-display').parentElement;
+        const textInput = document.getElementById(id === 'healthFocus' ? 'otherHealthFocus' : 'otherDietaryPreferences');
+        
+        // Hide dropdown button and show text input
+        dropdownButton.classList.add('hidden');
+        textInput.classList.remove('hidden');
+        textInput.focus();
+        
+        // Store the "Other" value
+        dropdownValues[id] = 'Other';
+      } else {
+        // Normal dropdown selection
+        document.getElementById(id + '-display').textContent = value;
+        dropdownValues[id] = value;
+      }
+    }
+
+    // Load saved data from localStorage
+    window.addEventListener("DOMContentLoaded", () => {
+      // Force styling on name input
+      const nameInput = document.getElementById('name');
+      nameInput.style.backgroundColor = 'transparent';
+      nameInput.style.color = 'white';
+      nameInput.style.webkitTextFillColor = 'white';
+      
+      // Add event listeners to maintain styling
+      nameInput.addEventListener('focus', function() {
+        this.style.backgroundColor = 'transparent';
+        this.style.color = 'white';
+        this.style.webkitTextFillColor = 'white';
+      });
+      
+      nameInput.addEventListener('input', function() {
+        this.style.backgroundColor = 'transparent';
+        this.style.color = 'white';
+        this.style.webkitTextFillColor = 'white';
+      });
+      
+      const saved = JSON.parse(localStorage.getItem("fitlife_user") || "{}");
+      
+      // Load regular input fields
+      fields.forEach(field => {
+        if (saved[field] && !['age', 'goal', 'workout', 'diet', 'healthFocus'].includes(field)) {
+          document.getElementById(field).value = saved[field];
+        }
+      });
+      
+      // Load dropdown values
+      if (saved.age) {
+        document.getElementById('age-display').textContent = saved.age;
+        dropdownValues.age = saved.age;
+      }
+      if (saved.goal) {
+        document.getElementById('goal-display').textContent = saved.goal;
+        dropdownValues.goal = saved.goal;
+      }
+      if (saved.workout) {
+        document.getElementById('workout-display').textContent = saved.workout;
+        dropdownValues.workout = saved.workout;
+      }
+      if (saved.diet) {
+        document.getElementById('diet-display').textContent = saved.diet;
+        dropdownValues.diet = saved.diet;
+      }
+      if (saved.healthFocus) {
+        dropdownValues.healthFocus = saved.healthFocus;
+        
+        // Show/hide other input based on saved value
+        if (saved.healthFocus === 'Other') {
+          document.getElementById('otherHealthFocus').classList.remove('hidden');
+          document.getElementById('healthFocus-display').parentElement.classList.add('hidden');
+        } else {
+          document.getElementById('healthFocus-display').textContent = saved.healthFocus;
+        }
+      }
+      if (saved.diet === 'Other') {
+        document.getElementById('otherDietaryPreferences').classList.remove('hidden');
+        document.getElementById('diet-display').parentElement.classList.add('hidden');
+      }
+      
+      // Temporarily disable photo loading to test
+      // if (saved.photo && saved.photo !== '') {
+      //   profilePreview.src = saved.photo;
+      // }
+      // Don't change the image if no saved photo - keep the default SVG
+
+      // After setting profilePreview.src, always update sidebar image
+      // document.getElementById('sidebarProfilePic').src = profilePreview.src; // Removed this line
+    });
+
+    // Preview profile photo
+    profilePhoto.addEventListener("change", () => {
+      const file = profilePhoto.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = () => {
+          profilePreview.src = reader.result;
+          // document.getElementById('sidebarProfilePic').src = reader.result; // Removed this line
+        };
+        reader.readAsDataURL(file);
+      }
+    });
+
+    // Save updated data
+    form.addEventListener("submit", e => {
+      e.preventDefault();
+      const updated = {};
+      
+      // Save regular input fields
+      fields.forEach(field => {
+        if (!['age', 'goal', 'workout', 'diet', 'healthFocus'].includes(field)) {
+          updated[field] = document.getElementById(field).value;
+        }
+      });
+      
+      // Save dropdown values
+      updated.age = dropdownValues.age || '';
+      updated.goal = dropdownValues.goal || '';
+      updated.workout = dropdownValues.workout || '';
+      updated.diet = dropdownValues.diet || '';
+      updated.healthFocus = dropdownValues.healthFocus || '';
+      
+      if (profilePhoto.files[0]) {
+        const reader = new FileReader();
+        reader.onload = () => {
+          updated.photo = reader.result;
+          localStorage.setItem("fitlife_user", JSON.stringify(updated));
+          alert("Preferences saved!");
+        };
+        reader.readAsDataURL(profilePhoto.files[0]);
+      } else {
+        // Only save photo if it's not the default SVG
+        const currentSrc = profilePreview.src;
+        if (!currentSrc.includes('data:image/svg+xml')) {
+          updated.photo = currentSrc;
+        }
+        localStorage.setItem("fitlife_user", JSON.stringify(updated));
+        alert("Preferences saved!");
+      }
+    });
+  </script>
+</body>
+</html>

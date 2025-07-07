@@ -20,46 +20,122 @@
   </style>
 </head>
 <body class="bg-custom-dark text-white min-h-screen flex flex-col">
-  <!-- Header -->
-  <header class="bg-custom-surface p-4 flex items-center gap-3 shadow">
-    <span class="text-3xl">🤖</span>
-    <h1 class="text-xl font-bold text-custom-primary">AI Companion</h1>
-    <span class="ml-auto text-xs text-gray-400">Chat, upload docs, or images for smart help!</span>
-  </header>
+  <!-- 🔝 Navigation Bar -->
+<header id="main-navbar" class="flex items-center justify-between px-6 sm:px-10 py-4 bg-[#1E1E1E] shadow-md sticky top-0 z-50 rounded-b-xl">
+  <div class="flex items-center space-x-3">
+    <div class="text-3xl font-extrabold bg-gradient-to-r from-[#62E0A1] to-[#36CFFF] text-transparent bg-clip-text drop-shadow-md tracking-wider animate-pulse">FitLife</div>
+  </div>
+  <nav class="space-x-6 text-lg">
+    <a href="HomePage.html" class="hover:text-custom-primary transition">Home</a>
+    <a href="profile.html" class="hover:text-custom-primary transition">Profile</a>
+    <a href="contact.html" class="hover:text-custom-primary transition">Contact</a>
+    <a href="ai-companion-page.html" class="hover:text-custom-primary transition border-b-2 border-[#24d0a4] pb-1">AI Companion</a>
+    <a href="login.html" class="bg-gradient-to-r from-[#62E0A1] to-[#F2B33D] text-black px-5 py-2 rounded-full font-semibold hover:scale-105 transition shadow-md">Get Started</a>
+  </nav>
+</header>
   <!-- Chat Area -->
-  <main class="flex-1 flex flex-col items-center justify-center px-2 py-6">
-    <div id="chatWindow" class="w-full max-w-2xl flex-1 bg-custom-surface rounded-2xl shadow-lg p-4 flex flex-col gap-3 overflow-y-auto scrollbar-hide" style="min-height:400px; max-height:60vh;">
-      <!-- Example messages -->
-      <div class="flex gap-2 items-start">
-        <span class="text-2xl">🤖</span>
-        <div class="bg-custom-surface border border-custom-primary text-custom-primary px-4 py-2 rounded-xl max-w-[80%] shadow">
-          Hi! Paste an image, upload a document, or ask me anything.
+  <main class="flex-1 flex px-2 py-6 gap-4">
+    <!-- Chat History Sidebar -->
+    <div class="w-80 bg-custom-surface rounded-2xl shadow-lg p-4 flex flex-col">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="text-lg font-semibold text-white">Chat History</h3>
+        <button id="clearHistory" class="text-custom-accent hover:text-yellow-400 text-sm transition">
+          <i class="fas fa-trash"></i> Clear
+        </button>
+      </div>
+      
+      <div id="chatHistory" class="flex-1 overflow-y-auto space-y-2">
+        <!-- History items will be added here dynamically -->
+        <div class="chat-history-item bg-custom-dark p-3 rounded-lg cursor-pointer hover:bg-gray-700 transition" data-session="session1">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-2">
+              <span class="text-2xl">💬</span>
+              <div>
+                <p class="text-sm font-medium text-white">Workout Plan Discussion</p>
+                <p class="text-xs text-gray-400">2 hours ago</p>
+              </div>
+            </div>
+            <button class="text-red-500 hover:text-red-400 text-xs opacity-0 group-hover:opacity-100 transition">
+              <i class="fas fa-times"></i>
+            </button>
+          </div>
+        </div>
+        
+        <div class="chat-history-item bg-custom-dark p-3 rounded-lg cursor-pointer hover:bg-gray-700 transition" data-session="session2">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-2">
+              <span class="text-2xl">💬</span>
+              <div>
+                <p class="text-sm font-medium text-white">Nutrition Advice</p>
+                <p class="text-xs text-gray-400">1 day ago</p>
+              </div>
+            </div>
+            <button class="text-red-500 hover:text-red-400 text-xs opacity-0 group-hover:opacity-100 transition">
+              <i class="fas fa-times"></i>
+            </button>
+          </div>
+        </div>
+        
+        <div class="chat-history-item bg-custom-dark p-3 rounded-lg cursor-pointer hover:bg-gray-700 transition" data-session="session3">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-2">
+              <span class="text-2xl">💬</span>
+              <div>
+                <p class="text-sm font-medium text-white">Fitness Goals</p>
+                <p class="text-xs text-gray-400">3 days ago</p>
+              </div>
+            </div>
+            <button class="text-red-500 hover:text-red-400 text-xs opacity-0 group-hover:opacity-100 transition">
+              <i class="fas fa-times"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+      
+      <div class="mt-4 pt-4 border-t border-gray-600">
+        <div class="flex items-center justify-between text-xs text-gray-400">
+          <span>Total conversations: <span id="totalConversations">3</span></span>
+          <span id="storageUsed">2.1 MB</span>
         </div>
       </div>
     </div>
-    <!-- Typing indicator -->
-    <div id="userTypingIndicator" class="w-full max-w-2xl flex justify-end mt-1" style="display:none;">
-      <div class="flex items-center gap-1">
-        <div class="bg-custom-primary text-black px-3 py-1 rounded-xl shadow flex items-center">
-          <span class="typing-dots"><span>.</span><span>.</span><span>.</span></span>
+
+    <!-- Main Chat Window -->
+    <div class="flex-1 flex flex-col p-4">
+      <div id="chatWindow" class="w-full h-full bg-custom-surface rounded-2xl shadow-lg p-4 flex flex-col gap-3 overflow-y-auto scrollbar-hide" style="min-height:400px;">
+        <!-- Example messages -->
+        <div class="flex gap-2 items-start">
+          <span class="text-2xl">🤖</span>
+          <div class="bg-custom-surface border border-custom-primary text-custom-primary px-4 py-2 rounded-xl max-w-[80%] shadow">
+            Hi! Paste an image, upload a document, or ask me anything.
+          </div>
         </div>
-        <span class="text-2xl">🧑</span>
       </div>
+      <!-- Typing indicator -->
+      <div id="userTypingIndicator" class="w-full flex justify-end mt-1" style="display:none;">
+        <div class="flex items-center gap-1">
+          <div class="bg-custom-primary text-black px-3 py-1 rounded-xl shadow flex items-center">
+            <span class="typing-dots"><span>.</span><span>.</span><span>.</span></span>
+          </div>
+          <span class="text-2xl">🧑</span>
+        </div>
+      </div>
+      <!-- Input Area -->
+      <form id="chatForm" class="w-full flex items-center gap-2 mt-4">
+        <label for="fileInput" class="cursor-pointer flex items-center justify-center w-11 h-11 rounded-full bg-[#1A1A1A] text-[#62E0A1] border border-[#2a2a2a] hover:bg-[#2a2a2a] hover:text-[#36CFFF] transition duration-200 shadow-md">
+          <i class="fas fa-paperclip text-base"></i>
+          <input id="fileInput" type="file" accept="image/*,.pdf,.doc,.docx" class="hidden" multiple>
+        </label>
+        
+        <input id="chatInput" type="text" placeholder="Type your message..." class="flex-1 bg-custom-surface border border-custom-primary rounded-xl px-4 py-2 text-white focus:outline-none" autocomplete="off"/>
+        <button type="submit" class="bg-custom-primary text-black px-5 py-2 rounded-xl font-bold hover:bg-custom-secondary transition flex items-center gap-2">
+          <span>Send</span>
+          <i class="fas fa-paper-plane"></i>
+        </button>
+      </form>
+      <!-- Preview for images/docs -->
+      <div id="filePreview" class="w-full mt-2 flex flex-wrap gap-2"></div>
     </div>
-    <!-- Input Area -->
-    <form id="chatForm" class="w-full max-w-2xl flex items-center gap-2 mt-4">
-      <label for="fileInput" class="cursor-pointer flex items-center justify-center w-10 h-10 rounded-full bg-custom-accent text-black hover:bg-yellow-400 transition">
-        <span class="text-lg">✨</span>
-        <input id="fileInput" type="file" accept="image/*,.pdf,.doc,.docx" class="hidden" multiple>
-      </label>
-      <input id="chatInput" type="text" placeholder="Type your message..." class="flex-1 bg-custom-surface border border-custom-primary rounded-xl px-4 py-2 text-white focus:outline-none" autocomplete="off"/>
-      <button type="submit" class="bg-custom-primary text-black px-5 py-2 rounded-xl font-bold hover:bg-custom-secondary transition flex items-center gap-2">
-        <span>Send</span>
-        <i class="fas fa-paper-plane"></i>
-      </button>
-    </form>
-    <!-- Preview for images/docs -->
-    <div id="filePreview" class="w-full max-w-2xl mt-2 flex flex-wrap gap-2"></div>
   </main>
   <script>
     // UI only: handle file preview and chat bubbles
@@ -68,6 +144,154 @@
     const chatInput = document.getElementById('chatInput');
     const fileInput = document.getElementById('fileInput');
     const filePreview = document.getElementById('filePreview');
+    const chatHistory = document.getElementById('chatHistory');
+    const clearHistoryBtn = document.getElementById('clearHistory');
+    const totalConversations = document.getElementById('totalConversations');
+    const storageUsed = document.getElementById('storageUsed');
+
+    // Chat history management
+    let currentSession = null;
+    let conversations = JSON.parse(localStorage.getItem('fitlife_chat_history') || '[]');
+
+    // Initialize history display
+    function updateHistoryDisplay() {
+      totalConversations.textContent = conversations.length;
+      const totalSize = conversations.reduce((sum, conv) => sum + JSON.stringify(conv).length, 0);
+      storageUsed.textContent = (totalSize / 1024 / 1024).toFixed(1) + ' MB';
+    }
+
+    // Save conversation to history
+    function saveConversation(title, messages) {
+      const conversation = {
+        id: Date.now().toString(),
+        title: title,
+        messages: messages,
+        timestamp: new Date().toISOString(),
+        lastMessage: messages[messages.length - 1]?.content || ''
+      };
+      
+      conversations.unshift(conversation);
+      if (conversations.length > 50) conversations = conversations.slice(0, 50); // Keep only 50 conversations
+      
+      localStorage.setItem('fitlife_chat_history', JSON.stringify(conversations));
+      updateHistoryDisplay();
+      renderHistoryItems();
+    }
+
+    // Render history items
+    function renderHistoryItems() {
+      chatHistory.innerHTML = '';
+      
+      conversations.forEach(conv => {
+        const historyItem = document.createElement('div');
+        historyItem.className = 'chat-history-item bg-custom-dark p-3 rounded-lg cursor-pointer hover:bg-gray-700 transition group';
+        historyItem.dataset.session = conv.id;
+        
+        const timeAgo = getTimeAgo(new Date(conv.timestamp));
+        
+        historyItem.innerHTML = `
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-2">
+              <span class="text-2xl">💬</span>
+              <div>
+                <p class="text-sm font-medium text-white">${conv.title}</p>
+                <p class="text-xs text-gray-400">${timeAgo}</p>
+              </div>
+            </div>
+            <button class="text-red-500 hover:text-red-400 text-xs opacity-0 group-hover:opacity-100 transition" onclick="deleteConversation('${conv.id}')">
+              <i class="fas fa-times"></i>
+            </button>
+          </div>
+        `;
+        
+        historyItem.addEventListener('click', () => loadConversation(conv.id));
+        chatHistory.appendChild(historyItem);
+      });
+    }
+
+    // Load conversation
+    function loadConversation(conversationId) {
+      const conversation = conversations.find(c => c.id === conversationId);
+      if (!conversation) return;
+      
+      currentSession = conversationId;
+      chatWindow.innerHTML = '';
+      
+      conversation.messages.forEach(msg => {
+        const messageDiv = document.createElement('div');
+        messageDiv.className = `flex gap-2 items-start ${msg.sender === 'user' ? 'justify-end' : ''} animate-fade-in`;
+        
+        if (msg.sender === 'user') {
+          messageDiv.innerHTML = `
+            <div class="bg-custom-primary text-black px-4 py-2 rounded-xl max-w-[80%] shadow text-right">${msg.content}</div>
+            <span class="text-2xl">🧑</span>
+          `;
+        } else {
+          messageDiv.innerHTML = `
+            <span class="text-2xl">🤖</span>
+            <div class="bg-custom-surface border border-custom-primary text-custom-primary px-4 py-2 rounded-xl max-w-[80%] shadow">${msg.content}</div>
+          `;
+        }
+        
+        chatWindow.appendChild(messageDiv);
+      });
+      
+      chatWindow.scrollTop = chatWindow.scrollHeight;
+    }
+
+    // Delete conversation
+    function deleteConversation(conversationId) {
+      conversations = conversations.filter(c => c.id !== conversationId);
+      localStorage.setItem('fitlife_chat_history', JSON.stringify(conversations));
+      updateHistoryDisplay();
+      renderHistoryItems();
+      
+      if (currentSession === conversationId) {
+        currentSession = null;
+        chatWindow.innerHTML = `
+          <div class="flex gap-2 items-start">
+            <span class="text-2xl">🤖</span>
+            <div class="bg-custom-surface border border-custom-primary text-custom-primary px-4 py-2 rounded-xl max-w-[80%] shadow">
+              Hi! Paste an image, upload a document, or ask me anything.
+            </div>
+          </div>
+        `;
+      }
+    }
+
+    // Get time ago
+    function getTimeAgo(date) {
+      const now = new Date();
+      const diffInMinutes = Math.floor((now - date) / (1000 * 60));
+      
+      if (diffInMinutes < 1) return 'Just now';
+      if (diffInMinutes < 60) return `${diffInMinutes} min ago`;
+      if (diffInMinutes < 1440) return `${Math.floor(diffInMinutes / 60)} hours ago`;
+      return `${Math.floor(diffInMinutes / 1440)} days ago`;
+    }
+
+    // Clear all history
+    clearHistoryBtn.addEventListener('click', () => {
+      if (confirm('Are you sure you want to clear all chat history?')) {
+        conversations = [];
+        localStorage.removeItem('fitlife_chat_history');
+        updateHistoryDisplay();
+        renderHistoryItems();
+        currentSession = null;
+        chatWindow.innerHTML = `
+          <div class="flex gap-2 items-start">
+            <span class="text-2xl">🤖</span>
+            <div class="bg-custom-surface border border-custom-primary text-custom-primary px-4 py-2 rounded-xl max-w-[80%] shadow">
+              Hi! Paste an image, upload a document, or ask me anything.
+            </div>
+          </div>
+        `;
+      }
+    });
+
+    // Initialize
+    updateHistoryDisplay();
+    renderHistoryItems();
 
     // Helper to add/remove typing indicator inside chat window
     function showUserTypingBubble(show) {
@@ -121,6 +345,11 @@
       // Hide typing indicator
       showUserTypingBubble(false);
 
+      // Start new session if none exists
+      if (!currentSession) {
+        currentSession = Date.now().toString();
+      }
+
       // User message bubble (right side)
       if (msg) {
         const userDiv = document.createElement('div');
@@ -172,6 +401,24 @@
         chatWindow.scrollTop = chatWindow.scrollHeight;
         setTimeout(() => {
           aiDiv.querySelector('.typing-dots').innerHTML = "I'm here to help! (AI response placeholder)";
+          
+          // Save conversation after AI response
+          const messages = [];
+          chatWindow.querySelectorAll('.flex.gap-2.items-start').forEach(msgDiv => {
+            const isUser = msgDiv.classList.contains('justify-end');
+            const content = msgDiv.querySelector('div')?.textContent || '';
+            if (content) {
+              messages.push({
+                sender: isUser ? 'user' : 'ai',
+                content: content
+              });
+            }
+          });
+          
+          if (messages.length > 0) {
+            const title = messages[0].content.substring(0, 30) + (messages[0].content.length > 30 ? '...' : '');
+            saveConversation(title, messages);
+          }
         }, 1200);
       }, 400);
 

@@ -11,11 +11,45 @@
     body {
       font-family: 'Inter', sans-serif;
     }
+    /* Homepage navbar styles - only for navbar */
+    .bg-custom-dark { background-color: #121212; }
+    .bg-custom-surface { background-color: #1E1E1E; }
+    .bg-custom-primary { background-color: #62E0A1; }
+    .bg-custom-secondary { background-color: #36CFFF; }
+    .bg-custom-accent { background-color: #F2B33D; }
+    .text-custom-primary { color: #62E0A1; }
+    .text-custom-secondary { color: #36CFFF; }
+    .text-custom-accent { color: #F2B33D; }
+    .border-custom-surface { border-color: #1E1E1E; }
+    /* Navbar specific font */
+    #main-navbar {
+      font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+    }
+    textarea#message {
+      padding-bottom: 0;
+      margin-bottom: -5px;
+      line-height: 1.5;
+      resize: none;
+    }
   </style>
 </head>
-<body class="bg-[#121212] text-white min-h-screen flex flex-col justify-between">
+<body class="bg-custom-dark text-white font-sans">
 
-  <div class="relative max-w-7xl mx-auto w-full px-6 sm:px-10 lg:px-16 py-10 sm:py-16 bg-[#1e1e1e] rounded-[32px] overflow-visible">
+  <!-- 🔝 Navigation Bar (copied from HomePage.html) -->
+  <header id="main-navbar" class="flex items-center justify-between px-6 sm:px-10 py-4 bg-[#1E1E1E] shadow-md sticky top-0 z-50 rounded-b-xl">
+    <div class="flex items-center space-x-3">
+      <a class="text-3xl font-extrabold bg-gradient-to-r from-[#62E0A1] to-[#36CFFF] text-transparent bg-clip-text drop-shadow-md tracking-wider animate-pulse">FitLife</a>
+    </div>
+    <nav class="space-x-6 text-lg">
+      <a href="HomePage.html" class="hover:text-custom-primary transition">Home</a>
+      <a href="profile.html" class="hover:text-custom-primary transition">Profile</a>
+      <a href="contact.html" class="hover:text-custom-primary transition border-b-2 border-[#24d0a4] pb-1">Contact</a>
+      <a href="ai-companion-page.html" class="hover:text-custom-primary transition">AI Companion</a>
+      <a href="login.html" class="bg-gradient-to-r from-[#62E0A1] to-[#F2B33D] text-black px-5 py-2 rounded-full font-semibold hover:scale-105 transition shadow-md">Get Started</a>
+    </nav>
+  </header>
+
+  <div class="relative max-w-7xl mx-auto w-full px-6 sm:px-10 lg:px-16 py-10 sm:py-16 bg-[#1e1e1e] rounded-[32px] overflow-visible mt-6">
     <div class="absolute -bottom-20 -right-20 w-72 h-72 bg-[#1e1e1e] rounded-[64px] overflow-hidden flex items-center justify-center">
       <img 
         src="/images/m.png"
@@ -24,21 +58,6 @@
         style="filter: grayscale(0.5) brightness(0.) contrast(1.5);"
       />
     </div>
-
-    <header class="flex items-center justify-center space-x-8 mb-10 sm:mb-14">
-      <a class="flex items-center space-x-1" href="#">
-        <span class="text-[#24d0a4] font-semibold text-lg leading-none">Fit</span>
-        <span class="text-white font-semibold text-lg leading-none">Life</span>
-      </a>
-      <nav class="hidden sm:flex space-x-6 text-[13px] text-gray-300 font-normal">
-        <a class="hover:underline" href="#">Home</a>
-        <a class="hover:underline" href="#">About Us</a>
-        <a class="hover:underline" href="#">Services</a>
-        <a class="hover:underline" href="#">Profile</a>
-        <a class="hover:underline" href="#">Ai companion</a>
-      </nav>
-      <a class="ml-auto hidden sm:inline-block bg-[#24d0a4] text-black text-[13px] font-semibold rounded-md px-5 py-2 hover:bg-[#2fd1c0] transition" href="#">Contact</a>
-    </header>
 
     <main class="max-w-4xl mx-auto text-center mb-12 sm:mb-16">
       <h1 class="text-2xl sm:text-3xl font-extrabold text-white mb-2">Get In Touch</h1>
@@ -92,7 +111,7 @@
 
         <div>
           <label class="block text-[11px] font-semibold text-[#24d0a4] mb-1" for="message">Message</label>
-          <textarea class="w-full border-b border-[#24d0a4] bg-transparent text-[13px] font-normal text-white focus:outline-none focus:border-[#2fd1c0] pb-1 resize-none" id="message" name="message" rows="3" placeholder="Write here your message"></textarea>
+          <textarea class="w-full border-b border-gray-500 bg-transparent text-[13px] font-normal text-white focus:outline-none focus:border-[#24d0a4] pb-1 resize-none" id="message" name="message" rows="3" placeholder="Write here your message"></textarea>
         </div>
 
         <button class="bg-[#f4aa3c] text-black text-[13px] font-semibold rounded px-5 py-2 hover:bg-[#ffb851] transition" type="submit">
@@ -104,8 +123,8 @@
 
   <footer class="max-w-7xl mx-auto w-full px-6 sm:px-10 lg:px-16 py-8 flex flex-col sm:flex-row items-center justify-between text-[11px] text-gray-400 font-normal">
     <a class="flex items-center space-x-1 mb-4 sm:mb-0" href="#">
-      <span class="text-[#24d0a4] font-semibold text-sm leading-none">Fit</span>
-      <span class="text-white font-semibold text-sm leading-none">Life</span>
+      <span class="text-[#24d0a4] font-semibold text-lg leading-none">Fit</span>
+      <span class="text-white font-semibold text-lg leading-none">Life</span>
     </a>
     <nav class="flex space-x-6 mb-4 sm:mb-0">
       <a class="hover:underline" href="#">Terms</a>
@@ -126,5 +145,24 @@
       <a href="#" aria-label="YouTube" class="text-[#24d0a4] hover:text-[#2fd1c0] text-lg"><i class="fab fa-youtube"></i></a>
     </div>
   </div>
+<div id="ai-assistant-include"></div>
+<script>
+  fetch('ai-assistant.html')
+    .then(res => res.text())
+    .then(html => {
+      document.getElementById('ai-assistant-include').innerHTML = html;
+      // Run any scripts in the loaded HTML
+      const scripts = document.getElementById('ai-assistant-include').querySelectorAll('script');
+      scripts.forEach(oldScript => {
+        const newScript = document.createElement('script');
+        if (oldScript.src) {
+          newScript.src = oldScript.src;
+        } else {
+          newScript.textContent = oldScript.textContent;
+        }
+        document.body.appendChild(newScript);
+      });
+    });
+</script>
 </body>
 </html>

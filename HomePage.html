@@ -29,19 +29,27 @@
       .text-custom-secondary { color: #36CFFF; }
       .text-custom-accent { color: #F2B33D; }
       .border-custom-surface { border-color: #1E1E1E; }
+      .navbar-large {
+  padding-top: 1.5rem !important;
+  padding-bottom: 1.5rem !important;
+  padding-left: 1.5rem !important;
+  padding-right: 1.5rem !important;
+  transition: padding 0.5s cubic-bezier(0.4,0,0.2,1);
+}
     </style>
   </head>
   <body class="bg-custom-dark text-white font-sans">
 
   <!-- 🔝 Navigation Bar -->
-<header class="flex items-center justify-between p-6 bg-custom-surface shadow-lg sticky top-0 z-50">
+<header id="main-navbar" class="flex items-center justify-between px-6 sm:px-10 py-4 bg-[#1E1E1E] shadow-md sticky top-0 z-50 rounded-b-xl">
   <div class="flex items-center space-x-3">
-    <span class="text-3xl font-extrabold bg-gradient-to-r from-[#62E0A1] to-[#36CFFF] text-transparent bg-clip-text drop-shadow-md tracking-wider animate-pulse">FitLife</span>
+    <div class="text-3xl font-extrabold bg-gradient-to-r from-[#62E0A1] to-[#36CFFF] text-transparent bg-clip-text drop-shadow-md tracking-wider animate-pulse">FitLife</div>
   </div>
   <nav class="space-x-6 text-lg">
-    <a href="#" class="hover:text-custom-primary transition">Home</a>
-    <a href="#" class="hover:text-custom-primary transition">Workouts</a>
-    <a href="#" class="hover:text-custom-primary transition">Nutrition</a>
+    <a href="HomePage.html" class="hover:text-custom-primary transition border-b-2 border-[#24d0a4] pb-1">Home</a>
+    <a href="profile.html" class="hover:text-custom-primary transition">Profile</a>
+    <a href="contact.html" class="hover:text-custom-primary transition">Contact</a>
+    <a href="ai-companion-page.html" class="hover:text-custom-primary transition">AI Companion</a>
     <a href="login.html" class="bg-gradient-to-r from-[#62E0A1] to-[#F2B33D] text-black px-5 py-2 rounded-full font-semibold hover:scale-105 transition shadow-md">Get Started</a>
   </nav>
 </header>
@@ -194,6 +202,39 @@
           autoSlide = setInterval(nextSlide, 5000);
         });
       });
+    </script>
+    <script>
+      // Only animate if coming from another page (not direct visit)
+      document.addEventListener("DOMContentLoaded", function() {
+        if (document.referrer && !document.referrer.includes('contact.html')) {
+          const navbar = document.getElementById('main-navbar');
+          if (navbar) {
+            navbar.classList.add('navbar-large');
+            setTimeout(() => {
+              navbar.classList.remove('navbar-large');
+            }, 50); // triggers the transition
+          }
+        }
+      });
+    </script>
+    <div id="ai-assistant-include"></div>
+    <script>
+      fetch('ai-assistant.html')
+        .then(res => res.text())
+        .then(html => {
+          document.getElementById('ai-assistant-include').innerHTML = html;
+          // Run any scripts in the loaded HTML
+          const scripts = document.getElementById('ai-assistant-include').querySelectorAll('script');
+          scripts.forEach(oldScript => {
+            const newScript = document.createElement('script');
+            if (oldScript.src) {
+              newScript.src = oldScript.src;
+            } else {
+              newScript.textContent = oldScript.textContent;
+            }
+            document.body.appendChild(newScript);
+          });
+        });
     </script>
   </body>
 </html>
