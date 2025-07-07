@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Contact us </title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet"/>
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+    }
+  </style>
+</head>
+<body class="bg-[#121212] text-white min-h-screen flex flex-col justify-between">
+
+  <div class="relative max-w-7xl mx-auto w-full px-6 sm:px-10 lg:px-16 py-10 sm:py-16 bg-[#1e1e1e] rounded-[32px] overflow-visible">
+    <div class="absolute -bottom-20 -right-20 w-72 h-72 bg-[#1e1e1e] rounded-[64px] overflow-hidden flex items-center justify-center">
+      <img 
+        src="/images/m.png"
+        alt="Contact Agent Sticker"
+        class="w-56 h-56 object-contain opacity-90 drop-shadow-lg"
+        style="filter: grayscale(0.5) brightness(0.) contrast(1.5);"
+      />
+    </div>
+
+    <header class="flex items-center justify-center space-x-8 mb-10 sm:mb-14">
+      <a class="flex items-center space-x-1" href="#">
+        <span class="text-[#24d0a4] font-semibold text-lg leading-none">Fit</span>
+        <span class="text-white font-semibold text-lg leading-none">Life</span>
+      </a>
+      <nav class="hidden sm:flex space-x-6 text-[13px] text-gray-300 font-normal">
+        <a class="hover:underline" href="#">Home</a>
+        <a class="hover:underline" href="#">About Us</a>
+        <a class="hover:underline" href="#">Services</a>
+        <a class="hover:underline" href="#">Profile</a>
+        <a class="hover:underline" href="#">Ai companion</a>
+      </nav>
+      <a class="ml-auto hidden sm:inline-block bg-[#24d0a4] text-black text-[13px] font-semibold rounded-md px-5 py-2 hover:bg-[#2fd1c0] transition" href="#">Contact</a>
+    </header>
+
+    <main class="max-w-4xl mx-auto text-center mb-12 sm:mb-16">
+      <h1 class="text-2xl sm:text-3xl font-extrabold text-white mb-2">Get In Touch</h1>
+      <p class="text-[13px] sm:text-sm text-gray-400 max-w-[480px] mx-auto leading-tight">
+        We would love to hear from you! Whether you have a question, feedback, or just want to say hello, feel free to reach out. Our team is here to assist you with anything you need.
+      </p>
+    </main>
+
+    <section class="max-w-4xl mx-auto flex flex-col sm:flex-row bg-[#1a1a1a] rounded-xl shadow-md overflow-hidden">
+      <div class="sm:w-1/3 bg-[#24d0a4] text-black p-6 sm:p-8 rounded-t-xl sm:rounded-l-xl sm:rounded-tr-none relative">
+        <h2 class="text-[15px] font-semibold mb-2">Contact Information</h2>
+        <p class="text-[11px] leading-tight mb-8 opacity-90">
+          If you have any questions, please feel free to contact us.
+        </p>
+        <ul class="space-y-4 text-[11px] opacity-90">
+          <li class="flex items-center space-x-3">
+            <i class="fas fa-phone-alt text-[12px]"></i>
+            <div>
+              <div>+8801779717686</div>
+              <div>+988678363866</div>
+            </div>
+          </li>
+          <li class="flex items-center space-x-3">
+            <i class="fas fa-envelope text-[12px]"></i>
+            <div>Support@fitlife.com</div>
+          </li>
+          <li class="flex items-center space-x-3">
+            <i class="fas fa-map-marker-alt text-[12px]"></i>
+            <div>New York, USA</div>
+          </li>
+        </ul>
+        <img class="absolute bottom-0 right-0 rounded-full opacity-30 w-28 h-28" src="https://storage.googleapis.com/a1aa/image/4d92f2d6-e0f4-4b7c-9268-739ac2c1a17a.jpg" alt="" />
+      </div>
+
+      <form class="sm:w-2/3 p-6 sm:p-8 space-y-6 bg-[#222222] rounded-b-xl sm:rounded-r-xl sm:rounded-bl-none" method="POST" novalidate>
+        <div class="flex flex-col sm:flex-row sm:space-x-6 space-y-6 sm:space-y-0">
+          <div class="flex-1">
+            <label class="block text-[11px] font-semibold text-gray-300 mb-1" for="name">Your Name</label>
+            <input class="w-full border-b border-gray-500 bg-transparent text-[13px] font-semibold text-white focus:outline-none focus:border-[#24d0a4] pb-1" id="name" name="name" type="text" value="John Trangely"/>
+          </div>
+          <div class="flex-1">
+            <label class="block text-[11px] font-semibold text-gray-300 mb-1" for="email">Your Email</label>
+            <input class="w-full border-b border-gray-500 bg-transparent text-[13px] font-semibold text-white focus:outline-none focus:border-[#24d0a4] pb-1" id="email" name="email" type="email" value="hello@nurency.com"/>
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-[11px] font-semibold text-gray-300 mb-1" for="subject">Your Subject</label>
+          <input class="w-full border-b border-gray-500 bg-transparent text-[13px] font-semibold text-white focus:outline-none focus:border-[#24d0a4] pb-1" id="subject" name="subject" type="text" value="I want to hire you quickly"/>
+        </div>
+
+        <div>
+          <label class="block text-[11px] font-semibold text-[#24d0a4] mb-1" for="message">Message</label>
+          <textarea class="w-full border-b border-[#24d0a4] bg-transparent text-[13px] font-normal text-white focus:outline-none focus:border-[#2fd1c0] pb-1 resize-none" id="message" name="message" rows="3" placeholder="Write here your message"></textarea>
+        </div>
+
+        <button class="bg-[#f4aa3c] text-black text-[13px] font-semibold rounded px-5 py-2 hover:bg-[#ffb851] transition" type="submit">
+          Send Message
+        </button>
+      </form>
+    </section>
+  </div>
+
+  <footer class="max-w-7xl mx-auto w-full px-6 sm:px-10 lg:px-16 py-8 flex flex-col sm:flex-row items-center justify-between text-[11px] text-gray-400 font-normal">
+    <a class="flex items-center space-x-1 mb-4 sm:mb-0" href="#">
+      <span class="text-[#24d0a4] font-semibold text-sm leading-none">Fit</span>
+      <span class="text-white font-semibold text-sm leading-none">Life</span>
+    </a>
+    <nav class="flex space-x-6 mb-4 sm:mb-0">
+      <a class="hover:underline" href="#">Terms</a>
+      <a class="hover:underline" href="#">Privacy</a>
+      <a class="hover:underline" href="#">Cookies</a>
+    </nav>
+    <div class="flex space-x-6 text-[#24d0a4] text-[14px]">
+      <a aria-label="LinkedIn" class="hover:text-[#2fd1c0]" href="#"><i class="fab fa-linkedin-in"></i></a>
+      <a aria-label="Facebook" class="hover:text-[#2fd1c0]" href="#"><i class="fab fa-facebook-f"></i></a>
+      <a aria-label="Twitter" class="hover:text-[#2fd1c0]" href="#"><i class="fab fa-twitter"></i></a>
+    </div>
+  </footer>
+  <!-- Social Media Floating Box (right bottom, small, properly aligned) -->
+  <div class=" bottom-6 right-6 z-50">
+    <div class="flex items-center justify-center space-x-3 bg-[#1e1e1e] px-3 py-2 rounded-full shadow-lg">
+      <a href="#" aria-label="Instagram" class="text-[#24d0a4] hover:text-[#2fd1c0] text-lg"><i class="fab fa-instagram"></i></a>
+      <a href="#" aria-label="WhatsApp" class="text-[#24d0a4] hover:text-[#2fd1c0] text-lg"><i class="fab fa-whatsapp"></i></a>
+      <a href="#" aria-label="YouTube" class="text-[#24d0a4] hover:text-[#2fd1c0] text-lg"><i class="fab fa-youtube"></i></a>
+    </div>
+  </div>
+</body>
+</html>
