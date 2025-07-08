@@ -2,20 +2,46 @@
 <div id="ai-assistant-box" class="fixed bottom-8 right-8 bg-[#1E1E1E] border-4 border-[#62E0A1] rounded-full shadow-xl w-16 h-16 flex items-center justify-center hover:shadow-2xl transition-all z-50 cursor-pointer group">
   <img src="https://img.icons8.com/fluency/96/chatbot.png" alt="AI Assistant Icon" class="w-10 h-10 animate-bounce-slow group-hover:scale-110 transition-transform duration-300" />
 </div>
-<div id="ai-assistant-popup" class="hidden fixed bottom-28 right-8 w-80 max-w-full bg-[#181f1b] border-2 border-[#62E0A1] rounded-2xl shadow-2xl z-50 flex flex-col" style="min-height: 400px;">
-  <div class="flex items-center justify-between px-4 py-2 border-b border-[#62E0A1] rounded-t-2xl bg-[#1E1E1E]">
-    <span class="font-bold text-custom-primary">AI Assistant</span>
-    <button id="ai-assistant-close" class="text-gray-400 hover:text-custom-accent text-xl font-bold">&times;</button>
+<!-- Soft AI Chat Box (new design) -->
+<div id="aiBox" class="hidden fixed bottom-32 right-6 bg-[#1E1E1E]/95 backdrop-blur-md border border-[#2a2a2a] rounded-2xl shadow-2xl w-[430px] max-w-full min-h-[450px] p-5 animate-soft-open z-50 flex flex-col">
+  <div class="flex items-center justify-between mb-4">
+    <div class="flex items-center gap-2">
+      <i class="fas fa-robot text-[#62E0A1] text-xl"></i>
+      <h3 class="text-lg font-semibold">FitLife AI Companion</h3>
+    </div>
+    <button id="closeBtn" class="text-gray-400 hover:text-red-400 transition text-xl">&times;</button>
   </div>
-  <div class="flex-1 p-4 overflow-y-auto text-gray-200" id="ai-assistant-messages">
-    <div class="text-center text-gray-400 mt-8">How can I help you today?</div>
+  <!-- Ongoing Chat Area -->
+  <div id="chatArea" class="flex-1 overflow-y-auto my-2 px-1" style="max-height: 270px;">
+    <div class="flex gap-2 items-start mb-3">
+      <i class="fas fa-robot text-[#62E0A1] text-lg mt-1"></i>
+      <div class="bg-[#222] text-custom-primary px-4 py-2 rounded-xl max-w-[80%] shadow">Hi there! How can I help you with your fitness goals today?</div>
+    </div>
+    <div class="flex gap-2 items-start justify-end mb-3">
+      <div class="bg-[#62E0A1] text-black px-4 py-2 rounded-xl max-w-[80%] shadow ml-auto">What's a good post-workout meal?</div>
+      <span class="text-2xl">🧑</span>
+    </div>
+    <div class="flex gap-2 items-start mb-3">
+      <i class="fas fa-robot text-[#62E0A1] text-lg mt-1"></i>
+      <div class="bg-[#222] text-custom-primary px-4 py-2 rounded-xl max-w-[80%] shadow">A balanced post-workout meal includes protein and carbs. For example, grilled chicken with brown rice and veggies!</div>
+    </div>
+    <div class="flex gap-2 items-start justify-end mb-3">
+      <div class="bg-[#62E0A1] text-black px-4 py-2 rounded-xl max-w-[80%] shadow ml-auto">Thank you! And how often should I do cardio?</div>
+      <span class="text-2xl">🧑</span>
+    </div>
+    <div class="flex gap-2 items-start mb-3">
+      <i class="fas fa-robot text-[#62E0A1] text-lg mt-1"></i>
+      <div class="bg-[#222] text-custom-primary px-4 py-2 rounded-xl max-w-[80%] shadow">Aim for at least 150 minutes of moderate cardio per week, like brisk walking or cycling.</div>
+    </div>
   </div>
-  <form id="ai-assistant-form" class="flex items-center border-t border-[#62E0A1] p-2 bg-[#1E1E1E] rounded-b-2xl">
-    <input type="text" id="ai-assistant-input" class="flex-1 bg-transparent text-white px-3 py-2 rounded-full focus:outline-none" placeholder="Type your question..." autocomplete="off" />
-    <button type="submit" class="ml-2 bg-custom-primary text-black px-4 py-2 rounded-full font-bold hover:bg-custom-secondary transition">Send</button>
+  <!-- Ask Question Form at the bottom -->
+  <form class="flex gap-2 pt-2 border-t border-[#2a2a2a] bg-transparent">
+    <input type="text" placeholder="Ask a question..." class="flex-1 px-4 py-2 rounded-lg bg-[#1a1a1a] border border-[#62E0A1] focus:outline-none text-white"/>
+    <button type="submit" class="bg-[#62E0A1] text-black px-4 py-2 rounded-lg font-semibold hover:bg-[#36CFFF] transition">
+      <i class="fas fa-paper-plane"></i>
+    </button>
   </form>
 </div>
-
 <style>
   @keyframes bounce-slow {
     0%, 100% {
@@ -28,63 +54,62 @@
   .animate-bounce-slow {
     animation: bounce-slow 2s infinite;
   }
-  /* Universal override to ensure AI assistant floats above all content */
-  #ai-assistant-box, #ai-assistant-popup {
-    position: fixed !important;
-    z-index: 2147483647 !important;
-    pointer-events: auto;
+  @keyframes softSlideFade {
+    from {
+      opacity: 0;
+      transform: translateY(10px) scale(0.98);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+  }
+  .animate-soft-open {
+    animation: softSlideFade 0.3s ease-out forwards;
+  }
+  /* Custom scrollbar for chat area */
+  #chatArea::-webkit-scrollbar {
+    width: 10px;
+    background: #111;
+  }
+  #chatArea::-webkit-scrollbar-thumb {
+    background: #333;
+    border-radius: 8px;
+  }
+  #chatArea::-webkit-scrollbar-thumb:hover {
+    background: #444;
+  }
+  #chatArea {
+    scrollbar-width: thin;
+    scrollbar-color: #333 #111;
   }
 </style>
-
 <script>
-  // Show/hide popup logic (match homepage)
-  setTimeout(() => {
-    const aiBox = document.getElementById('ai-assistant-box');
-    const aiPopup = document.getElementById('ai-assistant-popup');
-    const aiClose = document.getElementById('ai-assistant-close');
-    const aiForm = document.getElementById('ai-assistant-form');
-    const aiInput = document.getElementById('ai-assistant-input');
-    const aiMessages = document.getElementById('ai-assistant-messages');
-    let popupOpen = false;
-    function openPopup() {
-      aiPopup.classList.remove('hidden');
-      popupOpen = true;
+  // Show/hide new soft chat box
+  const aiBtn = document.getElementById('ai-assistant-box');
+  const aiBox = document.getElementById('aiBox');
+  const closeBtn = document.getElementById('closeBtn');
+  let boxOpen = false;
+  aiBtn.addEventListener('click', (e) => {
+    e.preventDefault();
+    if (boxOpen) {
+      aiBox.classList.add('hidden');
+      boxOpen = false;
+    } else {
+      aiBox.classList.remove('hidden');
+      aiBox.classList.add('animate-soft-open');
+      boxOpen = true;
     }
-    function closePopup() {
-      aiPopup.classList.add('hidden');
-      popupOpen = false;
+  });
+  closeBtn.addEventListener('click', () => {
+    aiBox.classList.add('hidden');
+    boxOpen = false;
+  });
+  // Hide chatbox if clicking outside
+  document.addEventListener('mousedown', (event) => {
+    if (boxOpen && !aiBox.contains(event.target) && !aiBtn.contains(event.target)) {
+      aiBox.classList.add('hidden');
+      boxOpen = false;
     }
-    aiBox.addEventListener('click', (e) => {
-      if (popupOpen) {
-        closePopup();
-      } else {
-        openPopup();
-      }
-    });
-    aiClose.addEventListener('click', closePopup);
-    document.addEventListener('mousedown', (event) => {
-      if (popupOpen && !aiPopup.contains(event.target) && !aiBox.contains(event.target)) {
-        closePopup();
-      }
-    });
-    aiForm.addEventListener('submit', function(e) {
-      e.preventDefault();
-      const userMsg = aiInput.value.trim();
-      if (!userMsg) return;
-      // Show user message
-      const userDiv = document.createElement('div');
-      userDiv.className = "text-right";
-      userDiv.innerHTML = `<span class="bg-custom-primary text-black px-2 py-1 rounded-lg inline-block">${userMsg}</span>`;
-      aiMessages.appendChild(userDiv);
-      aiMessages.scrollTop = aiMessages.scrollHeight;
-      aiInput.value = "";
-      // Simulate AI reply
-      setTimeout(() => {
-        const aiDiv = document.createElement('div');
-        aiDiv.innerHTML = `<span class="bg-custom-surface border border-custom-primary text-custom-primary px-2 py-1 rounded-lg inline-block">I'm here to help! (AI response placeholder)</span>`;
-        aiMessages.appendChild(aiDiv);
-        aiMessages.scrollTop = aiMessages.scrollHeight;
-      }, 800);
-    });
-  }, 100);
+  });
 </script>
