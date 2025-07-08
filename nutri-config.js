@@ -3,7 +3,7 @@
 
 const CONFIG = {
     // Get your free Gemini API key from: https://makersuite.google.com/app/apikey
-    GEMINI_API_KEY: 'AIzaSyDWeRetFqbdYaQe_shk-elNmaPs7TvQqug',
+    GEMINI_API_KEY: 'AIzaSyB4rkwfwyBObN4jF6_bomi8l8kxBAMlEqg',
     
     // API Configuration
     GEMINI_API_URL: 'https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent',
