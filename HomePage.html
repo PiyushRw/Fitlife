@@ -66,23 +66,30 @@
 </section>
 
     <!-- ✨ Feature Highlights -->
-    <section class="grid md:grid-cols-3 gap-8 p-10 bg-custom-dark max-w-7xl mx-auto my-20">
-      <div class="bg-custom-surface p-8 rounded-2xl text-center shadow-lg hover:scale-105 hover:shadow-2xl transition">
-        <img src="images/1.jpg" alt="" class="rounded-xl w-full mb-6 shadow-md" />
-        <h3 class="font-bold text-xl mb-3 text-custom-primary">AI Workout Planner</h3>
-        <p class="text-base text-gray-400 break-words">Build strength, improve endurance, or slim down — your smart trainer adapts every set to your personal fitness level and goals.</p>
-      </div>
-      <div class="bg-custom-surface p-8 rounded-2xl text-center shadow-lg hover:scale-105 hover:shadow-2xl transition">
-        <img src="images/2.jpg" alt="" class="rounded-xl w-full mb-6 shadow-md" />
-        <h3 class="font-bold text-xl mb-3 text-custom-secondary">Nutrition Guidance</h3>
-        <p class="text-base text-gray-400 break-words">Eat for your body, not someone else's. Get personalized meal suggestions based on your health conditions, goals, and preferences.</p>
-      </div>
-      <div class="bg-custom-surface p-8 rounded-2xl text-center shadow-lg hover:scale-105 hover:shadow-2xl transition">
-        <img src="images/3.jpg" alt="" class="rounded-xl w-full mb-6 shadow-md" />
-        <h3 class="font-bold text-xl mb-3 text-custom-accent">Chat Support</h3>
-        <p class="text-base text-gray-400 break-words">Got a question? Your AI assistant is here 24/7 to help with workouts, diets, fitness myths, and motivation.</p>
-      </div>
-    </section>
+    <section class="relative grid md:grid-cols-3 gap-12 p-10 bg-custom-dark max-w-7xl mx-auto my-20 z-10">
+  <!-- Decorative Overlap Box -->
+  <div class="hidden md:block absolute -top-8 -left-8 w-40 h-40 bg-custom-primary/20 rounded-3xl blur-xl z-0"></div>
+  <div class="hidden md:block absolute -bottom-8 -right-8 w-40 h-40 bg-custom-secondary/20 rounded-3xl blur-xl z-0"></div>
+  <!-- Feature Cards -->
+  <div class="relative bg-custom-surface p-8 rounded-2xl text-center shadow-2xl border-2 border-custom-primary/30 hover:scale-105 hover:shadow-2xl transition group overflow-hidden">
+    <div class="absolute -top-6 -right-6 w-20 h-20 bg-custom-primary/30 rounded-2xl blur-lg z-0"></div>
+    <img src="images/1.jpg" alt="" class="rounded-xl w-full mb-6 shadow-md relative z-10" />
+    <h3 class="font-bold text-xl mb-3 text-custom-primary relative z-10">AI Workout Planner</h3>
+    <p class="text-base text-gray-400 break-words relative z-10">Build strength, improve endurance, or slim down — your smart trainer adapts every set to your personal fitness level and goals.</p>
+  </div>
+  <div class="relative bg-custom-surface p-8 rounded-2xl text-center shadow-2xl border-2 border-custom-secondary/30 hover:scale-105 hover:shadow-2xl transition group overflow-hidden">
+    <div class="absolute -bottom-6 -left-6 w-20 h-20 bg-custom-secondary/30 rounded-2xl blur-lg z-0"></div>
+    <img src="images/2.jpg" alt="" class="rounded-xl w-full mb-6 shadow-md relative z-10" />
+    <h3 class="font-bold text-xl mb-3 text-custom-secondary relative z-10">Nutrition Guidance</h3>
+    <p class="text-base text-gray-400 break-words relative z-10">Eat for your body, not someone else's. Get personalized meal suggestions based on your health conditions, goals, and preferences.</p>
+  </div>
+  <div class="relative bg-custom-surface p-8 rounded-2xl text-center shadow-2xl border-2 border-custom-accent/30 hover:scale-105 hover:shadow-2xl transition group overflow-hidden">
+    <div class="absolute -top-6 -left-6 w-20 h-20 bg-custom-accent/30 rounded-2xl blur-lg z-0"></div>
+    <img src="images/3.jpg" alt="" class="rounded-xl w-full mb-6 shadow-md relative z-10" />
+    <h3 class="font-bold text-xl mb-3 text-custom-accent relative z-10">Chat Support</h3>
+    <p class="text-base text-gray-400 break-words relative z-10">Got a question? Your AI assistant is here 24/7 to help with workouts, diets, fitness myths, and motivation.</p>
+  </div>
+</section>
 
 
     <!-- 👵 Healthy Aging Section -->
@@ -122,20 +129,26 @@
       </div>
     </section>
 
-    <!-- 💬 Testimonial Carousel -->
+
+
+
+    <!-- 💬 Enhanced Testimonial Carousel (add avatars for more trust) -->
     <section class="text-center px-6 py-16 bg-custom-surface mt-20 rounded-3xl shadow-lg max-w-4xl mx-auto">
       <div id="testimonial-carousel" class="relative max-w-2xl mx-auto">
         <blockquote class="testimonial-slide text-xl font-semibold leading-relaxed text-white" style="display: block;">
+          <img src="https://randomuser.me/api/portraits/men/32.jpg" alt="User" class="mx-auto mb-4 w-14 h-14 rounded-full border-4 border-custom-primary shadow-lg" />
           "Your future self will thank you for starting today. Every small win matters."
           <br />
           <span class="block text-sm text-custom-primary mt-8">FitLife Team</span>
         </blockquote>
         <blockquote class="testimonial-slide text-xl font-semibold leading-relaxed text-white" style="display: none;">
+          <img src="https://randomuser.me/api/portraits/women/44.jpg" alt="User" class="mx-auto mb-4 w-14 h-14 rounded-full border-4 border-custom-secondary shadow-lg" />
           "Consistency is the key to progress. Trust the process and keep moving forward."
           <br />
           <span class="block text-sm text-custom-secondary mt-8">Coach Alex</span>
         </blockquote>
         <blockquote class="testimonial-slide text-xl font-semibold leading-relaxed text-white" style="display: none;">
+          <img src="https://randomuser.me/api/portraits/men/65.jpg" alt="User" class="mx-auto mb-4 w-14 h-14 rounded-full border-4 border-custom-accent shadow-lg" />
           "A healthy outside starts from the inside. Nourish your body and mind."
           <br />
           <span class="block text-sm text-custom-accent mt-8">Nutritionist Sam</span>
@@ -147,6 +160,94 @@
         </div>
       </div>
     </section>
+
+    <!-- 🌟 Motivation Banner -->
+<section class="relative bg-gradient-to-r from-[#1E1E1E] via-[#121212] to-[#62E0A1]/60  shadow-xl my-20 py-10 px-16 flex flex-col md:flex-row items-center justify-between max-w-full mx-auto overflow-hidden">
+  <div class="absolute -top-10 -left-10 w-44 h-44 bg-custom-secondary/20 rounded-3xl blur-2xl z-0"></div>
+  <div class="absolute -bottom-10 -right-10 w-44 h-44 bg-custom-primary/20 rounded-3xl blur-2xl z-0"></div>
+  <div class="flex-1 mb-8 md:mb-0 relative z-10">
+    <h2 class="text-3xl md:text-4xl font-extrabold text-white mb-3 drop-shadow-lg">
+      <span class="text-custom-primary">Stay Consistent,</span> Stay Strong!
+    </h2><br>
+    <p class="text-lg text-gray-200 mb-4 max-w-xl">
+      Your journey is unique. Every step, every meal, every rep counts. FitLife is here to celebrate your wins and guide you through the tough days. 
+    </p><br>
+    <ul class="list-disc list-inside text-gray-300 text-base space-y-1">
+      <li>Daily AI-powered motivation & reminders</li>
+      <li>Track your progress visually</li>
+      <li>Personalized wellness tips every week</li>
+    </ul>
+  </div>
+  <div class="flex-1 flex justify-center relative z-10">
+    <img src="https://img.icons8.com/color/144/medal2--v2.png" alt="Motivation" class="w-40 h-40 md:w-52 md:h-52 drop-shadow-2xl animate-fade-in-down" />
+  </div>
+</section>
+
+<!-- 🏆 Progress Tracker Preview -->
+<section class="relative bg-custom-surface rounded-3xl shadow-2xl max-w-5xl mx-auto my-20 px-8 py-10 overflow-hidden">
+  <div class="absolute -top-8 -left-8 w-32 h-32 bg-custom-primary/20 rounded-2xl blur-2xl z-0"></div>
+  <div class="absolute -bottom-8 -right-8 w-32 h-32 bg-custom-accent/20 rounded-2xl blur-2xl z-0"></div>
+  <h2 class="text-2xl font-bold text-custom-primary mb-6 text-center relative z-10">Your Progress At A Glance</h2>
+  <div class="grid md:grid-cols-4 gap-8 text-center relative z-10">
+    
+    <div class="relative bg-[#181f1b] rounded-2xl shadow-lg p-4 border border-custom-primary/30">
+      <div class="bg-custom-primary text-black w-16 h-16 mx-auto rounded-full flex items-center justify-center text-2xl font-bold shadow-lg mb-2">7</div>
+      <p class="text-gray-300 text-sm">Day Streak</p>
+    </div>
+    <div class="relative bg-[#181f1b] rounded-2xl shadow-lg p-4 border border-custom-secondary/30">
+      <div class="bg-custom-secondary text-black w-16 h-16 mx-auto rounded-full flex items-center justify-center text-2xl font-bold shadow-lg mb-2">12K</div>
+      <p class="text-gray-300 text-sm">Calories Burnt</p>
+    </div>
+    <div class="relative bg-[#181f1b] rounded-2xl shadow-lg p-4 border border-custom-accent/30">
+      <div class="bg-custom-accent text-black w-16 h-16 mx-auto rounded-full flex items-center justify-center text-2xl font-bold shadow-lg mb-2">18</div>
+      <p class="text-gray-300 text-sm">Workouts</p>
+    </div>
+    <div class="relative bg-[#181f1b] rounded-2xl shadow-lg p-4 border border-custom-primary/30">
+      <div class="bg-[#222] text-custom-primary w-16 h-16 mx-auto rounded-full flex items-center justify-center text-2xl font-bold shadow-lg mb-2">92%</div>
+      <p class="text-gray-300 text-sm">Consistency</p>
+    </div>
+  </div>  <br>
+ 
+  <div class="text-center mt-8 relative z-10">
+    <a href="profile.html" class="bg-custom-primary text-black font-semibold px-6 py-2 rounded-full hover:bg-[#36CFFF] hover:text-white transition shadow-md">See My Dashboard</a>
+  </div>
+  
+  <br>
+  <br>
+
+    <div class="absolute -top-8 -right-8 w-32 h-32 bg-custom-accent/20 rounded-2xl blur-2xl z-0"></div>
+  <div class="absolute -bottom-8 -left-8 w-32 h-32 bg-custom-primary/20 rounded-2xl blur-2xl z-0"></div>
+  <div class="flex-1 mb-8 md:mb-0 relative z-10">
+    <h2 class="text-2xl md:text-3xl font-bold text-custom-accent mb-4">Set Your Next Goal</h2>
+    <p class="text-gray-300 mb-4">
+      Whether it's body building, mastering a yoga pose,<br>
+      or simply drinking more water, FitLife helps you break big dreams into daily actions.
+    </p><br>
+    <form class="flex flex-col md:flex-row gap-4 items-center">
+      <input type="text" placeholder="Your next goal..." class="px-4 py-2 rounded-full bg-[#222] text-white focus:outline-none focus:ring-2 focus:ring-custom-accent w-full md:w-64" />
+      <button type="submit" class="bg-custom-accent text-black font-semibold px-6 py-2 rounded-full hover:bg-yellow-400 transition shadow-md">Add Goal</button>
+    </form>
+  </div>
+  
+</section>
+
+<!-- 💡 Wellness Tips -->
+<section class="relative max-w-7xl mx-auto my-20 px-6 overflow-visible">
+  <div class="absolute -top-8 -right-8 w-32 h-32 bg-custom-secondary/20 rounded-2xl blur-2xl z-0"></div>
+  <div class="absolute -bottom-8 -left-8 w-32 h-32 bg-custom-accent/20 rounded-2xl blur-2xl z-0"></div>
+  <h2 class="text-2xl font-bold text-custom-secondary mb-6 text-center relative z-10">Today's Wellness Tip</h2>
+  <div class="bg-[#181f1b] rounded-2xl shadow-lg p-8 flex flex-col md:flex-row items-center justify-between relative z-10">
+    <div class="flex-1">
+      <p class="text-lg text-gray-200 mb-2">
+        <span class="font-semibold text-custom-primary">Hydration Boost:</span> Start your day with a glass of water. Staying hydrated improves energy, focus, and recovery.
+      </p>
+      <p class="text-gray-400 text-sm">
+        Tip: Add a slice of lemon or cucumber for extra freshness!
+      </p>
+    </div>
+    <img src="https://img.icons8.com/color/96/water-bottle.png" alt="Hydration" class="w-20 h-20 md:ml-8 mt-6 md:mt-0 drop-shadow-xl" />
+  </div>
+</section>
 
     <!-- 🔚 Footer -->
     <footer class="grid md:grid-cols-4 gap-8 p-8 bg-custom-dark text-sm text-gray-400 mt-20 mb-12 rounded-3xl max-w-7xl mx-auto shadow-inner">
@@ -236,5 +337,11 @@
           });
         });
     </script>
+    <!-- Add this just before </body> for a floating quick-access help button -->
+<div class="fixed bottom-8 right-8 z-50">
+  <a href="contact.html" class="bg-custom-primary text-black rounded-full shadow-lg w-14 h-14 flex items-center justify-center text-2xl hover:bg-custom-secondary transition" title="Need Help?">
+    <i class="fas fa-headset"></i>
+  </a>
+</div>
   </body>
 </html>
