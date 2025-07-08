@@ -511,6 +511,16 @@
         setupExerciseOptionClickHandler();
         exerciseDisplay.textContent = 'Select Exercise';
       }
+      if (id === 'exercise') {
+        // Load demo GIF if ID is available
+        const exerciseId = exerciseNameToId[value];
+        if (exerciseId) {
+          loadExerciseGif(exerciseId);
+        } else {
+          const demoContainer = document.getElementById('exercise-demo');
+          demoContainer.innerHTML = `<div class="text-gray-400">Demo not available for this exercise</div>`;
+        }
+      }
     }   
     document.addEventListener('click', function(event) {
       const dropdowns = document.querySelectorAll('.dropdown-options');
@@ -608,6 +618,93 @@
       const filtered = exerciseList.filter(opt => opt.toLowerCase().includes(search));
       renderExerciseOptions(filtered);
       setupExerciseOptionClickHandler(); // <-- This line is critical!
+    }
+
+    // Mapping from exercise name to ExerciseDB ID (fully updated)
+    const exerciseNameToId = {
+      "Incline Dumbbell Press": "0330",
+      "Incline Barbell Press": "0329",
+      "Incline Push Ups": "1297",
+      "Decline Bench Press": "0026",
+      "Decline Push Ups": "1296",
+      "Close-Grip Push Ups": "1687",
+      "Pec Deck": "1300",
+      "Wide Grip Bench Press": "0032",
+      "Cable Fly": "0171",
+      "Face Pull": "0684",
+      "Reverse Fly": "0710",
+      "Seated Row": "0860",
+      "Back Extension": "1314",
+      "Superman": "0707",
+      "Good Morning": "1401",
+      "Lat Pulldown": "0583",
+      "Pull Ups": "0615",
+      "Straight-Arm Pulldown": "1313",
+      "Barbell Shrug": "0037",
+      "Dumbbell Shrug": "0322",
+      "Upright Row": "0098",
+      "Barbell Squat": "0043",
+      "Leg Press": "0584",
+      "Lunges": "0586",
+      "Leg Curl": "0585",
+      "Romanian Deadlift": "0706",
+      "Glute Ham Raise": "1371",
+      "Standing Calf Raise": "1378",
+      "Seated Calf Raise": "1380",
+      "Donkey Calf Raise": "1379",
+      "Hip Thrust": "1410",
+      "Glute Bridge": "3562",
+      "Cable Kickback": "0176",
+      "Bicep Curl": "1621",
+      "Hammer Curl": "1622",
+      "Concentration Curl": "1623",
+      "Tricep Dips": "1399",
+      "Tricep Pushdown": "1682",
+      "Overhead Tricep Extension": "1680",
+      "Wrist Curl": "0219",
+      "Reverse Curl": "0222",
+      "Farmer’s Walk": null, // Not found in API
+      "Front Raise": "0292",
+      "Overhead Press": "0524",
+      "Arnold Press": "0011",
+      "Lateral Raise": "0324",
+      "Cable Lateral Raise": "0173",
+      "Rear Delt Row": "0711",
+      "Crunches": "0274",
+      "Plank": "0685",
+      "Leg Raise": "0587",
+      "Bicycle Crunch": "0870",
+      "Side Plank": "0688",
+      "Russian Twist": "0851",
+      "Woodchopper": "2396",
+      "Reverse Crunch": "0866",
+      "Hanging Leg Raise": "0572",
+      "Mountain Climbers": "1160",
+      "Burpees": "2293",
+      "Jumping Jacks": "3221",
+      "Bear Crawl": null // Not found in API
+    };
+
+    const demoContainer = document.getElementById('exercise-demo');
+
+    async function loadExerciseGif(exerciseId) {
+      try {
+        demoContainer.innerHTML = `<div class="text-gray-400">Loading...</div>`;
+        const res = await fetch(`https://exercisedb-api.vercel.app/api/v1/exercises/${exerciseId}`);
+        if (!res.ok) throw new Error('Exercise not found');
+        const data = await res.json();
+
+        demoContainer.innerHTML = `
+          <div class="flex flex-col items-center">
+            <img src="${data.gifUrl}" alt="${data.name}" class="w-auto h-80 rounded-xl shadow-xl"/>
+            <p class="mt-2 text-sm text-gray-300 font-semibold">${data.name}</p>
+            <p class="text-xs text-gray-400">${data.target} • ${data.equipment}</p>
+          </div>
+        `;
+      } catch (err) {
+        console.error(err);
+        demoContainer.innerHTML = `<div class="text-red-400">Demo not available</div>`;
+      }
     }
   </script>
 </body>
