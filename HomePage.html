@@ -3,10 +3,24 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
     <title>FitLife</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
+  @keyframes bounce-slow {
+    0%, 100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-6px);
+    }
+  }
+  .animate-bounce-slow {
+    animation: bounce-slow 2s infinite;
+  }
+
       @keyframes fade-in-down {
   from {
     opacity: 0;
@@ -318,30 +332,52 @@
         }
       });
     </script>
-    <div id="ai-assistant-include"></div>
+    <!-- 💬 AI Assistant Floating Box -->
+    <div id="ai-assistant-box" class="fixed bottom-8 right-8 bg-[#1E1E1E] border-4 border-[#62E0A1] rounded-full shadow-xl w-16 h-16 flex items-center justify-center hover:shadow-2xl transition-all z-50 cursor-pointer group">
+      <img src="https://img.icons8.com/fluency/96/chatbot.png" alt="AI Assistant Icon" class="w-10 h-10 animate-bounce-slow group-hover:scale-110 transition-transform duration-300" />
+    </div>
+    <!-- AI Assistant Popup -->
+    <div id="ai-assistant-popup" class="hidden fixed bottom-28 right-8 w-80 max-w-full bg-[#181f1b] border-2 border-[#62E0A1] rounded-2xl shadow-2xl z-50 flex flex-col" style="min-height: 400px;">
+      <div class="flex items-center justify-between px-4 py-2 border-b border-[#62E0A1] rounded-t-2xl bg-[#1E1E1E]">
+        <span class="font-bold text-custom-primary">AI Assistant</span>
+        <button id="ai-assistant-close" class="text-gray-400 hover:text-custom-accent text-xl font-bold">&times;</button>
+      </div>
+      <div class="flex-1 p-4 overflow-y-auto text-gray-200" id="ai-assistant-messages">
+        <div class="text-center text-gray-400 mt-8">How can I help you today?</div>
+      </div>
+      <form id="ai-assistant-form" class="flex items-center border-t border-[#62E0A1] p-2 bg-[#1E1E1E] rounded-b-2xl">
+        <input type="text" id="ai-assistant-input" class="flex-1 bg-transparent text-white px-3 py-2 rounded-full focus:outline-none" placeholder="Type your question..." autocomplete="off" />
+        <button type="submit" class="ml-2 bg-custom-primary text-black px-4 py-2 rounded-full font-bold hover:bg-custom-secondary transition">Send</button>
+      </form>
+    </div>
     <script>
-      fetch('ai-assistant.html')
-        .then(res => res.text())
-        .then(html => {
-          document.getElementById('ai-assistant-include').innerHTML = html;
-          // Run any scripts in the loaded HTML
-          const scripts = document.getElementById('ai-assistant-include').querySelectorAll('script');
-          scripts.forEach(oldScript => {
-            const newScript = document.createElement('script');
-            if (oldScript.src) {
-              newScript.src = oldScript.src;
-            } else {
-              newScript.textContent = oldScript.textContent;
-            }
-            document.body.appendChild(newScript);
-          });
-        });
+      // Show/hide popup logic
+      const aiBox = document.getElementById('ai-assistant-box');
+      const aiPopup = document.getElementById('ai-assistant-popup');
+      const aiClose = document.getElementById('ai-assistant-close');
+      let popupOpen = false;
+      function openPopup() {
+        aiPopup.classList.remove('hidden');
+        popupOpen = true;
+      }
+      function closePopup() {
+        aiPopup.classList.add('hidden');
+        popupOpen = false;
+      }
+      aiBox.addEventListener('click', (e) => {
+        if (popupOpen) {
+          closePopup();
+        } else {
+          openPopup();
+        }
+      });
+      aiClose.addEventListener('click', closePopup);
+      // Hide popup if clicking outside
+      document.addEventListener('mousedown', (event) => {
+        if (popupOpen && !aiPopup.contains(event.target) && !aiBox.contains(event.target)) {
+          closePopup();
+        }
+      });
     </script>
-    <!-- Add this just before </body> for a floating quick-access help button -->
-<div class="fixed bottom-8 right-8 z-50">
-  <a href="contact.html" class="bg-custom-primary text-black rounded-full shadow-lg w-14 h-14 flex items-center justify-center text-2xl hover:bg-custom-secondary transition" title="Need Help?">
-    <i class="fas fa-headset"></i>
-  </a>
-</div>
   </body>
 </html>
