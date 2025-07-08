@@ -115,6 +115,13 @@
         </div>
       </section>
 
+
+      <!-- Muscle Group -->
+      <section class="bg-custom-dark p-4 rounded-xl">
+        <p class="font-semibold text-sm">Target Muscle Groups:</p>
+        <p class="text-xs text-gray-300 mt-1">Chest, Triceps</p>
+      </section>
+
       <!-- Today's Workout List -->
       <section class="bg-custom-dark p-4 rounded-xl">
         <div class="flex items-center justify-between">
@@ -123,28 +130,40 @@
         </div>
         <ul id="workoutList" class="mt-4 space-y-3 text-sm">
           <li class="flex justify-between items-center border-b border-gray-700 pb-2">
-            <div class="flex flex-col md:flex-row md:items-center md:gap-4">
-              <span>Bench Press</span><span>4 x 10</span>
+            <div class="flex items-center space-x-4">
+              <span>Bench Press</span>
+              <span>4 x 10</span>
             </div>
-            <button class="text-red-500 hover:text-red-700 text-xs ml-4" onclick="this.parentElement.remove();">
-              <i class="fas fa-trash"></i>
-            </button>
+            <div class="flex items-center space-x-2">
+              <a href="https://www.youtube.com/results?search_query=bench+press+exercise" target="_blank" class="text-blue-400"><i class="fas fa-video"></i></a>
+              <button class="text-red-500 hover:text-red-700 text-xs" onclick="this.closest('li').remove();">
+                <i class="fas fa-trash"></i>
+              </button>
+            </div>
           </li>
           <li class="flex justify-between items-center border-b border-gray-700 pb-2">
-            <div class="flex flex-col md:flex-row md:items-center md:gap-4">
-              <span>Incline Dumbbell Press</span><span>3 x 12</span>
+            <div class="flex items-center space-x-4">
+              <span>Incline Dumbbell Press</span>
+              <span>3 x 12</span>
             </div>
-            <button class="text-red-500 hover:text-red-700 text-xs ml-4" onclick="this.parentElement.remove();">
-              <i class="fas fa-trash"></i>
-            </button>
+            <div class="flex items-center space-x-2">
+              <a href="https://www.youtube.com/results?search_query=incline+dumbbell+press+exercise" target="_blank" class="text-blue-400"><i class="fas fa-video"></i></a>
+              <button class="text-red-500 hover:text-red-700 text-xs" onclick="this.closest('li').remove();">
+                <i class="fas fa-trash"></i>
+              </button>
+            </div>
           </li>
           <li class="flex justify-between items-center">
-            <div class="flex flex-col md:flex-row md:items-center md:gap-4">
-              <span>Tricep Dips</span><span>3 x 15</span>
+            <div class="flex items-center space-x-4">
+              <span>Tricep Dips</span>
+              <span>3 x 15</span>
             </div>
-            <button class="text-red-500 hover:text-red-700 text-xs ml-4" onclick="this.parentElement.remove();">
-              <i class="fas fa-trash"></i>
-            </button>
+            <div class="flex items-center space-x-2">
+              <a href="https://www.youtube.com/results?search_query=tricep+dips+exercise" target="_blank" class="text-blue-400"><i class="fas fa-video"></i></a>
+              <button class="text-red-500 hover:text-red-700 text-xs" onclick="this.closest('li').remove();">
+                <i class="fas fa-trash"></i>
+              </button>
+            </div>
           </li>
         </ul>
       </section>
