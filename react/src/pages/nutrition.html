@@ -221,6 +221,26 @@
         border: 3px solid #F2B33D !important;
         box-shadow: 0 0 0 3px rgba(242,179,61,0.18), 0 4px 24px 0 rgba(0,0,0,0.10);
       }
+      #tag-input-row .tag {
+        background: rgba(98,224,161,0.12);
+        color: #62E0A1;
+        border-radius: 9999px;
+        padding: 0.2em 0.8em;
+        font-size: 1em;
+        font-weight: 500;
+        display: inline-flex;
+        align-items: center;
+        margin-right: 0.3em;
+        border: 1px solid #62E0A1;
+        white-space: nowrap;
+      }
+      #tag-input-row {
+        min-height: 40px;
+        height: 40px;
+        overflow-x: auto;
+        overflow-y: hidden;
+        flex-wrap: nowrap;
+      }
     </style>
   </head>
   <body class="bg-custom-dark text-white font-sans">
@@ -423,15 +443,12 @@
                 <!-- Combined Tags and Input Box with Action Box -->
                 <div class="flex flex-row gap-4 mt-6">
                   <div class="flex-1 flex flex-col gap-2 p-4 bg-custom-dark rounded-lg border border-gray-700 min-h-[56px]">
-                    <div id="selected-tags-box" class="flex flex-wrap gap-2 mb-2">
-                      <!-- Tags will appear here -->
-                    </div>
-                    <hr class="border-gray-800 my-1" />
-                    <div class="flex items-center gap-2">
-                      <input id="customInputBox" type="text" placeholder="Type your preferences or notes..." class="flex-1 bg-transparent text-white placeholder-gray-400 outline-none border-none px-2 py-1" />
+                    <div id="tag-input-row" class="flex items-center gap-2 px-2 py-1 rounded bg-transparent border-none" style="min-height:40px; height:40px; overflow-x:auto; overflow-y:hidden; flex-wrap:nowrap;">
+                      <!-- Tags will be injected here by JS -->
+                      <input id="customInputBox" type="text" placeholder="Type your preferences or notes..." class="flex-1 bg-transparent text-white placeholder-gray-400 outline-none border-none min-w-[80px]" style="height:36px;" />
                       <button type="button" onclick="backspaceInput()" class="bg-gray-800 text-white rounded-full px-3 py-1 hover:bg-gray-700" title="Backspace"><i class="fas fa-backspace"></i></button>
                     </div>
-                    <div class="mt-1 text-xs text-gray-400">Selected tags appear above. You can also write your own preferences, restrictions, or notes here.</div>
+                    <div class="mt-1 text-xs text-gray-400">Selected tags appear inside the box. You can also write your own preferences, restrictions, or notes here.</div>
                   </div>
                   <div class="flex flex-col gap-2 justify-between p-4 bg-custom-dark rounded-lg border border-gray-700 min-w-[140px] max-w-[180px] items-center self-stretch">
                     <button type="button" onclick="clearInput()" class="bg-custom-accent text-black rounded-full px-3 py-1 hover:bg-yellow-400 font-semibold w-full" title="Clear">Clear</button>
@@ -718,14 +735,17 @@
       // Plan button group logic (multi-select)
       const selectedPlan = { goal: [], condition: [], lifestyle: [] };
       function updateSelectedTagsBox() {
-        const box = document.getElementById('selected-tags-box');
-        box.innerHTML = '';
+        const row = document.getElementById('tag-input-row');
+        // Remove all tags (but not the input/button)
+        Array.from(row.querySelectorAll('.tag')).forEach(tag => tag.remove());
+        // Insert tags before the input
+        const input = document.getElementById('customInputBox');
         Object.entries(selectedPlan).forEach(([cat, arr]) => {
           arr.forEach(val => {
             const tag = document.createElement('span');
-            tag.className = 'tag bg-gradient-to-r from-custom-primary to-custom-secondary text-black px-3 py-1 rounded-full font-semibold text-sm';
+            tag.className = 'tag';
             tag.textContent = val;
-            box.appendChild(tag);
+            row.insertBefore(tag, input);
           });
         });
       }
@@ -955,6 +975,32 @@
         currentMealDay = 0;
         renderMealPlanDay(currentMealDay);
       };
+    </script>
+    <script>
+// BEGIN nutri-config.js
+// Configuration file for Gemini AI API
+// Replace 'YOUR_GEMINI_API_KEY_HERE' with your actual Gemini API key
+
+const CONFIG = {
+    // Get your free Gemini API key from: https://makersuite.google.com/app/apikey
+    GEMINI_API_KEY: 'AIzaSyB4rkwfwyBObN4jF6_bomi8l8kxBAMlEqg',
+    // API Configuration
+    GEMINI_API_URL: 'https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent',
+    // Application Settings
+    MAX_RESPONSE_TOKENS: 1000,
+    CHAT_TEMPERATURE: 0.7,
+    NUTRITION_TEMPERATURE: 0.8,
+    // UI Settings
+    TYPING_INDICATOR_DELAY: 1000,
+    NOTIFICATION_DURATION: 5000,
+    // Fallback Images
+    FALLBACK_IMAGE: 'https://images.unsplash.com/photo-1517686469429-8bdb88b9f907?w=400&h=300&fit=crop'
+};
+window.CONFIG = CONFIG;
+// END nutri-config.js
+// BEGIN nutri-script.js
+// ... (entire contents of nutri-script.js here) ...
+// END nutri-script.js
     </script>
   </body>
   </html> 
