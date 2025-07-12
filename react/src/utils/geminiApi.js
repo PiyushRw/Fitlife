@@ -199,3 +199,209 @@ export const analyzeFoodImage = async (imageBase64) => {
     throw error;
   }
 };
+
+export const generateWorkoutPlan = async (preferences) => {
+  const prompt = `Create a personalized workout plan based on these preferences:
+  
+Fitness Goals: ${preferences.goals.join(', ') || 'General fitness'}
+Experience Level: ${preferences.experience || 'Beginner'}
+Available Equipment: ${preferences.equipment.join(', ') || 'Basic gym equipment'}
+Time Available: ${preferences.timeAvailable || '30-60 minutes'}
+Body Parts Focus: ${preferences.bodyParts.join(', ') || 'Full body'}
+Workout Frequency: ${preferences.frequency || '3-4 times per week'}
+
+Please provide a structured workout plan with exercises, sets, reps, and rest periods.
+
+Format the response as JSON:
+{
+  "workoutPlan": {
+    "overview": {
+      "duration": "workout duration",
+      "difficulty": "beginner/intermediate/advanced",
+      "estimatedCalories": "calories burned"
+    },
+    "exercises": [
+      {
+        "name": "exercise name",
+        "targetMuscles": ["muscle1", "muscle2"],
+        "sets": number,
+        "reps": "reps range",
+        "restTime": "rest duration",
+        "instructions": "detailed form instructions",
+        "tips": "important tips for proper form",
+        "videoKeywords": "search keywords for finding exercise videos"
+      }
+    ]
+  }
+}`;
+
+  try {
+    const response = await fetch(GEMINI_API_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-goog-api-key': GEMINI_API_KEY,
+      },
+      body: JSON.stringify({
+        contents: [
+          {
+            parts: [
+              {
+                text: prompt
+              }
+            ]
+          }
+        ],
+        generationConfig: {
+          temperature: 0.7,
+          topK: 40,
+          topP: 0.95,
+          maxOutputTokens: 4096,
+        }
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`API request failed: ${response.status}`);
+    }
+
+    const data = await response.json();
+    const generatedText = data.candidates[0].content.parts[0].text;
+    
+    try {
+      const jsonMatch = generatedText.match(/\{[\s\S]*\}/);
+      if (jsonMatch) {
+        return JSON.parse(jsonMatch[0]);
+      }
+    } catch {
+      console.warn('Could not parse JSON, returning fallback workout');
+    }
+    
+    // Fallback workout plan
+    return {
+      workoutPlan: {
+        overview: {
+          duration: "45-60 minutes",
+          difficulty: "intermediate",
+          estimatedCalories: "300-400"
+        },
+        exercises: [
+          {
+            name: "Push-ups",
+            targetMuscles: ["chest", "triceps", "shoulders"],
+            sets: 3,
+            reps: "8-12",
+            restTime: "60 seconds",
+            instructions: "Keep your body in a straight line, lower chest to ground, push back up",
+            tips: "Don't let your hips sag or pike up",
+            videoKeywords: "proper push up form technique"
+          }
+        ]
+      }
+    };
+
+  } catch (error) {
+    console.error('Error generating workout plan:', error);
+    throw error;
+  }
+};
+
+export const getExerciseRecommendations = async (muscleGroup, equipment = [], experience = 'beginner') => {
+  const prompt = `Recommend 5-8 exercises for ${muscleGroup} muscle group with the following constraints:
+  
+Equipment Available: ${equipment.join(', ') || 'bodyweight exercises only'}
+Experience Level: ${experience}
+
+For each exercise, provide:
+1. Exercise name
+2. Difficulty level (1-5)
+3. Equipment needed
+4. Primary muscles targeted
+5. Secondary muscles worked
+6. Proper form instructions
+7. Common mistakes to avoid
+8. YouTube search keywords for finding demonstration videos
+
+Format as JSON:
+{
+  "muscleGroup": "${muscleGroup}",
+  "exercises": [
+    {
+      "name": "exercise name",
+      "difficulty": 1-5,
+      "equipment": ["equipment1", "equipment2"],
+      "primaryMuscles": ["muscle1", "muscle2"],
+      "secondaryMuscles": ["muscle1", "muscle2"],
+      "instructions": "step by step form instructions",
+      "commonMistakes": ["mistake1", "mistake2", "mistake3"],
+      "videoSearchKeywords": "youtube search terms",
+      "setsRepsRecommendation": "recommended sets x reps for ${experience}"
+    }
+  ]
+}`;
+
+  try {
+    const response = await fetch(GEMINI_API_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-goog-api-key': GEMINI_API_KEY,
+      },
+      body: JSON.stringify({
+        contents: [
+          {
+            parts: [
+              {
+                text: prompt
+              }
+            ]
+          }
+        ],
+        generationConfig: {
+          temperature: 0.6,
+          topK: 40,
+          topP: 0.95,
+          maxOutputTokens: 3072,
+        }
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`API request failed: ${response.status}`);
+    }
+
+    const data = await response.json();
+    const generatedText = data.candidates[0].content.parts[0].text;
+    
+    try {
+      const jsonMatch = generatedText.match(/\{[\s\S]*\}/);
+      if (jsonMatch) {
+        return JSON.parse(jsonMatch[0]);
+      }
+    } catch {
+      console.warn('Could not parse JSON from exercise recommendations');
+    }
+    
+    // Fallback recommendations
+    return {
+      muscleGroup: muscleGroup,
+      exercises: [
+        {
+          name: "Basic Exercise",
+          difficulty: 3,
+          equipment: ["bodyweight"],
+          primaryMuscles: [muscleGroup],
+          secondaryMuscles: [],
+          instructions: "Perform with proper form",
+          commonMistakes: ["Poor form", "Wrong tempo"],
+          videoSearchKeywords: `${muscleGroup} exercise tutorial`,
+          setsRepsRecommendation: "3 sets x 8-12 reps"
+        }
+      ]
+    };
+
+  } catch (error) {
+    console.error('Error getting exercise recommendations:', error);
+    throw error;
+  }
+};
