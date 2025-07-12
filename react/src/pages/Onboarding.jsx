@@ -245,7 +245,7 @@ const Onboarding = () => {
           border: '1px solid #4b5563', // Tailwind border-gray-600
           borderRadius: '0.75rem',     // Tailwind rounded-xl
           padding: '0.75rem',          // Tailwind p-3
-          backgroundColor: '#121212',  // Tailwind bg-[#121212]
+          backgroundColor: '#1E1E1E',  // Updated to match app background
           color: dropdownValues[id] ? 'white' : '#9ca3af', // Tailwind text-white or placeholder-gray-500
           fontWeight: 400,             // Tailwind font-normal
           fontSize: '1rem',            // Tailwind text-base
@@ -285,7 +285,7 @@ const Onboarding = () => {
                 name="name"
                 value={formData.name}
                 onChange={handleInputChange}
-                className="w-full p-3 rounded-xl border border-gray-600 bg-[#121212] text-white focus:outline-none focus:border-[#62E0A1]"
+                className="w-full p-3 rounded-xl border border-gray-600 bg-[#1E1E1E] text-white focus:outline-none focus:border-[#62E0A1]"
                 placeholder="e.g. John"
               />
               {errors.name && <div className="error-message text-red-400 text-sm mt-1">{errors.name}</div>}
@@ -304,7 +304,7 @@ const Onboarding = () => {
                 name="weight"
                 value={formData.weight}
                 onChange={handleInputChange}
-                className="w-full p-3 rounded-xl border border-gray-600 bg-[#121212] text-white focus:outline-none focus:border-[#62E0A1]"
+                className="w-full p-3 rounded-xl border border-gray-600 bg-[#1E1E1E] text-white focus:outline-none focus:border-[#62E0A1]"
                 placeholder="e.g. 70"
               />
               {errors.weight && <div className="error-message text-red-400 text-sm mt-1">{errors.weight}</div>}
@@ -317,7 +317,7 @@ const Onboarding = () => {
                 name="height"
                 value={formData.height}
                 onChange={handleInputChange}
-                className="w-full p-3 rounded-xl border border-gray-600 bg-[#121212] text-white focus:outline-none focus:border-[#62E0A1]"
+                className="w-full p-3 rounded-xl border border-gray-600 bg-[#1E1E1E] text-white focus:outline-none focus:border-[#62E0A1]"
                 placeholder="e.g. 175"
               />
               {errors.height && <div className="error-message text-red-400 text-sm mt-1">{errors.height}</div>}
@@ -352,7 +352,7 @@ const Onboarding = () => {
                   name="otherHealthFocus"
                   value={formData.otherHealthFocus}
                   onChange={handleInputChange}
-                  className="w-full p-3 rounded-xl border border-gray-600 bg-[#121212] text-white focus:outline-none focus:border-[#62E0A1]"
+                  className="w-full p-3 rounded-xl border border-gray-600 bg-[#1E1E1E] text-white focus:outline-none focus:border-[#62E0A1]"
                   placeholder="Please specify..."
                 />
                 {errors.otherHealthFocus && <div className="error-message text-red-400 text-sm mt-1">{errors.otherHealthFocus}</div>}
@@ -388,7 +388,7 @@ const Onboarding = () => {
                   name="otherDietaryPreferences"
                   value={formData.otherDietaryPreferences}
                   onChange={handleInputChange}
-                  className="w-full p-3 rounded-xl border border-gray-600 bg-[#121212] text-white focus:outline-none focus:border-[#62E0A1]"
+                  className="w-full p-3 rounded-xl border border-gray-600 bg-[#1E1E1E] text-white focus:outline-none focus:border-[#62E0A1]"
                   placeholder="Please specify..."
                 />
                 {errors.otherDietaryPreferences && <div className="error-message text-red-400 text-sm mt-1">{errors.otherDietaryPreferences}</div>}

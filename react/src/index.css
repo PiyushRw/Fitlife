@@ -169,33 +169,33 @@ input[type="password"]::placeholder {
 
 /* Ensure consistent dropdown styling */
 .dropdown-button {
-  background-color: #121212 !important;
+  background-color: #1E1E1E !important;
   color: white !important;
   border-color: #4b5563 !important;
 }
 
 .dropdown-button:hover {
-  background-color: #1a1a1a !important;
+  background-color: #2a2a2a !important;
 }
 
 .dropdown-button:focus {
-  background-color: #1a1a1a !important;
+  background-color: #2a2a2a !important;
   border-color: #62E0A1 !important;
 }
 
 /* Force consistent styling for all dropdown buttons */
 button.dropdown-button {
-  background-color: #121212 !important;
+  background-color: #1E1E1E !important;
   color: white !important;
   border-color: #4b5563 !important;
 }
 
 button.dropdown-button:hover {
-  background-color: #1a1a1a !important;
+  background-color: #2a2a2a !important;
 }
 
 button.dropdown-button:focus {
-  background-color: #1a1a1a !important;
+  background-color: #2a2a2a !important;
   border-color: #62E0A1 !important;
 }
 
@@ -204,7 +204,7 @@ button.dropdown-button:focus {
 .dropdown-button:-webkit-autofill:hover,
 .dropdown-button:-webkit-autofill:focus,
 .dropdown-button:-webkit-autofill:active {
-  background-color: #121212 !important;
+  background-color: #1E1E1E !important;
   color: white !important;
   border-color: #4b5563 !important;
 }
@@ -213,7 +213,7 @@ button.dropdown-button:focus {
 .dropdown-container button,
 .dropdown-container .dropdown-button,
 button[class*="dropdown"] {
-  background-color: #121212 !important;
+  background-color: #1E1E1E !important;
   color: white !important;
   border-color: #4b5563 !important;
   border-width: 1px !important;
@@ -223,12 +223,12 @@ button[class*="dropdown"] {
 .dropdown-container button:hover,
 .dropdown-container .dropdown-button:hover,
 button[class*="dropdown"]:hover {
-  background-color: #1a1a1a !important;
+  background-color: #2a2a2a !important;
 }
 
 .dropdown-container button:focus,
 .dropdown-container .dropdown-button:focus,
 button[class*="dropdown"]:focus {
-  background-color: #1a1a1a !important;
+  background-color: #2a2a2a !important;
   border-color: #62E0A1 !important;
 }

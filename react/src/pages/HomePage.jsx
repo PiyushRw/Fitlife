@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import FitLifeLogo from '../components/FitLifeLogo';
 import image1 from '../assets/images/1.jpg';
 import image2 from '../assets/images/2.jpg';
 import image3 from '../assets/images/3.jpg';
@@ -110,7 +111,7 @@ const HomePage = () => {
       {/* Navigation Bar */}
       <header className="flex items-center justify-between px-6 sm:px-10 py-4 bg-[#1E1E1E] shadow-md sticky top-0 z-50 rounded-b-xl">
         <div className="flex items-center space-x-3">
-          <div className="text-3xl font-extrabold bg-gradient-to-r from-[#62E0A1] to-[#36CFFF] text-transparent bg-clip-text drop-shadow-md tracking-wider animate-pulse">FitLife</div>
+          <FitLifeLogo />
         </div>
         <nav className="space-x-6 text-lg">
           <Link to="/" className="hover:text-[#62E0A1] transition border-b-2 border-[#24d0a4] pb-1">Home</Link>

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
+import FitLifeLogo from '../components/FitLifeLogo';
 import { generateWorkoutPlan, getExerciseRecommendations } from '../utils/geminiApi';
 
 const Workout = () => {
@@ -287,7 +288,7 @@ const Workout = () => {
       {/* Navigation Bar */}
       <header className="flex items-center justify-between px-6 sm:px-10 py-4 bg-[#1E1E1E] shadow-md sticky top-0 z-50 rounded-b-xl">
         <div className="flex items-center space-x-3">
-          <Link to="/" className="text-3xl font-extrabold bg-gradient-to-r from-[#62E0A1] to-[#36CFFF] text-transparent bg-clip-text drop-shadow-md tracking-wider animate-pulse">FitLife</Link>
+          <FitLifeLogo />
         </div>
         <nav className="space-x-6 text-lg">
           <Link to="/" className="hover:text-[#62E0A1] transition">Home</Link>
@@ -447,7 +448,7 @@ const Workout = () => {
               <div className="relative w-full md:w-1/3">
                 <button 
                   type="button" 
-                  className="w-full p-3 bg-[#121212] text-white border border-gray-600 rounded-xl text-left flex justify-between items-center"
+                  className="w-full p-3 bg-[#1E1E1E] text-white border border-gray-600 rounded-xl text-left flex justify-between items-center"
                   onClick={() => toggleDropdown('muscleGroup')}
                 >
                   <span>{selectedMuscleGroup}</span>
@@ -472,7 +473,7 @@ const Workout = () => {
               <div className="relative w-full md:w-1/3">
                 <button 
                   type="button" 
-                  className="w-full p-3 bg-[#121212] text-white border border-gray-600 rounded-xl text-left flex justify-between items-center"
+                  className="w-full p-3 bg-[#1E1E1E] text-white border border-gray-600 rounded-xl text-left flex justify-between items-center"
                   onClick={() => toggleDropdown('subgroup')}
                 >
                   <span>{selectedSubgroup}</span>
@@ -497,7 +498,7 @@ const Workout = () => {
               <div className="relative w-full md:w-1/3">
                 <button 
                   type="button" 
-                  className="w-full p-3 bg-[#121212] text-white border border-gray-600 rounded-xl text-left flex justify-between items-center"
+                  className="w-full p-3 bg-[#1E1E1E] text-white border border-gray-600 rounded-xl text-left flex justify-between items-center"
                   onClick={() => toggleDropdown('exercise')}
                 >
                   <span>{selectedExercise}</span>

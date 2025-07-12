@@ -45,7 +45,7 @@ const Login = () => {
               value={formData.email}
               onChange={handleInputChange}
               placeholder="you@example.com" 
-              className="w-full p-3 rounded-xl bg-[#121212] text-white placeholder-gray-500 border border-gray-600 focus:outline-none" 
+                              className="w-full p-3 rounded-xl bg-[#1E1E1E] text-white placeholder-gray-500 border border-gray-600 focus:outline-none" 
               required
             />
           </div>
@@ -58,7 +58,7 @@ const Login = () => {
                 value={formData.password}
                 onChange={handleInputChange}
                 placeholder="Password"
-                className="w-full p-3 pr-12 rounded-xl bg-[#121212] text-white placeholder-gray-500 border border-gray-600 focus:outline-none" 
+                className="w-full p-3 pr-12 rounded-xl bg-[#1E1E1E] text-white placeholder-gray-500 border border-gray-600 focus:outline-none" 
                 required
               />
               <button 

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
+import FitLifeLogo from '../components/FitLifeLogo';
 
 const Profile = () => {
   const [activeTab, setActiveTab] = useState('overview');
@@ -44,12 +45,24 @@ const Profile = () => {
     console.log('Diet goal set to:', goal);
   };
 
+  const weekDays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+  const [assigned, setAssigned] = useState({
+    Mon: ['Chest'],
+    Tue: ['Back'],
+    Wed: ['Legs'],
+    Thu: ['Arms'],
+    Fri: ['Shoulders'],
+    Sat: ['Core'],
+    Sun: ['Cardio'],
+  });
+  const [draggedPart, setDraggedPart] = useState(null);
+
   return (
     <div className="bg-[#121212] text-white font-sans">
       {/* Navigation Bar */}
       <header className="flex items-center justify-between px-6 sm:px-10 py-4 bg-[#1E1E1E] shadow-md sticky top-0 z-50 rounded-b-xl">
         <div className="flex items-center space-x-3">
-          <Link to="/" className="text-3xl font-extrabold bg-gradient-to-r from-[#62E0A1] to-[#36CFFF] text-transparent bg-clip-text drop-shadow-md tracking-wider animate-pulse">FitLife</Link>
+          <FitLifeLogo />
         </div>
         <nav className="space-x-6 text-lg">
           <Link to="/" className="hover:text-[#62E0A1] transition">Home</Link>
@@ -402,64 +415,240 @@ const Profile = () => {
           )}
 
           {activeTab === 'workout' && (
-            <div className="bg-[#121212] rounded-2xl p-6">
-              <h3 className="text-xl font-bold text-white mb-6">Weekly Workout Plan</h3>
-              <div className="grid md:grid-cols-2 gap-6">
-                {/* Example workout plan for each day */}
-                <div className="bg-[#1E1E1E] rounded-lg p-4 mb-4">
-                  <h4 className="text-lg font-semibold text-[#62E0A1] mb-2">Monday</h4>
-                  <ul className="list-disc list-inside text-gray-300 text-sm space-y-1">
-                    <li>Chest: Bench Press, Push Ups</li>
-                    <li>Triceps: Tricep Dips</li>
-                    <li>Cardio: 20 min HIIT</li>
-                  </ul>
+            <div className="grid md:grid-cols-3 gap-6">
+              <div className="bg-[#121212] rounded-2xl p-6">
+                <h3 className="text-lg font-bold text-white mb-4">Weekly Workout Plan</h3>
+                <div className="space-y-3">
+                  {weekDays.map(day => (
+                    <div key={day} className="flex justify-between items-center">
+                      <span className="text-gray-400">{day}</span>
+                      <div
+                        className="flex-1 flex gap-1 justify-end min-h-[28px]"
+                        onDrop={e => {
+                          e.preventDefault();
+                          if (
+                            draggedPart &&
+                            (!assigned[day].includes(draggedPart)) &&
+                            assigned[day].length < 3
+                          ) {
+                            // Remove draggedPart from its previous day
+                            const prevDay = weekDays.find(d => assigned[d].includes(draggedPart));
+                            setAssigned(prev => ({
+                              ...prev,
+                              [prevDay]: prev[prevDay].filter(p => p !== draggedPart),
+                              [day]: [...prev[day], draggedPart],
+                            }));
+                          }
+                          setDraggedPart(null);
+                        }}
+                        onDragOver={e => {
+                          if (assigned[day].length < 3) e.preventDefault();
+                        }}
+                      >
+                        {assigned[day].map(part => (
+                          <div
+                            key={part}
+                            draggable
+                            onDragStart={() => setDraggedPart(part)}
+                            className="px-2 py-1 rounded bg-gray-700/50 border border-gray-500 text-gray-300 text-xs font-semibold cursor-grab select-none transition hover:bg-gray-600/50"
+                            style={{ minWidth: 48, textAlign: 'center', backdropFilter: 'blur(2px)' }}
+                          >
+                            {part}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
                 </div>
-                <div className="bg-[#1E1E1E] rounded-lg p-4 mb-4">
-                  <h4 className="text-lg font-semibold text-[#36CFFF] mb-2">Tuesday</h4>
-                  <ul className="list-disc list-inside text-gray-300 text-sm space-y-1">
-                    <li>Back: Pull Ups, Deadlifts</li>
-                    <li>Biceps: Dumbbell Curls</li>
-                    <li>Core: Plank, Russian Twists</li>
-                  </ul>
+                <p className="text-xs text-gray-400 mt-2 text-center">Drag a tag to another day to move it (max 3 per day).</p>
+              </div>
+
+              <div className="bg-[#121212] rounded-2xl p-6">
+                <h3 className="text-lg font-bold text-white mb-4">🏆 Hidden Achievements</h3>
+                <div className="space-y-3 max-h-64 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-gray-800">
+                  <div className="bg-gradient-to-r from-[#62E0A1] to-[#36CFFF] p-3 rounded-lg">
+                    <div className="flex items-center space-x-2">
+                      <div className="bg-white/20 rounded-full p-2">
+                        <i className="fas fa-fire text-white text-sm"></i>
+                      </div>
+                      <div>
+                        <p className="text-white font-semibold text-sm">7-Day Streak</p>
+                        <p className="text-white/80 text-xs">Unlocked 2 days ago</p>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="bg-gradient-to-r from-[#F2B33D] to-[#FF6B6B] p-3 rounded-lg">
+                    <div className="flex items-center space-x-2">
+                      <div className="bg-white/20 rounded-full p-2">
+                        <i className="fas fa-dumbbell text-white text-sm"></i>
+                      </div>
+                      <div>
+                        <p className="text-white font-semibold text-sm">First 100kg Bench</p>
+                        <p className="text-white/80 text-xs">Unlocked 1 week ago</p>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="bg-gradient-to-r from-[#36CFFF] to-[#62E0A1] p-3 rounded-lg">
+                    <div className="flex items-center space-x-2">
+                      <div className="bg-white/20 rounded-full p-2">
+                        <i className="fas fa-running text-white text-sm"></i>
+                      </div>
+                      <div>
+                        <p className="text-white font-semibold text-sm">5K Under 25min</p>
+                        <p className="text-white/80 text-xs">Unlocked 3 days ago</p>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="bg-gradient-to-r from-[#FF6B6B] to-[#F2B33D] p-3 rounded-lg opacity-60">
+                    <div className="flex items-center space-x-2">
+                      <div className="bg-white/20 rounded-full p-2">
+                        <i className="fas fa-trophy text-white text-sm"></i>
+                      </div>
+                      <div>
+                        <p className="text-white font-semibold text-sm">30-Day Challenge</p>
+                        <p className="text-white/80 text-xs">15/30 days completed</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="bg-gradient-to-r from-[#9B59B6] to-[#E74C3C] p-3 rounded-lg">
+                    <div className="flex items-center space-x-2">
+                      <div className="bg-white/20 rounded-full p-2">
+                        <i className="fas fa-medal text-white text-sm"></i>
+                      </div>
+                      <div>
+                        <p className="text-white font-semibold text-sm">Perfect Form Master</p>
+                        <p className="text-white/80 text-xs">Unlocked 5 days ago</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="bg-gradient-to-r from-[#2ECC71] to-[#3498DB] p-3 rounded-lg">
+                    <div className="flex items-center space-x-2">
+                      <div className="bg-white/20 rounded-full p-2">
+                        <i className="fas fa-clock text-white text-sm"></i>
+                      </div>
+                      <div>
+                        <p className="text-white font-semibold text-sm">Early Bird</p>
+                        <p className="text-white/80 text-xs">Unlocked 1 week ago</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="bg-gradient-to-r from-[#E67E22] to-[#F39C12] p-3 rounded-lg">
+                    <div className="flex items-center space-x-2">
+                      <div className="bg-white/20 rounded-full p-2">
+                        <i className="fas fa-heartbeat text-white text-sm"></i>
+                      </div>
+                      <div>
+                        <p className="text-white font-semibold text-sm">Cardio King</p>
+                        <p className="text-white/80 text-xs">Unlocked 2 weeks ago</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="bg-gradient-to-r from-[#1ABC9C] to-[#16A085] p-3 rounded-lg">
+                    <div className="flex items-center space-x-2">
+                      <div className="bg-white/20 rounded-full p-2">
+                        <i className="fas fa-leaf text-white text-sm"></i>
+                      </div>
+                      <div>
+                        <p className="text-white font-semibold text-sm">Nutrition Guru</p>
+                        <p className="text-white/80 text-xs">Unlocked 3 weeks ago</p>
+                      </div>
+                    </div>
+                  </div>
                 </div>
-                <div className="bg-[#1E1E1E] rounded-lg p-4 mb-4">
-                  <h4 className="text-lg font-semibold text-[#F2B33D] mb-2">Wednesday</h4>
-                  <ul className="list-disc list-inside text-gray-300 text-sm space-y-1">
-                    <li>Legs: Squats, Lunges</li>
-                    <li>Glutes: Hip Thrusts</li>
-                    <li>Cardio: 30 min Cycling</li>
-                  </ul>
+                <p className="text-xs text-gray-400 mt-2 text-center">Complete challenges to unlock more achievements!</p>
+              </div>
+
+              <div className="bg-[#121212] rounded-2xl p-6">
+                <h3 className="text-lg font-bold text-white mb-4">🎯 Next Milestones</h3>
+                <div className="space-y-3 max-h-64 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-gray-800">
+                  <div className="flex items-center space-x-3">
+                    <div className="w-8 h-8 bg-[#62E0A1] rounded-full flex items-center justify-center">
+                      <i className="fas fa-target text-black text-xs"></i>
+                    </div>
+                    <div>
+                      <p className="text-white font-semibold text-sm">10-Day Streak</p>
+                      <p className="text-gray-400 text-xs">3 more days to go</p>
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-center space-x-3">
+                    <div className="w-8 h-8 bg-[#36CFFF] rounded-full flex items-center justify-center">
+                      <i className="fas fa-weight text-black text-xs"></i>
+                    </div>
+                    <div>
+                      <p className="text-white font-semibold text-sm">120kg Deadlift</p>
+                      <p className="text-gray-400 text-xs">5kg more to lift</p>
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-center space-x-3">
+                    <div className="w-8 h-8 bg-[#F2B33D] rounded-full flex items-center justify-center">
+                      <i className="fas fa-heart text-black text-xs"></i>
+                    </div>
+                    <div>
+                      <p className="text-white font-semibold text-sm">Rest Day Master</p>
+                      <p className="text-gray-400 text-xs">Take 2 rest days this week</p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center space-x-3 opacity-60">
+                    <div className="w-8 h-8 bg-gray-600 rounded-full flex items-center justify-center">
+                      <i className="fas fa-question text-gray-400 text-xs"></i>
+                    </div>
+                    <div>
+                      <p className="text-gray-400 font-semibold text-sm">???</p>
+                      <p className="text-gray-500 text-xs">Try different workouts to unlock</p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center space-x-3 opacity-60">
+                    <div className="w-8 h-8 bg-gray-600 rounded-full flex items-center justify-center">
+                      <i className="fas fa-question text-gray-400 text-xs"></i>
+                    </div>
+                    <div>
+                      <p className="text-gray-400 font-semibold text-sm">???</p>
+                      <p className="text-gray-500 text-xs">Complete cardio challenges</p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center space-x-3 opacity-60">
+                    <div className="w-8 h-8 bg-gray-600 rounded-full flex items-center justify-center">
+                      <i className="fas fa-question text-gray-400 text-xs"></i>
+                    </div>
+                    <div>
+                      <p className="text-gray-400 font-semibold text-sm">???</p>
+                      <p className="text-gray-500 text-xs">Focus on nutrition goals</p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center space-x-3 opacity-60">
+                    <div className="w-8 h-8 bg-gray-600 rounded-full flex items-center justify-center">
+                      <i className="fas fa-question text-gray-400 text-xs"></i>
+                    </div>
+                    <div>
+                      <p className="text-gray-400 font-semibold text-sm">???</p>
+                      <p className="text-gray-500 text-xs">Try morning workouts</p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center space-x-3 opacity-60">
+                    <div className="w-8 h-8 bg-gray-600 rounded-full flex items-center justify-center">
+                      <i className="fas fa-question text-gray-400 text-xs"></i>
+                    </div>
+                    <div>
+                      <p className="text-gray-400 font-semibold text-sm">???</p>
+                      <p className="text-gray-500 text-xs">Improve form and technique</p>
+                    </div>
+                  </div>
                 </div>
-                <div className="bg-[#1E1E1E] rounded-lg p-4 mb-4">
-                  <h4 className="text-lg font-semibold text-[#62E0A1] mb-2">Thursday</h4>
-                  <ul className="list-disc list-inside text-gray-300 text-sm space-y-1">
-                    <li>Shoulders: Overhead Press</li>
-                    <li>Arms: Hammer Curls</li>
-                    <li>Core: Leg Raises</li>
-                  </ul>
-                </div>
-                <div className="bg-[#1E1E1E] rounded-lg p-4 mb-4">
-                  <h4 className="text-lg font-semibold text-[#36CFFF] mb-2">Friday</h4>
-                  <ul className="list-disc list-inside text-gray-300 text-sm space-y-1">
-                    <li>Full Body: Burpees, Mountain Climbers</li>
-                    <li>Mobility: Stretching</li>
-                    <li>Cardio: 20 min Jog</li>
-                  </ul>
-                </div>
-                <div className="bg-[#1E1E1E] rounded-lg p-4 mb-4">
-                  <h4 className="text-lg font-semibold text-[#F2B33D] mb-2">Saturday</h4>
-                  <ul className="list-disc list-inside text-gray-300 text-sm space-y-1">
-                    <li>Active Recovery: Yoga, Foam Rolling</li>
-                    <li>Light Cardio: Walking</li>
-                  </ul>
-                </div>
-                <div className="bg-[#1E1E1E] rounded-lg p-4 mb-4">
-                  <h4 className="text-lg font-semibold text-[#62E0A1] mb-2">Sunday</h4>
-                  <ul className="list-disc list-inside text-gray-300 text-sm space-y-1">
-                    <li>Rest Day</li>
-                    <li>Optional: Meditation</li>
-                  </ul>
-                </div>
+                <p className="text-xs text-gray-400 mt-2 text-center">Keep pushing to unlock these achievements!</p>
               </div>
             </div>
           )}
