@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
+import '@fortawesome/fontawesome-free/css/all.min.css';
 
 const Profile = () => {
   const [activeTab, setActiveTab] = useState('overview');
@@ -495,4 +496,4 @@ const Profile = () => {
   );
 };
 
-export default Profile; 
+export default Profile;

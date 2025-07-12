@@ -325,10 +325,10 @@ const HomePage = () => {
         <div>
           <h4 className="text-white font-bold mb-2">Connect</h4>
           <div className="space-x-3 text-lg">
-            <a href="#"><img src="/images/icons8-instagram-50.png" alt="Instagram" className="inline w-6 h-6 rounded hover:scale-110 transition" /></a>
-            <a href="#"><img src="/images/icons8-youtube-50.png" alt="YouTube" className="inline w-6 h-6 rounded hover:scale-110 transition" /></a>
-            <a href="#"><img src="/images/icons8-x-30.png" alt="X" className="inline w-6 h-6 rounded hover:scale-110 transition" /></a>
-            <a href="#"><img src="/images/icons8-mail-50.png" alt="Mail" className="inline w-6 h-6 rounded hover:scale-110 transition" /></a>
+            <a href="#"><img src="../assets/images/icons8-instagram-50.png" alt="Instagram" className="inline w-6 h-6 rounded hover:scale-110 transition" /></a>
+            <a href="#"><img src="../assets/images/icons8-youtube-50.png" alt="YouTube" className="inline w-6 h-6 rounded hover:scale-110 transition" /></a>
+            <a href="#"><img src="../assets/images/icons8-x-30.png" alt="X" className="inline w-6 h-6 rounded hover:scale-110 transition" /></a>
+            <a href="#"><img src="../assets/images/icons8-mail-50.png" alt="Mail" className="inline w-6 h-6 rounded hover:scale-110 transition" /></a>
           </div>
         </div>
         <div>
