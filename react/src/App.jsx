@@ -37,7 +37,6 @@ function App() {
           <Route path="/home" element={<HomePage />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
-          <Route path="/welcome" element={<Welcome />} />
           <Route path="/contact" element={<Contact />} />
           <Route path="/ai-companion" element={<AICompanion />} />
           <Route path="/profile" element={<Profile />} />
