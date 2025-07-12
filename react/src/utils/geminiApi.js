@@ -405,3 +405,164 @@ Format as JSON:
     throw error;
   }
 };
+
+export const getFitnessChat = async (userMessage, conversationHistory = []) => {
+  // Build conversation context
+  let conversationContext = '';
+  if (conversationHistory.length > 0) {
+    conversationContext = '\n\nPrevious conversation:\n' + 
+      conversationHistory.slice(-6).map(msg => `${msg.sender === 'user' ? 'User' : 'Assistant'}: ${msg.content}`).join('\n');
+  }
+
+  const prompt = `You are FitLife AI, a knowledgeable and supportive fitness companion. You specialize in:
+- Workout routines and exercise form
+- Nutrition and meal planning
+- Weight loss and muscle building strategies
+- Injury prevention and recovery
+- Motivation and accountability
+- Fitness equipment recommendations
+- Health and wellness tips
+
+Guidelines for responses:
+1. Be encouraging and supportive
+2. Provide practical, actionable advice
+3. Always emphasize safety and proper form
+4. Ask follow-up questions to better understand user needs
+5. Suggest modifications for different fitness levels
+6. Reference scientific principles when relevant
+7. Keep responses conversational but informative
+8. If asked about medical conditions, advise consulting healthcare professionals
+
+Current user message: "${userMessage}"
+${conversationContext}
+
+Respond as FitLife AI in a friendly, knowledgeable manner. Keep responses concise but helpful (max 200 words unless detailed instructions are requested).`;
+
+  try {
+    const response = await fetch(GEMINI_API_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-goog-api-key': GEMINI_API_KEY,
+      },
+      body: JSON.stringify({
+        contents: [
+          {
+            parts: [
+              {
+                text: prompt
+              }
+            ]
+          }
+        ],
+        generationConfig: {
+          temperature: 0.7,
+          topK: 40,
+          topP: 0.95,
+          maxOutputTokens: 1024,
+        }
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`API request failed: ${response.status}`);
+    }
+
+    const data = await response.json();
+    const generatedText = data.candidates[0].content.parts[0].text;
+    
+    return {
+      success: true,
+      response: generatedText.trim()
+    };
+
+  } catch (error) {
+    console.error('Error getting fitness chat response:', error);
+    return {
+      success: false,
+      error: error.message,
+      response: "I'm having trouble connecting right now. Please try again in a moment!"
+    };
+  }
+};
+
+export const analyzeWorkoutImage = async (imageBase64) => {
+  const prompt = `Analyze this workout/exercise image and provide feedback. Look for:
+1. Exercise form and technique
+2. Identify the exercise being performed
+3. Suggest improvements if any
+4. Safety considerations
+5. Target muscles being worked
+
+Return a JSON object with:
+{
+  "exerciseIdentified": "name of exercise",
+  "formAnalysis": "analysis of form and technique",
+  "improvements": ["suggestion1", "suggestion2"],
+  "targetMuscles": ["muscle1", "muscle2"],
+  "safetyTips": ["tip1", "tip2"],
+  "overallRating": "Good/Needs Improvement/Excellent"
+}`;
+
+  try {
+    const response = await fetch(GEMINI_API_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-goog-api-key': GEMINI_API_KEY,
+      },
+      body: JSON.stringify({
+        contents: [
+          {
+            parts: [
+              {
+                text: prompt
+              },
+              {
+                inline_data: {
+                  mime_type: "image/jpeg",
+                  data: imageBase64
+                }
+              }
+            ]
+          }
+        ],
+        generationConfig: {
+          temperature: 0.4,
+          topK: 32,
+          topP: 0.95,
+          maxOutputTokens: 1024,
+        }
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`API request failed: ${response.status}`);
+    }
+
+    const data = await response.json();
+    const generatedText = data.candidates[0].content.parts[0].text;
+    
+    try {
+      const jsonMatch = generatedText.match(/\{[\s\S]*\}/);
+      if (jsonMatch) {
+        return JSON.parse(jsonMatch[0]);
+      }
+    } catch {
+      console.warn('Could not parse JSON from workout image analysis');
+    }
+    
+    return {
+      exerciseIdentified: "Exercise detected",
+      formAnalysis: "Form analysis available",
+      improvements: ["Keep working on your form"],
+      targetMuscles: ["Multiple muscle groups"],
+      safetyTips: ["Focus on proper form", "Start with lighter weights"],
+      overallRating: "Good"
+    };
+
+  } catch (error) {
+    console.error('Error analyzing workout image:', error);
+    throw error;
+  }
+};
