@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
+import contactImage from '../assets/images/m.png';
 
 const Contact = () => {
   const [formData, setFormData] = useState({
@@ -40,14 +41,14 @@ const Contact = () => {
       </header>
 
       <div className="relative max-w-7xl mx-auto w-full px-6 sm:px-10 lg:px-16 py-10 sm:py-16 bg-[#1e1e1e] rounded-[32px] overflow-visible mt-6">
-        <div className="absolute -bottom-20 -right-20 w-72 h-72 bg-[#1e1e1e] rounded-[64px] overflow-hidden flex items-center justify-center">
-          <img 
-            src="/images/m.png"
-            alt="Contact Agent Sticker"
-            className="w-56 h-56 object-contain opacity-90 drop-shadow-lg"
-            style={{ filter: 'grayscale(0.5) brightness(0.) contrast(1.5)' }}
-          />
-        </div>
+                  <div className="absolute -bottom-20 -right-20 w-72 h-72 bg-[#1e1e1e] rounded-[64px] overflow-hidden flex items-center justify-center">
+            <img 
+              src={contactImage}
+              alt="Contact Agent Sticker"
+              className="w-56 h-56 object-contain opacity-90 drop-shadow-lg"
+              style={{ filter: 'grayscale(0.5) brightness(0.) contrast(1.5)' }}
+            />
+          </div>
 
         <main className="max-w-4xl mx-auto text-center mb-12 sm:mb-16">
           <h1 className="text-2xl sm:text-3xl font-extrabold text-white mb-2">Get In Touch</h1>
@@ -79,7 +80,9 @@ const Contact = () => {
                 <div>New York, USA</div>
               </li>
             </ul>
-            <img className="absolute bottom-0 right-0 rounded-full opacity-30 w-28 h-28" src="https://storage.googleapis.com/a1aa/image/4d92f2d6-e0f4-4b7c-9268-739ac2c1a17a.jpg" alt="" />
+            <div className="absolute bottom-0 right-0 rounded-full opacity-30 w-28 h-28 bg-[#24d0a4] flex items-center justify-center">
+              <i className="fas fa-user text-xl text-black"></i>
+            </div>
           </div>
 
           <form className="sm:w-2/3 p-6 sm:p-8 space-y-6 bg-[#222222] rounded-b-xl sm:rounded-r-xl sm:rounded-bl-none" onSubmit={handleSubmit}>

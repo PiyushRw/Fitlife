@@ -4,6 +4,10 @@ import image1 from '../assets/images/1.jpg';
 import image2 from '../assets/images/2.jpg';
 import image3 from '../assets/images/3.jpg';
 import heroImage from '../assets/images/Untitled design.png';
+import instagramIcon from '../assets/images/icons8-instagram-50.png';
+import youtubeIcon from '../assets/images/icons8-youtube-50.png';
+import xIcon from '../assets/images/icons8-x-30.png';
+import mailIcon from '../assets/images/icons8-mail-50.png';
 
 const HomePage = () => {
   const [currentTestimonial, setCurrentTestimonial] = useState(0);
@@ -324,12 +328,12 @@ const HomePage = () => {
         </div>
         <div>
           <h4 className="text-white font-bold mb-2">Connect</h4>
-          <div className="space-x-3 text-lg">
-            <a href="#"><img src="../assets/images/icons8-instagram-50.png" alt="Instagram" className="inline w-6 h-6 rounded hover:scale-110 transition" /></a>
-            <a href="#"><img src="../assets/images/icons8-youtube-50.png" alt="YouTube" className="inline w-6 h-6 rounded hover:scale-110 transition" /></a>
-            <a href="#"><img src="../assets/images/icons8-x-30.png" alt="X" className="inline w-6 h-6 rounded hover:scale-110 transition" /></a>
-            <a href="#"><img src="../assets/images/icons8-mail-50.png" alt="Mail" className="inline w-6 h-6 rounded hover:scale-110 transition" /></a>
-          </div>
+                      <div className="space-x-3 text-lg">
+              <a href="#"><img src={instagramIcon} alt="Instagram" className="inline w-6 h-6 rounded hover:scale-110 transition" /></a>
+              <a href="#"><img src={youtubeIcon} alt="YouTube" className="inline w-6 h-6 rounded hover:scale-110 transition" /></a>
+              <a href="#"><img src={xIcon} alt="X" className="inline w-6 h-6 rounded hover:scale-110 transition" /></a>
+              <a href="#"><img src={mailIcon} alt="Mail" className="inline w-6 h-6 rounded hover:scale-110 transition" /></a>
+            </div>
         </div>
         <div>
           <h4 className="text-white font-bold mb-2">Contact</h4>
