@@ -1,213 +1,493 @@
-import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 const Onboarding = () => {
-  const [step, setStep] = useState(1);
+  const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState({
     name: '',
     age: '',
     weight: '',
     height: '',
-    fitnessGoal: '',
-    activityLevel: '',
-    dietaryRestrictions: []
+    goal: '',
+    healthFocus: '',
+    otherHealthFocus: '',
+    workoutType: '',
+    dietaryPreferences: '',
+    otherDietaryPreferences: ''
   });
+  const [errors, setErrors] = useState({});
+  const [dropdownValues, setDropdownValues] = useState({});
+  const [openDropdown, setOpenDropdown] = useState(null);
+  const [showOverview, setShowOverview] = useState(false);
+  const [countdown, setCountdown] = useState(3);
   const navigate = useNavigate();
+
+  // Close dropdowns when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (!event.target.closest('.dropdown-container')) {
+        setOpenDropdown(null);
+      }
+    };
+
+    document.addEventListener('click', handleClickOutside);
+    return () => document.removeEventListener('click', handleClickOutside);
+  }, []);
+
+  // Countdown timer for overview
+  useEffect(() => {
+    if (showOverview && countdown > 0) {
+      const timer = setTimeout(() => setCountdown(countdown - 1), 1000);
+      return () => clearTimeout(timer);
+    } else if (showOverview && countdown === 0) {
+      setTimeout(() => {
+        navigate('/profile');
+      }, 1000);
+    }
+  }, [showOverview, countdown, navigate]);
+
+  const isSenior = () => {
+    return dropdownValues.age === "46–60" || dropdownValues.age === "60+";
+  };
+
+  const getProgressPercentage = () => {
+    const senior = isSenior();
+    if (senior) {
+      // 5 steps: 1,2,3(senior),4,5
+      if (currentStep === 1) return 0;
+      else if (currentStep === 2) return 20;
+      else if (currentStep === 3) return 40;
+      else if (currentStep === 4) return 60;
+      else if (currentStep === 5) return 80;
+    } else {
+      // 4 steps: 1,2,4,5
+      if (currentStep === 1) return 0;
+      else if (currentStep === 2) return 25;
+      else if (currentStep === 4) return 50;
+      else if (currentStep === 5) return 75;
+    }
+    return 100;
+  };
+
+  const toggleDropdown = (id) => {
+    setOpenDropdown(openDropdown === id ? null : id);
+  };
+
+  const selectDropdownOption = (id, value) => {
+    setDropdownValues(prev => ({ ...prev, [id]: value }));
+    setOpenDropdown(null);
+    setErrors(prev => ({ ...prev, [id]: '' }));
+    
+    // Handle "Other" options
+    if (id === 'healthFocus' && value === 'Other') {
+      setFormData(prev => ({ ...prev, otherHealthFocus: '' }));
+    }
+    if (id === 'dietaryPreferences' && value === 'Other') {
+      setFormData(prev => ({ ...prev, otherDietaryPreferences: '' }));
+    }
+  };
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
+    setFormData(prev => ({ ...prev, [name]: value }));
+    setErrors(prev => ({ ...prev, [name]: '' }));
   };
 
-  const handleNext = () => {
-    if (step < 4) {
-      setStep(step + 1);
-    } else {
-      // Complete onboarding and redirect to home
-      navigate('/home');
+  const validateStep1 = () => {
+    const newErrors = {};
+    
+    if (!formData.name.trim()) {
+      newErrors.name = "Name is required";
+    }
+    
+    if (!dropdownValues.age) {
+      newErrors.age = "Please select your age range";
+    }
+    
+    if (!formData.weight) {
+      newErrors.weight = "Weight is required";
+    } else if (formData.weight < 20 || formData.weight > 300) {
+      newErrors.weight = "Please enter a valid weight (20-300 kg)";
+    }
+    
+    if (!formData.height) {
+      newErrors.height = "Height is required";
+    } else if (formData.height < 100 || formData.height > 250) {
+      newErrors.height = "Please enter a valid height (100-250 cm)";
+    }
+    
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const validateStep2 = () => {
+    if (!dropdownValues.goal) {
+      setErrors(prev => ({ ...prev, goal: "Please select your primary goal" }));
+      return false;
+    }
+    setErrors(prev => ({ ...prev, goal: '' }));
+    return true;
+  };
+
+  const validateSeniorExtra = () => {
+    if (!dropdownValues.healthFocus) {
+      setErrors(prev => ({ ...prev, healthFocus: "Please select a health focus" }));
+      return false;
+    }
+    
+    if (dropdownValues.healthFocus === "Other" && !formData.otherHealthFocus.trim()) {
+      setErrors(prev => ({ ...prev, otherHealthFocus: "Please specify your health concern" }));
+      return false;
+    }
+    
+    setErrors(prev => ({ ...prev, healthFocus: '', otherHealthFocus: '' }));
+    return true;
+  };
+
+  const validateStep3 = () => {
+    if (!dropdownValues.workoutType) {
+      setErrors(prev => ({ ...prev, workoutType: "Please select your preferred workout type" }));
+      return false;
+    }
+    setErrors(prev => ({ ...prev, workoutType: '' }));
+    return true;
+  };
+
+  const validateStep4 = () => {
+    if (!dropdownValues.dietaryPreferences) {
+      setErrors(prev => ({ ...prev, dietaryPreferences: "Please select your dietary preference" }));
+      return false;
+    }
+    
+    if (dropdownValues.dietaryPreferences === "Other" && !formData.otherDietaryPreferences.trim()) {
+      setErrors(prev => ({ ...prev, otherDietaryPreferences: "Please specify your dietary preference" }));
+      return false;
+    }
+    
+    setErrors(prev => ({ ...prev, dietaryPreferences: '', otherDietaryPreferences: '' }));
+    return true;
+  };
+
+  const nextStep = () => {
+    let isValid = false;
+
+    if (currentStep === 1) {
+      isValid = validateStep1();
+    } else if (currentStep === 2) {
+      isValid = validateStep2();
+    } else if (currentStep === 3) {
+      isValid = validateSeniorExtra();
+    } else if (currentStep === 4) {
+      isValid = validateStep3();
+    } else if (currentStep === 5) {
+      isValid = validateStep4();
+    }
+
+    if (!isValid) return;
+
+    const senior = isSenior();
+    if (currentStep === 1) {
+      setCurrentStep(2);
+    } else if (currentStep === 2) {
+      if (senior) {
+        setCurrentStep(3);
+      } else {
+        setCurrentStep(4);
+      }
+    } else if (currentStep === 3) {
+      setCurrentStep(4);
+    } else if (currentStep === 4) {
+      setCurrentStep(5);
     }
   };
 
-  const handleBack = () => {
-    if (step > 1) {
-      setStep(step - 1);
+  const previousStep = () => {
+    const senior = isSenior();
+    if (currentStep === 2) {
+      setCurrentStep(1);
+    } else if (currentStep === 3) {
+      setCurrentStep(2);
+    } else if (currentStep === 4) {
+      if (senior) {
+        setCurrentStep(3);
+      } else {
+        setCurrentStep(2);
+      }
+    } else if (currentStep === 5) {
+      setCurrentStep(4);
     }
   };
+
+  const finish = () => {
+    if (!validateStep4()) return;
+    
+    // Save data to localStorage
+    const userData = {
+      ...formData,
+      ...dropdownValues
+    };
+    localStorage.setItem('fitlife_user', JSON.stringify(userData));
+    
+    // Show overview with countdown
+    setShowOverview(true);
+  };
+
+  const renderDropdown = (id, options, placeholder) => (
+    <div className="dropdown-container relative">
+      <button
+        type="button"
+        className="dropdown-button w-full p-3 bg-[#121212] text-white border border-gray-600 rounded-xl text-left cursor-pointer flex justify-between items-center hover:bg-[#1a1a1a] transition focus:outline-none focus:border-[#62E0A1]"
+        onClick={() => toggleDropdown(id)}
+      >
+        <span>{dropdownValues[id] || placeholder}</span>
+        <span className="text-gray-400">⌄</span>
+      </button>
+      {openDropdown === id && (
+        <div className="dropdown-options absolute top-full left-0 right-0 bg-[#1e1e1e] border border-gray-600 rounded-xl mt-1 max-h-48 overflow-y-auto z-50 shadow-lg">
+          {options.map((option) => (
+            <div
+              key={option}
+              className="dropdown-option p-3 cursor-pointer border-radius-0.5rem mx-1 my-0.5 transition hover:bg-[#2a2a2a]"
+              onClick={() => selectDropdownOption(id, option)}
+            >
+              {option}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
 
   const renderStep = () => {
-    switch (step) {
+    switch (currentStep) {
       case 1:
         return (
           <div className="space-y-6">
-            <h2 className="text-2xl font-bold text-[#62E0A1]">Welcome to FitLife!</h2>
-            <p className="text-gray-300">Let's personalize your fitness journey. First, tell us about yourself.</p>
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">Full Name</label>
-                <input
-                  type="text"
-                  name="name"
-                  value={formData.name}
-                  onChange={handleInputChange}
-                  className="w-full px-4 py-3 bg-[#1E1E1E] border border-gray-600 rounded-lg text-white focus:border-[#62E0A1] focus:outline-none"
-                  placeholder="Enter your full name"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">Age</label>
-                <input
-                  type="number"
-                  name="age"
-                  value={formData.age}
-                  onChange={handleInputChange}
-                  className="w-full px-4 py-3 bg-[#1E1E1E] border border-gray-600 rounded-lg text-white focus:border-[#62E0A1] focus:outline-none"
-                  placeholder="Enter your age"
-                />
-              </div>
+            <div>
+              <label className="block mb-2 text-sm">What's your name?</label>
+              <input
+                type="text"
+                name="name"
+                value={formData.name}
+                onChange={handleInputChange}
+                className="w-full p-3 rounded-xl border border-gray-600 bg-[#121212] text-white focus:outline-none focus:border-[#62E0A1]"
+                placeholder="e.g. John"
+              />
+              {errors.name && <div className="error-message text-red-400 text-sm mt-1">{errors.name}</div>}
+            </div>
+
+            <div>
+              <label className="block mb-2 text-sm">Select your age range</label>
+              {renderDropdown('age', ['Under 18', '18–30', '31–45', '46–60', '60+'], 'Select age range')}
+              {errors.age && <div className="error-message text-red-400 text-sm mt-1">{errors.age}</div>}
+            </div>
+
+            <div>
+              <label className="block mb-2 text-sm">Your Weight (in kg)</label>
+              <input
+                type="number"
+                name="weight"
+                value={formData.weight}
+                onChange={handleInputChange}
+                className="w-full p-3 rounded-xl border border-gray-600 bg-[#121212] text-white focus:outline-none focus:border-[#62E0A1]"
+                placeholder="e.g. 70"
+              />
+              {errors.weight && <div className="error-message text-red-400 text-sm mt-1">{errors.weight}</div>}
+            </div>
+
+            <div>
+              <label className="block mb-2 text-sm">Your Height (in cm)</label>
+              <input
+                type="number"
+                name="height"
+                value={formData.height}
+                onChange={handleInputChange}
+                className="w-full p-3 rounded-xl border border-gray-600 bg-[#121212] text-white focus:outline-none focus:border-[#62E0A1]"
+                placeholder="e.g. 175"
+              />
+              {errors.height && <div className="error-message text-red-400 text-sm mt-1">{errors.height}</div>}
             </div>
           </div>
         );
+
       case 2:
         return (
           <div className="space-y-6">
-            <h2 className="text-2xl font-bold text-[#62E0A1]">Body Metrics</h2>
-            <p className="text-gray-300">Help us understand your current fitness level.</p>
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">Weight (kg)</label>
-                <input
-                  type="number"
-                  name="weight"
-                  value={formData.weight}
-                  onChange={handleInputChange}
-                  className="w-full px-4 py-3 bg-[#1E1E1E] border border-gray-600 rounded-lg text-white focus:border-[#62E0A1] focus:outline-none"
-                  placeholder="Enter your weight"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">Height (cm)</label>
-                <input
-                  type="number"
-                  name="height"
-                  value={formData.height}
-                  onChange={handleInputChange}
-                  className="w-full px-4 py-3 bg-[#1E1E1E] border border-gray-600 rounded-lg text-white focus:border-[#62E0A1] focus:outline-none"
-                  placeholder="Enter your height"
-                />
-              </div>
+            <div>
+              <label className="block mb-2 text-sm">What's your primary goal?</label>
+              {renderDropdown('goal', ['Lose weight', 'Gain muscle', 'Improve flexibility', 'Stay active'], 'Select goal')}
+              {errors.goal && <div className="error-message text-red-400 text-sm mt-1">{errors.goal}</div>}
             </div>
           </div>
         );
+
       case 3:
         return (
           <div className="space-y-6">
-            <h2 className="text-2xl font-bold text-[#62E0A1]">Fitness Goals</h2>
-            <p className="text-gray-300">What do you want to achieve?</p>
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">Primary Goal</label>
-                <select
-                  name="fitnessGoal"
-                  value={formData.fitnessGoal}
-                  onChange={handleInputChange}
-                  className="w-full px-4 py-3 bg-[#1E1E1E] border border-gray-600 rounded-lg text-white focus:border-[#62E0A1] focus:outline-none"
-                >
-                  <option value="">Select your goal</option>
-                  <option value="weight-loss">Weight Loss</option>
-                  <option value="muscle-gain">Muscle Gain</option>
-                  <option value="endurance">Improve Endurance</option>
-                  <option value="flexibility">Increase Flexibility</option>
-                  <option value="general-fitness">General Fitness</option>
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">Activity Level</label>
-                <select
-                  name="activityLevel"
-                  value={formData.activityLevel}
-                  onChange={handleInputChange}
-                  className="w-full px-4 py-3 bg-[#1E1E1E] border border-gray-600 rounded-lg text-white focus:border-[#62E0A1] focus:outline-none"
-                >
-                  <option value="">Select activity level</option>
-                  <option value="sedentary">Sedentary (Little to no exercise)</option>
-                  <option value="lightly-active">Lightly Active (1-3 days/week)</option>
-                  <option value="moderately-active">Moderately Active (3-5 days/week)</option>
-                  <option value="very-active">Very Active (6-7 days/week)</option>
-                  <option value="extremely-active">Extremely Active (Daily exercise)</option>
-                </select>
-              </div>
+            <div>
+              <label className="block mb-2 text-sm">Do you have concerns about any of the following?</label>
+              {renderDropdown('healthFocus', ['Bone strength', 'Eye health', 'Joint mobility', 'Cholesterol/Blood pressure', 'Other'], 'Select health focus')}
+              {errors.healthFocus && <div className="error-message text-red-400 text-sm mt-1">{errors.healthFocus}</div>}
             </div>
+
+            {dropdownValues.healthFocus === 'Other' && (
+              <div>
+                <input
+                  type="text"
+                  name="otherHealthFocus"
+                  value={formData.otherHealthFocus}
+                  onChange={handleInputChange}
+                  className="w-full p-3 rounded-xl border border-gray-600 bg-[#121212] text-white focus:outline-none focus:border-[#62E0A1]"
+                  placeholder="Please specify..."
+                />
+                {errors.otherHealthFocus && <div className="error-message text-red-400 text-sm mt-1">{errors.otherHealthFocus}</div>}
+              </div>
+            )}
           </div>
         );
+
       case 4:
         return (
           <div className="space-y-6">
-            <h2 className="text-2xl font-bold text-[#62E0A1]">Almost Done!</h2>
-            <p className="text-gray-300">Let's review your information and get you started.</p>
-            <div className="bg-[#1E1E1E] p-6 rounded-lg space-y-3">
-              <div className="flex justify-between">
-                <span className="text-gray-300">Name:</span>
-                <span className="text-white">{formData.name}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-gray-300">Age:</span>
-                <span className="text-white">{formData.age}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-gray-300">Goal:</span>
-                <span className="text-white">{formData.fitnessGoal}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-gray-300">Activity Level:</span>
-                <span className="text-white">{formData.activityLevel}</span>
-              </div>
+            <div>
+              <label className="block mb-2 text-sm">Preferred type of workout</label>
+              {renderDropdown('workoutType', ['Calisthenics', 'Yoga', 'Weight training', 'Mixed'], 'Select workout type')}
+              {errors.workoutType && <div className="error-message text-red-400 text-sm mt-1">{errors.workoutType}</div>}
             </div>
           </div>
         );
+
+      case 5:
+        return (
+          <div className="space-y-6">
+            <div>
+              <label className="block mb-2 text-sm">Any dietary preferences?</label>
+              {renderDropdown('dietaryPreferences', ['None', 'Vegetarian', 'Vegan', 'Gluten-free', 'Dairy-free', 'Low-carb', 'Keto', 'Other'], 'Select dietary preference')}
+              {errors.dietaryPreferences && <div className="error-message text-red-400 text-sm mt-1">{errors.dietaryPreferences}</div>}
+            </div>
+
+            {dropdownValues.dietaryPreferences === 'Other' && (
+              <div>
+                <input
+                  type="text"
+                  name="otherDietaryPreferences"
+                  value={formData.otherDietaryPreferences}
+                  onChange={handleInputChange}
+                  className="w-full p-3 rounded-xl border border-gray-600 bg-[#121212] text-white focus:outline-none focus:border-[#62E0A1]"
+                  placeholder="Please specify..."
+                />
+                {errors.otherDietaryPreferences && <div className="error-message text-red-400 text-sm mt-1">{errors.otherDietaryPreferences}</div>}
+              </div>
+            )}
+          </div>
+        );
+
       default:
         return null;
     }
   };
 
-  return (
-    <div className="bg-[#121212] text-white min-h-screen flex items-center justify-center p-6">
-      <div className="max-w-md w-full bg-[#1E1E1E] p-8 rounded-xl shadow-xl">
-        <div className="mb-8">
-          <div className="flex justify-between items-center mb-4">
-            <span className="text-sm text-gray-400">Step {step} of 4</span>
-            <div className="flex space-x-2">
-              {[1, 2, 3, 4].map((s) => (
-                <div
-                  key={s}
-                  className={`w-3 h-3 rounded-full ${
-                    s <= step ? 'bg-[#62E0A1]' : 'bg-gray-600'
-                  }`}
-                />
-              ))}
+  if (showOverview) {
+    return (
+      <div className="bg-[#121212] text-white min-h-screen flex items-center justify-center p-6">
+        <div className="w-full max-w-xl bg-[#1E1E1E] rounded-xl shadow-xl p-8 space-y-8">
+          <div className="text-center">
+            <h2 className="text-2xl font-bold text-[#62E0A1] mb-6">Profile Overview</h2>
+            <div className="bg-[#121212] rounded-xl p-6 space-y-4 text-left">
+              <div className="flex justify-between">
+                <span className="text-gray-400">Name:</span>
+                <span className="text-white font-medium">{formData.name}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-gray-400">Age Range:</span>
+                <span className="text-white font-medium">{dropdownValues.age}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-gray-400">Weight:</span>
+                <span className="text-white font-medium">{formData.weight} kg</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-gray-400">Height:</span>
+                <span className="text-white font-medium">{formData.height} cm</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-gray-400">Goal:</span>
+                <span className="text-white font-medium">{dropdownValues.goal}</span>
+              </div>
+              {isSenior() && (
+                <div className="flex justify-between">
+                  <span className="text-gray-400">Health Focus:</span>
+                  <span className="text-white font-medium">
+                    {dropdownValues.healthFocus === 'Other' ? formData.otherHealthFocus : dropdownValues.healthFocus}
+                  </span>
+                </div>
+              )}
+              <div className="flex justify-between">
+                <span className="text-gray-400">Workout Type:</span>
+                <span className="text-white font-medium">{dropdownValues.workoutType}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-gray-400">Dietary Preference:</span>
+                <span className="text-white font-medium">
+                  {dropdownValues.dietaryPreferences === 'Other' ? formData.otherDietaryPreferences : dropdownValues.dietaryPreferences}
+                </span>
+              </div>
+            </div>
+            <div className="mt-6">
+              <p className="text-gray-400 mb-2">Redirecting to your profile in:</p>
+              <div className="text-3xl font-bold text-[#62E0A1]">{countdown}</div>
             </div>
           </div>
         </div>
+      </div>
+    );
+  }
 
-        {renderStep()}
+  return (
+    <div className="bg-[#121212] text-white flex items-center justify-center min-h-screen font-sans px-4">
+      <div className="w-full max-w-xl bg-[#1E1E1E] rounded-xl shadow-xl p-8 space-y-8">
+        
+        {/* Progress Bar */}
+        <div className="w-full bg-gray-700 rounded-full h-2">
+          <div 
+            className="bg-[#62E0A1] h-2 rounded-full transition-all duration-300" 
+            style={{ width: `${getProgressPercentage()}%` }}
+          ></div>
+        </div>
 
-        <div className="flex justify-between mt-8">
-          {step > 1 && (
+        {/* Step Content */}
+        <div className="space-y-6">
+          {renderStep()}
+        </div>
+
+        {/* Navigation Buttons */}
+        <div className="flex justify-between mt-6">
+          {currentStep > 1 && (
             <button
-              onClick={handleBack}
-              className="px-6 py-3 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition"
+              type="button"
+              onClick={previousStep}
+              className="bg-gray-600 text-white px-6 py-2 rounded-full hover:bg-gray-500 transition"
             >
               Back
             </button>
           )}
-          <button
-            onClick={handleNext}
-            className="px-6 py-3 bg-[#62E0A1] text-black font-semibold rounded-lg hover:bg-[#4CAF50] transition ml-auto"
-          >
-            {step === 4 ? 'Get Started' : 'Next'}
-          </button>
+          {currentStep < 5 ? (
+            <button
+              type="button"
+              onClick={nextStep}
+              className="bg-[#F2B33D] text-black px-6 py-2 rounded-full hover:bg-yellow-400 transition ml-auto"
+            >
+              Next
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={finish}
+              className="bg-[#F2B33D] text-black px-6 py-2 rounded-full hover:bg-yellow-400 transition ml-auto"
+            >
+              Finish
+            </button>
+          )}
         </div>
       </div>
     </div>

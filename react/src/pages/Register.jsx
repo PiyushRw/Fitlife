@@ -70,7 +70,6 @@ const Register = () => {
                 name="password"
                 value={formData.password}
                 onChange={handleInputChange}
-                placeholder="••••••••" 
                 className="w-full p-3 pr-12 rounded-xl bg-[#121212] text-white placeholder-gray-500 border border-gray-600 focus:outline-none" 
                 required 
               />

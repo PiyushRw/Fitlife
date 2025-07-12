@@ -43,6 +43,31 @@ textarea:-webkit-autofill:active {
   transition: background-color 5000s ease-in-out 0s;
 }
 
+/* Remove spinner arrows from number inputs */
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+input[type="number"] {
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+
+/* Placeholder styling - make them greyish */
+input::placeholder,
+textarea::placeholder {
+  color: #9ca3af !important;
+  opacity: 0.7 !important;
+}
+
+/* Remove placeholders from password fields */
+input[type="password"]::placeholder {
+  color: transparent !important;
+  opacity: 0 !important;
+}
+
 /* Override any Tailwind classes */
 .bg-transparent {
   background-color: transparent !important;
