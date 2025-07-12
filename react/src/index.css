@@ -11,19 +11,18 @@ html, body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Prevent white backgrounds on input autofill and focus */
+/* Basic input styling */
 input, select, textarea {
   background-color: transparent !important;
   color: white !important;
-  -webkit-text-fill-color: white !important;
 }
 
 input:focus, select:focus, textarea:focus {
   background-color: transparent !important;
   color: white !important;
-  -webkit-text-fill-color: white !important;
 }
 
+/* Prevent white backgrounds on autofill */
 input:-webkit-autofill,
 input:-webkit-autofill:hover,
 input:-webkit-autofill:focus,
@@ -37,11 +36,21 @@ textarea:-webkit-autofill:hover,
 textarea:-webkit-autofill:focus,
 textarea:-webkit-autofill:active {
   -webkit-box-shadow: 0 0 0 30px transparent inset !important;
-  -webkit-text-fill-color: white !important;
   background-color: transparent !important;
   color: white !important;
-  transition: background-color 5000s ease-in-out 0s;
+  -webkit-text-fill-color: white !important;
 }
+
+/* Additional autofill prevention */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active {
+  transition: background-color 5000s ease-in-out 0s;
+  -webkit-text-fill-color: white !important;
+}
+
+
 
 /* Remove spinner arrows from number inputs */
 input[type="number"]::-webkit-outer-spin-button,
@@ -62,11 +71,13 @@ textarea::placeholder {
   opacity: 0.7 !important;
 }
 
-/* Remove placeholders from password fields */
+/* Ensure password placeholders are also greyish */
 input[type="password"]::placeholder {
-  color: transparent !important;
-  opacity: 0 !important;
+  color: #9ca3af !important;
+  opacity: 0.7 !important;
 }
+
+
 
 /* Override any Tailwind classes */
 .bg-transparent {
@@ -154,4 +165,70 @@ input[type="password"]::placeholder {
 /* Glow effect */
 .glow-icon {
   filter: drop-shadow(0 0 6px #62E0A1);
+}
+
+/* Ensure consistent dropdown styling */
+.dropdown-button {
+  background-color: #121212 !important;
+  color: white !important;
+  border-color: #4b5563 !important;
+}
+
+.dropdown-button:hover {
+  background-color: #1a1a1a !important;
+}
+
+.dropdown-button:focus {
+  background-color: #1a1a1a !important;
+  border-color: #62E0A1 !important;
+}
+
+/* Force consistent styling for all dropdown buttons */
+button.dropdown-button {
+  background-color: #121212 !important;
+  color: white !important;
+  border-color: #4b5563 !important;
+}
+
+button.dropdown-button:hover {
+  background-color: #1a1a1a !important;
+}
+
+button.dropdown-button:focus {
+  background-color: #1a1a1a !important;
+  border-color: #62E0A1 !important;
+}
+
+/* Override any potential autofill styling on dropdowns */
+.dropdown-button:-webkit-autofill,
+.dropdown-button:-webkit-autofill:hover,
+.dropdown-button:-webkit-autofill:focus,
+.dropdown-button:-webkit-autofill:active {
+  background-color: #121212 !important;
+  color: white !important;
+  border-color: #4b5563 !important;
+}
+
+/* Force all dropdown buttons to have identical styling */
+.dropdown-container button,
+.dropdown-container .dropdown-button,
+button[class*="dropdown"] {
+  background-color: #121212 !important;
+  color: white !important;
+  border-color: #4b5563 !important;
+  border-width: 1px !important;
+  border-style: solid !important;
+}
+
+.dropdown-container button:hover,
+.dropdown-container .dropdown-button:hover,
+button[class*="dropdown"]:hover {
+  background-color: #1a1a1a !important;
+}
+
+.dropdown-container button:focus,
+.dropdown-container .dropdown-button:focus,
+button[class*="dropdown"]:focus {
+  background-color: #1a1a1a !important;
+  border-color: #62E0A1 !important;
 }

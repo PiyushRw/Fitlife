@@ -234,14 +234,29 @@ const Onboarding = () => {
 
   const renderDropdown = (id, options, placeholder) => (
     <div className="dropdown-container relative">
-      <button
-        type="button"
-        className="dropdown-button w-full p-3 bg-[#121212] text-white border border-gray-600 rounded-xl text-left cursor-pointer flex justify-between items-center hover:bg-[#1a1a1a] transition focus:outline-none focus:border-[#62E0A1]"
+      <div
+        role="button"
+        tabIndex={0}
+        className="text-left cursor-pointer flex justify-between items-center transition"
         onClick={() => toggleDropdown(id)}
+        onKeyDown={e => (e.key === 'Enter' || e.key === ' ') && toggleDropdown(id)}
+        style={{
+          minHeight: '48px',
+          border: '1px solid #4b5563', // Tailwind border-gray-600
+          borderRadius: '0.75rem',     // Tailwind rounded-xl
+          padding: '0.75rem',          // Tailwind p-3
+          backgroundColor: '#121212',  // Tailwind bg-[#121212]
+          color: dropdownValues[id] ? 'white' : '#9ca3af', // Tailwind text-white or placeholder-gray-500
+          fontWeight: 400,             // Tailwind font-normal
+          fontSize: '1rem',            // Tailwind text-base
+          fontFamily: 'inherit',
+          boxShadow: 'none',
+          outline: 'none',
+        }}
       >
-        <span>{dropdownValues[id] || placeholder}</span>
-        <span className="text-gray-400">⌄</span>
-      </button>
+        <span style={{ color: dropdownValues[id] ? 'white' : '#9ca3af' }}>{dropdownValues[id] || placeholder}</span>
+        <span style={{ color: '#9ca3af', fontSize: '1.25rem', fontWeight: 400 }}>⌄</span>
+      </div>
       {openDropdown === id && (
         <div className="dropdown-options absolute top-full left-0 right-0 bg-[#1e1e1e] border border-gray-600 rounded-xl mt-1 max-h-48 overflow-y-auto z-50 shadow-lg">
           {options.map((option) => (
