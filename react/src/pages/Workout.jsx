@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
+import { generateWorkoutPlan, getExerciseRecommendations } from '../utils/geminiApi';
 
 const Workout = () => {
   const [workoutList, setWorkoutList] = useState([
@@ -19,6 +20,22 @@ const Workout = () => {
     subgroup: false,
     exercise: false,
     modalExercise: false
+  });
+
+  // AI Workout Features
+  const [showPreferencesModal, setShowPreferencesModal] = useState(false);
+  const [aiRecommendations, setAiRecommendations] = useState([]);
+  const [isLoadingRecommendations, setIsLoadingRecommendations] = useState(false);
+  const [exerciseDetails, setExerciseDetails] = useState(null);
+  const [currentVideoUrl, setCurrentVideoUrl] = useState('https://www.youtube.com/embed/vcBig73ojpE');
+  const [exerciseSearchTerm, setExerciseSearchTerm] = useState('');
+  const [userPreferences, setUserPreferences] = useState({
+    goals: [],
+    experience: 'Beginner',
+    equipment: [],
+    timeAvailable: '30-45 minutes',
+    bodyParts: [],
+    frequency: '3-4 times per week'
   });
 
   const subgroupOptions = {
@@ -76,6 +93,8 @@ const Workout = () => {
       setSelectedExercise('Select Exercise');
     } else if (type === 'exercise') {
       setSelectedExercise(value);
+      setCurrentVideoUrl(generateVideoUrl(value));
+      setExerciseDetails(null); // Clear AI details when manually selecting
     } else if (type === 'modalExercise') {
       setModalExercise(value);
     }
@@ -119,6 +138,150 @@ const Workout = () => {
     return Object.values(exerciseOptions).flat();
   };
 
+  // AI Workout Helper Functions
+  const generateVideoUrl = (exerciseName = selectedExercise) => {
+    // Exercise-specific YouTube video URLs for demonstrations
+    const exerciseVideos = {
+      // Chest Exercises
+      'Bench Press': 'https://www.youtube.com/embed/rT7DgCr-3pg',
+      'Incline Dumbbell Press': 'https://www.youtube.com/embed/8iPEnn-ltC8',
+      'Incline Barbell Press': 'https://www.youtube.com/embed/IP4oeKh5j20',
+      'Incline Push Ups': 'https://www.youtube.com/embed/cfTFJFwGWU4',
+      'Decline Bench Press': 'https://www.youtube.com/embed/LfyQBUKR8SE',
+      'Decline Push Ups': 'https://www.youtube.com/embed/SKPab2YC8BE',
+      'Close-Grip Push Ups': 'https://www.youtube.com/embed/cfZmpElGrZw',
+      'Pec Deck': 'https://www.youtube.com/embed/Z57CtFmRMxQ',
+      'Wide Grip Bench Press': 'https://www.youtube.com/embed/rxD321l2svE',
+      'Cable Fly': 'https://www.youtube.com/embed/QENKPHhQVi4',
+      
+      // Back Exercises
+      'Face Pull': 'https://www.youtube.com/embed/rep-qVOkqgk',
+      'Reverse Fly': 'https://www.youtube.com/embed/JoCRRZ3zRtI',
+      'Seated Row': 'https://www.youtube.com/embed/xQNrFHEMhI4',
+      'Back Extension': 'https://www.youtube.com/embed/qtdyyRVCZ2E',
+      'Superman': 'https://www.youtube.com/embed/cc6UVRS7PW4',
+      'Good Morning': 'https://www.youtube.com/embed/YuWLAKuBx6E',
+      'Lat Pulldown': 'https://www.youtube.com/embed/CAwf7n6Luuc',
+      'Pull Ups': 'https://www.youtube.com/embed/eGo4IYlbE5g',
+      'Straight-Arm Pulldown': 'https://www.youtube.com/embed/kiuVA0gs3EI',
+      'Barbell Shrug': 'https://www.youtube.com/embed/g6qbq4Lf1FI',
+      'Dumbbell Shrug': 'https://www.youtube.com/embed/g6qbq4Lf1FI',
+      'Upright Row': 'https://www.youtube.com/embed/zD_bEhFUHWA',
+      
+      // Legs Exercises
+      'Barbell Squat': 'https://www.youtube.com/embed/ultWZbUMPL8',
+      'Leg Press': 'https://www.youtube.com/embed/IZxyjW7MPJQ',
+      'Lunges': 'https://www.youtube.com/embed/QOVaHwm-Q6U',
+      'Leg Curl': 'https://www.youtube.com/embed/1Tq3QdYUuHs',
+      'Romanian Deadlift': 'https://www.youtube.com/embed/jEy_czb3RKA',
+      'Glute Ham Raise': 'https://www.youtube.com/embed/tz8HbTRqa0Y',
+      'Standing Calf Raise': 'https://www.youtube.com/embed/gwLzBJYoWlI',
+      'Seated Calf Raise': 'https://www.youtube.com/embed/JbyjNymZOt0',
+      'Donkey Calf Raise': 'https://www.youtube.com/embed/2KEDXrAHzJY',
+      'Hip Thrust': 'https://www.youtube.com/embed/SEdqd1n0cvg',
+      'Glute Bridge': 'https://www.youtube.com/embed/OUgsJ8-Vi0E',
+      'Cable Kickback': 'https://www.youtube.com/embed/umKR5-cQEpc',
+      
+      // Arms Exercises
+      'Bicep Curl': 'https://www.youtube.com/embed/ykJmrZ5v0Oo',
+      'Hammer Curl': 'https://www.youtube.com/embed/zC3nLlEvin4',
+      'Concentration Curl': 'https://www.youtube.com/embed/ebk4rJ5t5eE',
+      'Tricep Dips': 'https://www.youtube.com/embed/0326dy_-CzM',
+      'Tricep Pushdown': 'https://www.youtube.com/embed/2-LAMcpzODU',
+      'Overhead Tricep Extension': 'https://www.youtube.com/embed/YbX7Wd8jQ-Q',
+      'Wrist Curl': 'https://www.youtube.com/embed/0lC1DGhG9zY',
+      'Reverse Curl': 'https://www.youtube.com/embed/nRgxYX2Ve9w',
+      "Farmer's Walk": 'https://www.youtube.com/embed/p3QD2GhCJcw',
+      
+      // Shoulders Exercises
+      'Front Raise': 'https://www.youtube.com/embed/cxY9s0UBnhE',
+      'Overhead Press': 'https://www.youtube.com/embed/2yjwXTZQDDI',
+      'Arnold Press': 'https://www.youtube.com/embed/6Z15_WdXmVw',
+      'Lateral Raise': 'https://www.youtube.com/embed/3VcKaXpzqRo',
+      'Cable Lateral Raise': 'https://www.youtube.com/embed/VgV7dCjxJAc',
+      'Rear Delt Row': 'https://www.youtube.com/embed/MiRAi2KOfRQ',
+      
+      // Core Exercises
+      'Crunches': 'https://www.youtube.com/embed/Xyd_fa5zoEU',
+      'Plank': 'https://www.youtube.com/embed/ASdvN_XEl_c',
+      'Leg Raise': 'https://www.youtube.com/embed/JB2oyawG9KI',
+      'Bicycle Crunch': 'https://www.youtube.com/embed/9FGilxCbdz8',
+      'Side Plank': 'https://www.youtube.com/embed/K2VljzCC16g',
+      'Russian Twist': 'https://www.youtube.com/embed/DJQGX2J4IVw',
+      'Woodchopper': 'https://www.youtube.com/embed/pAplQXk3dkU',
+      'Reverse Crunch': 'https://www.youtube.com/embed/Wp4BlxcFTkE',
+      'Hanging Leg Raise': 'https://www.youtube.com/embed/hdng3Nm1x_E',
+      'Mountain Climbers': 'https://www.youtube.com/embed/nmwgirgXLYM',
+      
+      // Full Body Exercises
+      'Burpees': 'https://www.youtube.com/embed/auBLPXO8Fww',
+      'Jumping Jacks': 'https://www.youtube.com/embed/dmYwZH_BNd0',
+      'Bear Crawl': 'https://www.youtube.com/embed/wKl4IxVMvQ8'
+    };
+    
+    // Return specific video for the exercise, or default if not found
+    return exerciseVideos[exerciseName] || 'https://www.youtube.com/embed/vcBig73ojpE';
+  };
+
+  const getAIRecommendations = async () => {
+    if (selectedMuscleGroup === 'Select Muscle Group') {
+      alert('Please select a muscle group first');
+      return;
+    }
+
+    setIsLoadingRecommendations(true);
+    try {
+      const recommendations = await getExerciseRecommendations(
+        selectedMuscleGroup.toLowerCase(),
+        userPreferences.equipment,
+        userPreferences.experience.toLowerCase()
+      );
+      setAiRecommendations(recommendations.exercises || []);
+    } catch (error) {
+      console.error('Error getting AI recommendations:', error);
+      alert('Failed to get AI recommendations. Please try again.');
+    } finally {
+      setIsLoadingRecommendations(false);
+    }
+  };
+
+  const selectAIExercise = (exercise) => {
+    setSelectedExercise(exercise.name);
+    setExerciseDetails(exercise);
+    setCurrentVideoUrl(generateVideoUrl(exercise.name));
+  };
+
+  const generateWorkoutFromPreferences = async () => {
+    setIsLoadingRecommendations(true);
+    try {
+      const workoutPlan = await generateWorkoutPlan(userPreferences);
+      if (workoutPlan.workoutPlan && workoutPlan.workoutPlan.exercises) {
+        setAiRecommendations(workoutPlan.workoutPlan.exercises);
+      }
+    } catch (error) {
+      console.error('Error generating workout plan:', error);
+      alert('Failed to generate workout plan. Please try again.');
+    } finally {
+      setIsLoadingRecommendations(false);
+    }
+  };
+
+  const updatePreference = (key, value) => {
+    setUserPreferences(prev => ({
+      ...prev,
+      [key]: value
+    }));
+  };
+
+  const togglePreferenceArray = (key, value) => {
+    setUserPreferences(prev => ({
+      ...prev,
+      [key]: prev[key].includes(value) 
+        ? prev[key].filter(item => item !== value)
+        : [...prev[key], value]
+    }));
+  };
+
   return (
     <div className="bg-[#121212] text-white font-sans">
       {/* Navigation Bar */}
@@ -140,16 +303,16 @@ const Workout = () => {
         <aside className="flex flex-col bg-[#1E1E1E] w-20 md:w-48 p-4 rounded-2xl">
           <div className="flex items-center space-x-3 bg-[#121212] p-2 rounded-lg">
             <div className="relative">
-              <img src="https://storage.googleapis.com/a1aa/image/d2cfe623-1544-4224-2da4-46a005423708.jpg" alt="Profile" className="rounded-md w-10 h-10" />
+              <img src="https://storage.googleapis.com/a1aa/image/d2cfe623-1544-4224-2da4-46a005423708.jpg" alt="Profile" className="w-10 h-10 rounded-md" />
               <button title="Edit Profile Picture" className="absolute bottom-0 right-0 bg-[#62E0A1] text-black rounded-full w-5 h-5 flex items-center justify-center text-xs border border-white">
                 <i className="fas fa-edit"></i>
               </button>
             </div>
-            <div className="hidden md:block text-xs text-gray-300">
+            <div className="hidden text-xs text-gray-300 md:block">
               <p className="font-normal">Nitish</p>
             </div>
           </div>
-          <nav className="flex flex-col space-y-2 text-sm mt-6">
+          <nav className="flex flex-col mt-6 space-y-2 text-sm">
             <Link to="/profile" className="flex items-center space-x-2 hover:bg-[#121212] px-3 py-2 rounded-full">
               <i className="fas fa-calendar-alt"></i>
               <span className="hidden md:inline">Schedule</span>
@@ -163,7 +326,7 @@ const Workout = () => {
               <span className="hidden md:inline">Nutrition</span>
             </Link>
           </nav>
-          <div className="mt-auto pt-8 space-y-2">
+          <div className="pt-8 mt-auto space-y-2">
             <Link to="/preference" className="flex items-center space-x-2 hover:bg-[#121212] px-3 py-2 rounded-full">
               <i className="fas fa-cog"></i>
               <span className="hidden md:inline">Preferences</span>
@@ -193,7 +356,7 @@ const Workout = () => {
           </section>
 
           {/* Workout Summary */}
-          <section className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <section className="grid grid-cols-1 gap-4 md:grid-cols-3">
             <div className="bg-[#121212] rounded-xl p-4 text-center">
               <div className="bg-[#62E0A1] text-black rounded-full w-8 h-8 flex items-center justify-center mx-auto">
                 <i className="fas fa-calendar-check"></i>
@@ -219,8 +382,8 @@ const Workout = () => {
 
           {/* Progress Bar */}
           <section className="bg-[#121212] p-4 rounded-xl">
-            <p className="font-semibold text-sm mb-2">Workout Completion</p>
-            <p className="text-xs mb-1">Completed: 8 / 10 sets</p>
+            <p className="mb-2 text-sm font-semibold">Workout Completion</p>
+            <p className="mb-1 text-xs">Completed: 8 / 10 sets</p>
             <div className="h-2 bg-gray-700 rounded-full">
               <div className="h-2 bg-[#62E0A1] rounded-full w-[80%]"></div>
             </div>
@@ -229,24 +392,24 @@ const Workout = () => {
           {/* Today's Workout List */}
           <section className="bg-[#121212] p-4 rounded-xl">
             <div className="flex items-center justify-between">
-              <p className="font-semibold text-sm">Today's Workout</p>
+              <p className="text-sm font-semibold">Today's Workout</p>
               <button 
                 onClick={() => setShowAddModal(true)}
                 className="bg-[#62E0A1] text-black px-3 py-1 rounded-full text-xs"
               >
-                <i className="fas fa-plus mr-1"></i> Add Exercise
+                <i className="mr-1 fas fa-plus"></i> Add Exercise
               </button>
             </div>
             <ul className="mt-4 space-y-3 text-sm">
               {workoutList.map((exercise) => (
-                <li key={exercise.id} className="flex justify-between items-center border-b border-gray-700 pb-2">
+                <li key={exercise.id} className="flex items-center justify-between pb-2 border-b border-gray-700">
                   <div className="flex flex-col md:flex-row md:items-center md:gap-4">
                     <span>{exercise.name}</span>
                     <span>{exercise.sets} x {exercise.reps}</span>
                   </div>
                   <button 
                     onClick={() => removeExercise(exercise.id)}
-                    className="text-red-500 hover:text-red-700 text-xs ml-4"
+                    className="ml-4 text-xs text-red-500 hover:text-red-700"
                   >
                     <i className="fas fa-trash"></i>
                   </button>
@@ -257,8 +420,29 @@ const Workout = () => {
 
           {/* Video Demonstration Area */}
           <section className="bg-[#121212] p-4 rounded-xl">
-            <p className="font-semibold text-sm mb-2">Exercise Video Demonstration</p>
-            <div className="flex flex-col md:flex-row gap-4 mb-4">
+            <div className="flex items-center justify-between mb-4">
+              <p className="text-sm font-semibold">Exercise Video Demonstration</p>
+              <div className="flex gap-2">
+                <button 
+                  onClick={() => setShowPreferencesModal(true)}
+                  className="bg-[#F2B33D] text-black px-3 py-1 rounded-full text-xs font-semibold hover:scale-105 transition"
+                >
+                  <i className="mr-1 fas fa-robot"></i> AI Preferences
+                </button>
+                <button 
+                  onClick={getAIRecommendations}
+                  disabled={isLoadingRecommendations || selectedMuscleGroup === 'Select Muscle Group'}
+                  className="bg-[#36CFFF] text-black px-3 py-1 rounded-full text-xs font-semibold hover:scale-105 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {isLoadingRecommendations ? (
+                    <><i className="mr-1 fas fa-spinner fa-spin"></i> Loading...</>
+                  ) : (
+                    <><i className="mr-1 fas fa-magic"></i> AI Recommendations</>
+                  )}
+                </button>
+              </div>
+            </div>
+            <div className="flex flex-col gap-4 mb-4 md:flex-row">
               {/* Muscle Group Dropdown */}
               <div className="relative w-full md:w-1/3">
                 <button 
@@ -324,9 +508,15 @@ const Workout = () => {
                     <input 
                       type="text" 
                       placeholder="Search exercise..." 
+                      value={exerciseSearchTerm}
+                      onChange={(e) => setExerciseSearchTerm(e.target.value)}
                       className="w-full p-2 mb-2 rounded bg-[#1E1E1E] text-white border border-gray-600"
                     />
-                    {getCurrentExerciseOptions().map((exercise) => (
+                    {getCurrentExerciseOptions()
+                      .filter(exercise => 
+                        exercise.toLowerCase().includes(exerciseSearchTerm.toLowerCase())
+                      )
+                      .map((exercise) => (
                       <div 
                         key={exercise}
                         className="p-3 cursor-pointer hover:bg-[#2a2a2a] rounded-lg m-1"
@@ -344,41 +534,357 @@ const Workout = () => {
             <div className="aspect-w-16 aspect-h-9">
               <iframe 
                 className="w-full h-96 rounded-xl" 
-                src="https://www.youtube.com/embed/vcBig73ojpE" 
-                title="Exercise Demo Video" 
+                src={currentVideoUrl}
+                title={`${selectedExercise} Demo Video`}
                 frameBorder="0" 
                 allowFullScreen
               ></iframe>
             </div>
 
-            {/* Mistakes Section */}
-            <div className="mt-6 p-4 rounded-xl bg-[#23272e] shadow-inner border-l-4 border-[#F2B33D]">
-              <div className="flex items-center mb-2">
-                <span className="text-2xl mr-2 text-[#F2B33D]">⚠</span>
-                <span className="font-extrabold text-lg text-[#F2B33D] tracking-wide">Common Mistakes</span>
+            {/* Quick Exercise Access */}
+            <div className="mt-4 p-3 bg-[#1A1A1A] rounded-xl">
+              <p className="text-sm font-semibold mb-3 text-[#62E0A1]">Quick Access - Popular Exercises</p>
+              <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-2">
+                {[
+                  'Push-Ups', 'Bench Press', 'Barbell Squat', 'Pull Ups', 
+                  'Plank', 'Bicep Curl', 'Lunges', 'Tricep Dips'
+                ].map((exercise) => (
+                  <button
+                    key={exercise}
+                    onClick={() => {
+                      setSelectedExercise(exercise);
+                      setCurrentVideoUrl(generateVideoUrl(exercise));
+                      setExerciseDetails(null);
+                    }}
+                    className="text-xs p-2 bg-[#2A2A2A] hover:bg-[#36CFFF] hover:text-black rounded-lg transition font-medium"
+                  >
+                    {exercise}
+                  </button>
+                ))}
               </div>
-              <ul className="list-disc list-inside space-y-2 text-sm text-[#ffe6b3] font-semibold">
-                <li className="bg-[#3a2f1a] rounded px-3 py-1">Using too much weight and sacrificing form</li>
-                <li className="bg-[#3a2f1a] rounded px-3 py-1">Not maintaining a full range of motion</li>
-                <li className="bg-[#3a2f1a] rounded px-3 py-1">Arching the back excessively</li>
-                <li className="bg-[#3a2f1a] rounded px-3 py-1">Improper breathing technique</li>
-              </ul>
+            </div>
+
+            {/* Exercise Details and Mistakes Section */}
+            <div className="mt-6 space-y-4">
+              {exerciseDetails && (
+                <div className="p-4 rounded-xl bg-[#1a2332] border-l-4 border-[#36CFFF]">
+                  <div className="flex items-center mb-2">
+                    <span className="text-2xl mr-2 text-[#36CFFF]">🤖</span>
+                    <span className="font-extrabold text-lg text-[#36CFFF] tracking-wide">AI Exercise Insights</span>
+                  </div>
+                  <div className="grid grid-cols-1 gap-4 text-sm md:grid-cols-2">
+                    <div>
+                      <p className="font-semibold text-[#36CFFF] mb-1">Difficulty Level:</p>
+                      <p className="text-gray-300">{exerciseDetails.difficulty}/5</p>
+                    </div>
+                    <div>
+                      <p className="font-semibold text-[#36CFFF] mb-1">Recommended Sets x Reps:</p>
+                      <p className="text-gray-300">{exerciseDetails.setsRepsRecommendation}</p>
+                    </div>
+                    <div className="md:col-span-2">
+                      <p className="font-semibold text-[#36CFFF] mb-1">Primary Muscles:</p>
+                      <p className="text-gray-300">{exerciseDetails.primaryMuscles?.join(', ')}</p>
+                    </div>
+                    <div className="md:col-span-2">
+                      <p className="font-semibold text-[#36CFFF] mb-1">Form Instructions:</p>
+                      <p className="text-gray-300">{exerciseDetails.instructions}</p>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              <div className="p-4 rounded-xl bg-[#23272e] shadow-inner border-l-4 border-[#F2B33D]">
+                <div className="flex items-center mb-2">
+                  <span className="text-2xl mr-2 text-[#F2B33D]">⚠</span>
+                  <span className="font-extrabold text-lg text-[#F2B33D] tracking-wide">Common Mistakes</span>
+                </div>
+                <ul className="list-disc list-inside space-y-2 text-sm text-[#ffe6b3] font-semibold">
+                  {exerciseDetails && exerciseDetails.commonMistakes ? (
+                    exerciseDetails.commonMistakes.map((mistake, index) => (
+                      <li key={index} className="bg-[#3a2f1a] rounded px-3 py-1">{mistake}</li>
+                    ))
+                  ) : (
+                    <>
+                      <li className="bg-[#3a2f1a] rounded px-3 py-1">Using too much weight and sacrificing form</li>
+                      <li className="bg-[#3a2f1a] rounded px-3 py-1">Not maintaining a full range of motion</li>
+                      <li className="bg-[#3a2f1a] rounded px-3 py-1">Arching the back excessively</li>
+                      <li className="bg-[#3a2f1a] rounded px-3 py-1">Improper breathing technique</li>
+                    </>
+                  )}
+                </ul>
+              </div>
+            </div>
+          </section>
+
+          {/* AI Recommendations Section */}
+          {aiRecommendations.length > 0 && (
+            <section className="bg-[#121212] p-4 rounded-xl">
+              <div className="flex items-center mb-4">
+                <span className="mr-2 text-2xl">🤖</span>
+                <p className="text-lg font-semibold">AI Exercise Recommendations</p>
+              </div>
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+                {aiRecommendations.map((exercise, index) => (
+                  <div 
+                    key={index}
+                    className="bg-[#1E1E1E] p-4 rounded-xl border border-gray-700 hover:border-[#36CFFF] transition cursor-pointer"
+                    onClick={() => selectAIExercise(exercise)}
+                  >
+                    <div className="flex items-start justify-between mb-2">
+                      <h3 className="text-sm font-semibold text-white">{exercise.name}</h3>
+                      <span className="text-xs bg-[#36CFFF] text-black px-2 py-1 rounded-full">
+                        Level {exercise.difficulty || 'N/A'}
+                      </span>
+                    </div>
+                    <div className="space-y-1 text-xs text-gray-400">
+                      <p><span className="text-[#62E0A1]">Target:</span> {exercise.targetMuscles?.join(', ') || exercise.primaryMuscles?.join(', ') || 'Multiple muscles'}</p>
+                      <p><span className="text-[#F2B33D]">Sets/Reps:</span> {exercise.setsRepsRecommendation || `${exercise.sets} x ${exercise.reps}` || '3 x 8-12'}</p>
+                      {exercise.equipment && (
+                        <p><span className="text-[#36CFFF]">Equipment:</span> {exercise.equipment.join(', ')}</p>
+                      )}
+                    </div>
+                    <button className="mt-3 w-full bg-[#36CFFF] text-black text-xs py-2 rounded-lg font-semibold hover:scale-105 transition">
+                      Select Exercise
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </section>
+          )}
+
+          {/* Popular Workout Videos Section */}
+          <section className="bg-[#121212] p-4 rounded-xl">
+            <div className="flex items-center mb-4">
+              <span className="mr-2 text-2xl">🎥</span>
+              <p className="text-lg font-semibold">Popular Workout Videos</p>
+            </div>
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+              {[
+                {
+                  title: "Perfect Push-Up Form",
+                  exercise: "Push-Ups",
+                  videoId: "IODxDxX7oi4",
+                  duration: "5:30",
+                  difficulty: "Beginner",
+                  description: "Master the perfect push-up technique"
+                },
+                {
+                  title: "Squat Tutorial",
+                  exercise: "Barbell Squat",
+                  videoId: "ultWZbUMPL8",
+                  duration: "8:45",
+                  difficulty: "Intermediate",
+                  description: "Complete guide to proper squat form"
+                },
+                {
+                  title: "Deadlift Technique",
+                  exercise: "Romanian Deadlift",
+                  videoId: "jEy_czb3RKA",
+                  duration: "12:20",
+                  difficulty: "Advanced",
+                  description: "Romanian deadlift for hamstrings"
+                },
+                {
+                  title: "Plank Variations",
+                  exercise: "Plank",
+                  videoId: "ASdvN_XEl_c",
+                  duration: "7:15",
+                  difficulty: "Beginner",
+                  description: "5 effective plank variations"
+                },
+                {
+                  title: "Bicep Curl Guide",
+                  exercise: "Bicep Curl",
+                  videoId: "ykJmrZ5v0Oo",
+                  duration: "6:30",
+                  difficulty: "Beginner",
+                  description: "Build bigger biceps with proper form"
+                },
+                {
+                  title: "Pull-Up Progression",
+                  exercise: "Pull Ups",
+                  videoId: "eGo4IYlbE5g",
+                  duration: "10:45",
+                  difficulty: "Intermediate",
+                  description: "From zero to hero pull-up guide"
+                }
+              ].map((video, index) => (
+                <div 
+                  key={index}
+                  className="bg-[#1E1E1E] rounded-xl overflow-hidden border border-gray-700 hover:border-[#62E0A1] transition cursor-pointer"
+                  onClick={() => {
+                    setSelectedExercise(video.exercise);
+                    setCurrentVideoUrl(`https://www.youtube.com/embed/${video.videoId}`);
+                    setExerciseDetails(null);
+                  }}
+                >
+                  <div className="relative">
+                    <img 
+                      src={`https://img.youtube.com/vi/${video.videoId}/hqdefault.jpg`}
+                      alt={video.title}
+                      className="w-full h-32 object-cover"
+                    />
+                    <div className="absolute bottom-2 right-2 bg-black bg-opacity-75 text-white text-xs px-2 py-1 rounded">
+                      {video.duration}
+                    </div>
+                    <div className="absolute top-2 left-2">
+                      <span className={`text-xs px-2 py-1 rounded-full font-semibold ${
+                        video.difficulty === 'Beginner' ? 'bg-[#62E0A1] text-black' :
+                        video.difficulty === 'Intermediate' ? 'bg-[#F2B33D] text-black' :
+                        'bg-[#FF6B6B] text-white'
+                      }`}>
+                        {video.difficulty}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="p-3">
+                    <h3 className="font-semibold text-white text-sm mb-1">{video.title}</h3>
+                    <p className="text-xs text-gray-400 mb-2">{video.description}</p>
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs text-[#36CFFF]">{video.exercise}</span>
+                      <button className="text-xs bg-[#62E0A1] text-black px-3 py-1 rounded-full font-semibold hover:scale-105 transition">
+                        Watch
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))}
             </div>
           </section>
         </main>
       </div>
 
-      {/* Add Exercise Modal */}
-      {showAddModal && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-sm z-50">
-          <div className="bg-[#121212] p-8 rounded-2xl shadow-xl w-full max-w-md relative">
+      {/* AI Preferences Modal */}
+      {showPreferencesModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-sm">
+          <div className="bg-[#121212] p-8 rounded-2xl shadow-xl w-full max-w-2xl relative max-h-[90vh] overflow-y-auto">
             <button 
-              onClick={() => setShowAddModal(false)}
-              className="absolute top-3 right-3 text-gray-400 hover:text-white text-xl"
+              onClick={() => setShowPreferencesModal(false)}
+              className="absolute text-xl text-gray-400 top-3 right-3 hover:text-white"
             >
               ×
             </button>
-            <h2 className="text-xl font-bold mb-6 text-center">Add Exercise</h2>
+            <h2 className="flex items-center justify-center mb-6 text-xl font-bold text-center">
+              <span className="mr-2 text-2xl">🤖</span>
+              AI Workout Preferences
+            </h2>
+            
+            <div className="space-y-6">
+              {/* Fitness Goals */}
+              <div>
+                <label className="block mb-2 text-sm font-semibold">Fitness Goals</label>
+                <div className="grid grid-cols-2 gap-2 md:grid-cols-3">
+                  {['Muscle Building', 'Weight Loss', 'Strength', 'Endurance', 'Flexibility', 'General Fitness'].map((goal) => (
+                    <button
+                      key={goal}
+                      onClick={() => togglePreferenceArray('goals', goal)}
+                      className={`text-xs p-2 rounded-lg border transition ${
+                        userPreferences.goals.includes(goal)
+                          ? 'bg-[#36CFFF] text-black border-[#36CFFF]'
+                          : 'bg-[#1E1E1E] text-gray-300 border-gray-600 hover:border-[#36CFFF]'
+                      }`}
+                    >
+                      {goal}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Experience Level */}
+              <div>
+                <label className="block mb-2 text-sm font-semibold">Experience Level</label>
+                <div className="grid grid-cols-3 gap-2">
+                  {['Beginner', 'Intermediate', 'Advanced'].map((level) => (
+                    <button
+                      key={level}
+                      onClick={() => updatePreference('experience', level)}
+                      className={`text-xs p-2 rounded-lg border transition ${
+                        userPreferences.experience === level
+                          ? 'bg-[#62E0A1] text-black border-[#62E0A1]'
+                          : 'bg-[#1E1E1E] text-gray-300 border-gray-600 hover:border-[#62E0A1]'
+                      }`}
+                    >
+                      {level}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Equipment */}
+              <div>
+                <label className="block mb-2 text-sm font-semibold">Available Equipment</label>
+                <div className="grid grid-cols-2 gap-2 md:grid-cols-3">
+                  {['Dumbbells', 'Barbell', 'Resistance Bands', 'Pull-up Bar', 'Kettlebells', 'Bodyweight Only'].map((equipment) => (
+                    <button
+                      key={equipment}
+                      onClick={() => togglePreferenceArray('equipment', equipment)}
+                      className={`text-xs p-2 rounded-lg border transition ${
+                        userPreferences.equipment.includes(equipment)
+                          ? 'bg-[#F2B33D] text-black border-[#F2B33D]'
+                          : 'bg-[#1E1E1E] text-gray-300 border-gray-600 hover:border-[#F2B33D]'
+                      }`}
+                    >
+                      {equipment}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Body Parts Focus */}
+              <div>
+                <label className="block mb-2 text-sm font-semibold">Focus Areas</label>
+                <div className="grid grid-cols-2 gap-2 md:grid-cols-4">
+                  {['Chest', 'Back', 'Legs', 'Arms', 'Shoulders', 'Core', 'Full Body', 'Cardio'].map((part) => (
+                    <button
+                      key={part}
+                      onClick={() => togglePreferenceArray('bodyParts', part)}
+                      className={`text-xs p-2 rounded-lg border transition ${
+                        userPreferences.bodyParts.includes(part)
+                          ? 'bg-[#36CFFF] text-black border-[#36CFFF]'
+                          : 'bg-[#1E1E1E] text-gray-300 border-gray-600 hover:border-[#36CFFF]'
+                      }`}
+                    >
+                      {part}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex justify-center gap-4 mt-8">
+                <button 
+                  onClick={() => setShowPreferencesModal(false)}
+                  className="px-6 py-2 text-white bg-gray-600 rounded-full hover:bg-gray-500"
+                >
+                  Close
+                </button>
+                <button 
+                  onClick={() => {
+                    generateWorkoutFromPreferences();
+                    setShowPreferencesModal(false);
+                  }}
+                  className="px-6 py-2 rounded-full bg-[#62E0A1] text-black font-semibold hover:scale-105 flex items-center"
+                >
+                  <i className="mr-2 fas fa-magic"></i>
+                  Generate AI Workout
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Add Exercise Modal */}
+      {showAddModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-sm">
+          <div className="bg-[#121212] p-8 rounded-2xl shadow-xl w-full max-w-md relative">
+            <button 
+              onClick={() => setShowAddModal(false)}
+              className="absolute text-xl text-gray-400 top-3 right-3 hover:text-white"
+            >
+              ×
+            </button>
+            <h2 className="mb-6 text-xl font-bold text-center">Add Exercise</h2>
             <form onSubmit={addExercise} className="space-y-4">
               <div>
                 <label className="block mb-1 text-sm">Exercise Name</label>
@@ -436,7 +942,7 @@ const Workout = () => {
                 <button 
                   type="button" 
                   onClick={() => setShowAddModal(false)}
-                  className="px-6 py-2 rounded-full bg-gray-600 text-white hover:bg-gray-500"
+                  className="px-6 py-2 text-white bg-gray-600 rounded-full hover:bg-gray-500"
                 >
                   Cancel
                 </button>
