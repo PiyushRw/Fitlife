@@ -4,7 +4,7 @@ import '@fortawesome/fontawesome-free/css/all.min.css';
 
 const Profile = () => {
   const [activeTab, setActiveTab] = useState('overview');
-  const [profileData, setProfileData] = useState({
+  const [profileData] = useState({
     name: 'Nitish',
     email: 'nitish@example.com',
     age: 28,
@@ -17,19 +17,6 @@ const Profile = () => {
   const [mood, setMood] = useState('happy');
   const [workoutStreak] = useState(7);
   const [healthScore, setHealthScore] = useState(78);
-
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setProfileData(prev => ({
-      ...prev,
-      [name]: value
-    }));
-  };
-
-  const handleSave = () => {
-    console.log('Profile saved:', profileData);
-    // Handle save logic here
-  };
 
   const updateMoodInsight = () => {
     const moodInsights = {
