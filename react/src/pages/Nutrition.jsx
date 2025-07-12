@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
+import { generateDietPlan, analyzeFoodImage } from '../utils/geminiApi';
 
 const Nutrition = () => {
   const [selectedTags, setSelectedTags] = useState({
@@ -10,6 +11,17 @@ const Nutrition = () => {
   const [customInput, setCustomInput] = useState('');
   const [showResultsModal, setShowResultsModal] = useState(false);
   const [currentDay, setCurrentDay] = useState(1);
+  const [selectedDays, setSelectedDays] = useState(7);
+  const [dietPlan, setDietPlan] = useState(null);
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [foodAnalysis, setFoodAnalysis] = useState({
+    protein: '18 g',
+    calories: '320 kcal',
+    sugar: '5 g',
+    carbs: '42 g'
+  });
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [uploadedImage, setUploadedImage] = useState(null);
 
   const goalOptions = [
     'Weight Loss', 'Muscle Gain', 'Maintain Energy', 'Improve Sleep', 'Balanced Diet'
@@ -67,15 +79,68 @@ const Nutrition = () => {
     setCustomInput('');
   };
 
-  const generateNutritionPlan = () => {
-    setShowResultsModal(true);
+  const generateNutritionPlan = async () => {
+    setIsGenerating(true);
+    try {
+      const preferences = {
+        goal: selectedTags.goal,
+        condition: selectedTags.condition,
+        lifestyle: selectedTags.lifestyle,
+        customNotes: customInput
+      };
+      
+      const plan = await generateDietPlan(preferences, selectedDays);
+      setDietPlan(plan);
+      setCurrentDay(1); // Reset to day 1 when showing new plan
+      setShowResultsModal(true);
+    } catch (error) {
+      console.error('Error generating nutrition plan:', error);
+      alert('Failed to generate nutrition plan. Please try again.');
+    } finally {
+      setIsGenerating(false);
+    }
   };
 
   const changeMealDay = (direction) => {
     setCurrentDay(prev => {
       const newDay = prev + direction;
-      return Math.max(1, Math.min(7, newDay));
+      return Math.max(1, Math.min(selectedDays, newDay));
     });
+  };
+
+  const handleImageUpload = (event) => {
+    const file = event.target.files[0];
+    if (file && file.type.startsWith('image/')) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setUploadedImage(e.target.result);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const analyzeFood = async () => {
+    if (!uploadedImage) {
+      alert('Please upload an image first');
+      return;
+    }
+
+    setIsAnalyzing(true);
+    try {
+      const base64Data = uploadedImage.split(',')[1]; // Remove data:image/jpeg;base64, prefix
+      const analysis = await analyzeFoodImage(base64Data);
+      setFoodAnalysis({
+        protein: analysis.protein || '18 g',
+        calories: `${analysis.calories || 320} kcal`,
+        sugar: analysis.sugar || '5 g',
+        carbs: analysis.carbs || '42 g'
+      });
+    } catch (error) {
+      console.error('Error analyzing food:', error);
+      alert('Failed to analyze food. Please try again.');
+    } finally {
+      setIsAnalyzing(false);
+    }
   };
 
   const allTags = [
@@ -105,16 +170,16 @@ const Nutrition = () => {
         <aside className="flex flex-col bg-[#1E1E1E] w-20 md:w-48 p-4 rounded-2xl">
           <div className="flex items-center space-x-3 bg-[#121212] p-2 rounded-lg">
             <div className="relative">
-              <img src="https://storage.googleapis.com/a1aa/image/d2cfe623-1544-4224-2da4-46a005423708.jpg" alt="Profile" className="rounded-md w-10 h-10" />
+              <img src="https://storage.googleapis.com/a1aa/image/d2cfe623-1544-4224-2da4-46a005423708.jpg" alt="Profile" className="w-10 h-10 rounded-md" />
               <button title="Edit Profile Picture" className="absolute bottom-0 right-0 bg-[#62E0A1] text-black rounded-full w-5 h-5 flex items-center justify-center text-xs border border-white">
                 <i className="fas fa-edit"></i>
               </button>
             </div>
-            <div className="hidden md:block text-xs text-gray-300">
+            <div className="hidden text-xs text-gray-300 md:block">
               <p className="font-normal">Nitish</p>
             </div>
           </div>
-          <nav className="flex flex-col space-y-2 text-sm mt-6">
+          <nav className="flex flex-col mt-6 space-y-2 text-sm">
             <Link to="/profile" className="flex items-center space-x-2 hover:bg-[#121212] px-3 py-2 rounded-full">
               <i className="fas fa-calendar-alt"></i>
               <span className="hidden md:inline">Schedule</span>
@@ -128,7 +193,7 @@ const Nutrition = () => {
               <span className="hidden md:inline">Nutrition</span>
             </button>
           </nav>
-          <div className="mt-auto pt-8 space-y-2">
+          <div className="pt-8 mt-auto space-y-2">
             <Link to="/preference" className="flex items-center space-x-2 hover:bg-[#121212] px-3 py-2 rounded-full">
               <i className="fas fa-cog"></i>
               <span className="hidden md:inline">Preferences</span>
@@ -159,26 +224,26 @@ const Nutrition = () => {
 
           {/* Calorie Intake Section */}
           <section className="bg-[#121212] p-4 rounded-xl mt-8">
-            <p className="font-semibold text-sm mb-2">Calorie Intake</p>
-            <div className="grid grid-cols-4 text-xs mb-2">
+            <p className="mb-2 text-sm font-semibold">Calorie Intake</p>
+            <div className="grid grid-cols-4 mb-2 text-xs">
               <div></div>
-              <div className="text-center font-semibold">Total</div>
-              <div className="text-center font-semibold">Goal</div>
-              <div className="text-center font-semibold">Left</div>
+              <div className="font-semibold text-center">Total</div>
+              <div className="font-semibold text-center">Goal</div>
+              <div className="font-semibold text-center">Left</div>
             </div>
-            <div className="text-xs mb-1 flex justify-between">
+            <div className="flex justify-between mb-1 text-xs">
               <span>Calories</span><span>2200</span><span>2000</span><span>-200</span>
             </div>
             <div className="h-1 bg-gray-700 rounded-full">
               <div className="h-1 bg-[#62E0A1] rounded-full w-[90%]"></div>
             </div>
-            <div className="text-xs mt-2 mb-1 flex justify-between">
+            <div className="flex justify-between mt-2 mb-1 text-xs">
               <span>Proteins</span><span>150</span><span>200</span><span>70</span>
             </div>
             <div className="h-1 bg-gray-700 rounded-full">
               <div className="h-1 bg-[#36CFFF] rounded-full w-[75%]"></div>
             </div>
-            <div className="text-xs mt-2 mb-1 flex justify-between">
+            <div className="flex justify-between mt-2 mb-1 text-xs">
               <span>Carbohydrates</span><span>250</span><span>300</span><span>15</span>
             </div>
             <div className="h-1 bg-gray-700 rounded-full">
@@ -194,7 +259,7 @@ const Nutrition = () => {
                 <div className="min-w-[360px] max-w-[360px] min-h-[340px] bg-[#121212] rounded-2xl shadow-lg border border-gray-700 flex flex-col items-center justify-center p-6 gap-4">
                   <img src="https://images.unsplash.com/photo-1490645935967-10de6ba17061?w=135&h=135&fit=crop&crop=center" alt="Weight Loss" className="w-[135px] h-[135px] object-cover rounded-2xl border-3 border-[#62E0A1] bg-[#222] shadow-lg" />
                   <h3 className="font-bold text-lg text-[#62E0A1] text-center">Weight Loss Plan</h3>
-                  <ul className="text-sm text-gray-300 space-y-1">
+                  <ul className="space-y-1 text-sm text-gray-300">
                     <li><span className="font-bold text-[#62E0A1]">Calories:</span> 1,500/day</li>
                     <li><span className="font-bold text-[#62E0A1]">Protein:</span> 120g/day</li>
                     <li><span className="font-bold text-[#62E0A1]">Carbs:</span> 150g/day</li>
@@ -204,7 +269,7 @@ const Nutrition = () => {
                 <div className="min-w-[360px] max-w-[360px] min-h-[340px] bg-[#121212] rounded-2xl shadow-lg border border-gray-700 flex flex-col items-center justify-center p-6 gap-4">
                   <img src="https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=135&h=135&fit=crop&crop=center" alt="Muscle Gain" className="w-[135px] h-[135px] object-cover rounded-2xl border-3 border-[#62E0A1] bg-[#222] shadow-lg" />
                   <h3 className="font-bold text-lg text-[#62E0A1] text-center">Muscle Gain Plan</h3>
-                  <ul className="text-sm text-gray-300 space-y-1">
+                  <ul className="space-y-1 text-sm text-gray-300">
                     <li><span className="font-bold text-[#62E0A1]">Calories:</span> 2,200/day</li>
                     <li><span className="font-bold text-[#62E0A1]">Protein:</span> 180g/day</li>
                     <li><span className="font-bold text-[#62E0A1]">Carbs:</span> 250g/day</li>
@@ -214,7 +279,7 @@ const Nutrition = () => {
                 <div className="min-w-[360px] max-w-[360px] min-h-[340px] bg-[#121212] rounded-2xl shadow-lg border border-gray-700 flex flex-col items-center justify-center p-6 gap-4">
                   <img src="https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=135&h=135&fit=crop&crop=center" alt="Maintenance" className="w-[135px] h-[135px] object-cover rounded-2xl border-3 border-[#62E0A1] bg-[#222] shadow-lg" />
                   <h3 className="font-bold text-lg text-[#62E0A1] text-center">Maintenance Plan</h3>
-                  <ul className="text-sm text-gray-300 space-y-1">
+                  <ul className="space-y-1 text-sm text-gray-300">
                     <li><span className="font-bold text-[#62E0A1]">Calories:</span> 1,800/day</li>
                     <li><span className="font-bold text-[#62E0A1]">Protein:</span> 140g/day</li>
                     <li><span className="font-bold text-[#62E0A1]">Carbs:</span> 200g/day</li>
@@ -228,39 +293,50 @@ const Nutrition = () => {
           {/* Food Photo Analysis Section */}
           <section className="bg-[#121212] p-6 rounded-xl mt-8 flex flex-col items-center">
             <h2 className="text-xl font-bold mb-6 text-[#62E0A1] flex items-center justify-center">
-              <i className="fas fa-camera mr-2"></i>Analyze Your Meal
+              <i className="mr-2 fas fa-camera"></i>Analyze Your Meal
             </h2>
             <div className="w-full max-w-4xl mx-auto">
-              <div className="flex flex-col md:flex-row md:items-start md:justify-center gap-10 bg-gray-800 rounded-xl p-8 border border-gray-700 shadow-lg">
+              <div className="flex flex-col gap-10 p-8 bg-gray-800 border border-gray-700 shadow-lg md:flex-row md:items-start md:justify-center rounded-xl">
                 {/* Photo Upload & Preview */}
                 <div className="flex flex-col items-center justify-start w-full md:w-[320px]">
                   <div className="relative flex items-center justify-center w-48 h-48 mb-4">
-                    <img src="https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=400&h=300&fit=crop" alt="Random Food" className="w-48 h-48 object-cover rounded-lg border border-gray-700" />
+                    <img 
+                      src={uploadedImage || "https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=400&h=300&fit=crop"} 
+                      alt="Food to analyze" 
+                      className="object-cover w-48 h-48 border border-gray-700 rounded-lg" 
+                    />
                   </div>
                   <label className="bg-[#62E0A1] text-black px-4 py-2 rounded-full font-medium cursor-pointer hover:bg-green-300 transition-colors flex items-center gap-2 mb-3 w-full justify-center">
                     <i className="fas fa-upload"></i> Choose Food Photo
+                    <input type="file" accept="image/*" onChange={handleImageUpload} className="hidden" />
                   </label>
-                  <button className="bg-[#62E0A1] text-black px-6 py-3 rounded-full font-semibold hover:scale-105 transition shadow-lg hover:shadow-xl w-full">Analyze Food</button>
+                  <button 
+                    onClick={analyzeFood}
+                    disabled={isAnalyzing || !uploadedImage}
+                    className="bg-[#62E0A1] text-black px-6 py-3 rounded-full font-semibold hover:scale-105 transition shadow-lg hover:shadow-xl w-full disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {isAnalyzing ? 'Analyzing...' : 'Analyze Food'}
+                  </button>
                 </div>
                 {/* Nutrition Facts */}
-                <div className="flex-1 flex flex-col items-center md:items-start justify-center mt-8 md:mt-0 md:ml-6 w-full">
+                <div className="flex flex-col items-center justify-center flex-1 w-full mt-8 md:items-start md:mt-0 md:ml-6">
                   <h3 className="text-lg font-semibold mb-4 text-[#36CFFF] text-center md:text-left">Estimated Nutrition Facts</h3>
-                  <div className="grid grid-cols-2 gap-8 w-full max-w-lg">
+                  <div className="grid w-full max-w-lg grid-cols-2 gap-8">
                     <div className="bg-[#121212] rounded-lg p-8 flex flex-col items-center justify-center min-h-[120px]">
-                      <p className="text-xs text-gray-400 mb-2 text-center">Protein</p>
-                      <p className="text-2xl font-bold text-center">18 g</p>
+                      <p className="mb-2 text-xs text-center text-gray-400">Protein</p>
+                      <p className="text-2xl font-bold text-center">{foodAnalysis.protein}</p>
                     </div>
                     <div className="bg-[#121212] rounded-lg p-8 flex flex-col items-center justify-center min-h-[120px]">
-                      <p className="text-xs text-gray-400 mb-2 text-center">Calories</p>
-                      <p className="text-2xl font-bold text-center">320 kcal</p>
+                      <p className="mb-2 text-xs text-center text-gray-400">Calories</p>
+                      <p className="text-2xl font-bold text-center">{foodAnalysis.calories}</p>
                     </div>
                     <div className="bg-[#121212] rounded-lg p-8 flex flex-col items-center justify-center min-h-[120px]">
-                      <p className="text-xs text-gray-400 mb-2 text-center">Sugar</p>
-                      <p className="text-2xl font-bold text-center">5 g</p>
+                      <p className="mb-2 text-xs text-center text-gray-400">Sugar</p>
+                      <p className="text-2xl font-bold text-center">{foodAnalysis.sugar}</p>
                     </div>
                     <div className="bg-[#121212] rounded-lg p-8 flex flex-col items-center justify-center min-h-[120px]">
-                      <p className="text-xs text-gray-400 mb-2 text-center">Carbohydrates</p>
-                      <p className="text-2xl font-bold text-center">42 g</p>
+                      <p className="mb-2 text-xs text-center text-gray-400">Carbohydrates</p>
+                      <p className="text-2xl font-bold text-center">{foodAnalysis.carbs}</p>
                     </div>
                   </div>
                 </div>
@@ -286,7 +362,7 @@ const Nutrition = () => {
                   {/* Category: Goal */}
                   <div>
                     <label className="block text-base font-semibold text-[#62E0A1] mb-3">Goal-Based Nutrition</label>
-                    <div className="flex flex-row flex-wrap gap-2 w-full">
+                    <div className="flex flex-row flex-wrap w-full gap-2">
                       {goalOptions.map((goal) => (
                         <button
                           key={goal}
@@ -303,7 +379,7 @@ const Nutrition = () => {
                   {/* Category: Condition */}
                   <div>
                     <label className="block text-base font-semibold text-[#36CFFF] mb-3">Health Conditions</label>
-                    <div className="flex flex-row flex-wrap gap-2 w-full">
+                    <div className="flex flex-row flex-wrap w-full gap-2">
                       {conditionOptions.map((condition) => (
                         <button
                           key={condition}
@@ -320,7 +396,7 @@ const Nutrition = () => {
                   {/* Category: Lifestyle */}
                   <div>
                     <label className="block text-base font-semibold text-[#F2B33D] mb-3">Lifestyle Preferences</label>
-                    <div className="flex flex-row flex-wrap gap-2 w-full">
+                    <div className="flex flex-row flex-wrap w-full gap-2">
                       {lifestyleOptions.map((lifestyle) => (
                         <button
                           key={lifestyle}
@@ -332,6 +408,26 @@ const Nutrition = () => {
                         </button>
                       ))}
                     </div>
+                  </div>
+                </div>
+                {/* Day Selection */}
+                <div className="mt-6">
+                  <label className="block mb-3 text-base font-semibold text-white">Select Plan Duration</label>
+                  <div className="flex flex-wrap gap-2">
+                    {[1, 2, 3, 4, 5, 6, 7].map((days) => (
+                      <button
+                        key={days}
+                        type="button"
+                        onClick={() => setSelectedDays(days)}
+                        className={`px-4 py-2 rounded-full font-medium transition ${
+                          selectedDays === days
+                            ? 'bg-gradient-to-r from-[#62E0A1] to-[#36CFFF] text-black'
+                            : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
+                        }`}
+                      >
+                        {days} Day{days > 1 ? 's' : ''}
+                      </button>
+                    ))}
                   </div>
                 </div>
                 {/* Combined Tags and Input Box with Action Box */}
@@ -360,7 +456,7 @@ const Nutrition = () => {
                       <button 
                         type="button" 
                         onClick={() => setCustomInput(prev => prev.slice(0, -1))}
-                        className="bg-gray-800 text-white rounded-full px-3 py-1 hover:bg-gray-700" 
+                        className="px-3 py-1 text-white bg-gray-800 rounded-full hover:bg-gray-700" 
                         title="Backspace"
                       >
                         <i className="fas fa-backspace"></i>
@@ -380,11 +476,12 @@ const Nutrition = () => {
                     <button 
                       type="button" 
                       onClick={generateNutritionPlan}
-                      className="bg-gradient-to-r from-[#62E0A1] to-[#F2B33D] text-white px-6 py-2 rounded-full font-semibold flex items-center justify-center gap-2 shadow-lg border-2 border-[#F2B33D] hover:scale-105 focus:ring-2 focus:ring-[#F2B33D] focus:ring-opacity-50 transition-all w-full" 
+                      disabled={isGenerating}
+                      className="bg-gradient-to-r from-[#62E0A1] to-[#F2B33D] text-white px-6 py-2 rounded-full font-semibold flex items-center justify-center gap-2 shadow-lg border-2 border-[#F2B33D] hover:scale-105 focus:ring-2 focus:ring-[#F2B33D] focus:ring-opacity-50 transition-all w-full disabled:opacity-50 disabled:cursor-not-allowed" 
                       title="Send"
                     >
-                      <i className="fas fa-paper-plane text-lg"></i>
-                      <span className="hidden md:inline">Send</span>
+                      <i className={`fas ${isGenerating ? 'fa-spinner fa-spin' : 'fa-paper-plane'} text-lg`}></i>
+                      <span className="hidden md:inline">{isGenerating ? 'Generating...' : 'Send'}</span>
                     </button>
                   </div>
                 </div>
@@ -405,9 +502,31 @@ const Nutrition = () => {
             >
               ×
             </button>
-            <h2 className="text-3xl font-bold text-white mb-8 text-center bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
-              Your Personalized Nutrition Plan
+            <h2 className="mb-8 text-3xl font-bold text-center text-transparent text-white bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text">
+              Your Personalized {selectedDays}-Day Nutrition Plan
             </h2>
+            
+            {/* Plan Summary */}
+            {dietPlan && dietPlan.summary && (
+              <div className="bg-[#121212] p-6 rounded-xl mb-6">
+                <h3 className="text-xl font-bold text-[#62E0A1] mb-4">Plan Summary</h3>
+                <div className="grid gap-4 text-center md:grid-cols-3">
+                  <div>
+                    <p className="text-sm text-gray-400">Daily Calories</p>
+                    <p className="text-xl font-bold text-white">{dietPlan.summary.dailyCalories}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-400">Protein/Day</p>
+                    <p className="text-xl font-bold text-[#36CFFF]">{dietPlan.summary.macroBreakdown?.protein}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-400">Duration</p>
+                    <p className="text-xl font-bold text-[#F2B33D]">{selectedDays} Days</p>
+                  </div>
+                </div>
+              </div>
+            )}
+            
             <div className="space-y-8">
               {/* Meal Plan with Day Navigation */}
               <div className="space-y-6">
@@ -420,37 +539,143 @@ const Nutrition = () => {
                   >
                     <i className="fas fa-chevron-left"></i>
                   </button>
-                  <div className="text-center flex-1">
+                  <div className="flex-1 text-center">
                     <h3 className="text-2xl font-bold text-[#62E0A1] mb-1">Day {currentDay} Meal Plan</h3>
-                    <p className="text-gray-400 mb-2">Balanced, high-protein, and energy-sustaining meals</p>
+                    <p className="mb-2 text-gray-400">
+                      {dietPlan ? 'AI-Generated based on your preferences' : 'Balanced, high-protein, and energy-sustaining meals'}
+                    </p>
                   </div>
                   <button 
                     onClick={() => changeMealDay(1)}
-                    disabled={currentDay === 7}
+                    disabled={currentDay === selectedDays}
                     className="bg-gray-800 hover:bg-[#62E0A1] hover:text-black text-gray-300 rounded-full w-10 h-10 flex items-center justify-center text-2xl transition disabled:opacity-40"
                     title="Next Day"
                   >
                     <i className="fas fa-chevron-right"></i>
                   </button>
                 </div>
-                <div className="grid md:grid-cols-3 gap-4">
+                <div className="grid gap-4 md:grid-cols-3">
+                  {/* Breakfast */}
                   <div className="bg-[#121212] p-4 rounded-xl">
                     <h4 className="font-bold text-[#62E0A1] mb-2">Breakfast</h4>
-                    <p className="text-sm text-gray-300">Oatmeal with berries and nuts</p>
-                    <p className="text-xs text-gray-400 mt-1">320 calories</p>
+                    {dietPlan && dietPlan.mealPlan && dietPlan.mealPlan[`day${currentDay}`] ? (
+                      <>
+                        <p className="text-sm text-gray-300">{dietPlan.mealPlan[`day${currentDay}`].breakfast?.name || 'Oatmeal with berries and nuts'}</p>
+                        <p className="mt-1 text-xs text-gray-400">{dietPlan.mealPlan[`day${currentDay}`].breakfast?.calories || 320} calories</p>
+                        {dietPlan.mealPlan[`day${currentDay}`].breakfast?.ingredients && (
+                          <p className="mt-1 text-xs text-gray-500">
+                            {dietPlan.mealPlan[`day${currentDay}`].breakfast.ingredients.slice(0, 3).join(', ')}
+                          </p>
+                        )}
+                      </>
+                    ) : (
+                      <>
+                        <p className="text-sm text-gray-300">Oatmeal with berries and nuts</p>
+                        <p className="mt-1 text-xs text-gray-400">320 calories</p>
+                      </>
+                    )}
                   </div>
+                  
+                  {/* Lunch */}
                   <div className="bg-[#121212] p-4 rounded-xl">
                     <h4 className="font-bold text-[#36CFFF] mb-2">Lunch</h4>
-                    <p className="text-sm text-gray-300">Grilled chicken salad</p>
-                    <p className="text-xs text-gray-400 mt-1">450 calories</p>
+                    {dietPlan && dietPlan.mealPlan && dietPlan.mealPlan[`day${currentDay}`] ? (
+                      <>
+                        <p className="text-sm text-gray-300">{dietPlan.mealPlan[`day${currentDay}`].lunch?.name || 'Grilled chicken salad'}</p>
+                        <p className="mt-1 text-xs text-gray-400">{dietPlan.mealPlan[`day${currentDay}`].lunch?.calories || 450} calories</p>
+                        {dietPlan.mealPlan[`day${currentDay}`].lunch?.ingredients && (
+                          <p className="mt-1 text-xs text-gray-500">
+                            {dietPlan.mealPlan[`day${currentDay}`].lunch.ingredients.slice(0, 3).join(', ')}
+                          </p>
+                        )}
+                      </>
+                    ) : (
+                      <>
+                        <p className="text-sm text-gray-300">Grilled chicken salad</p>
+                        <p className="mt-1 text-xs text-gray-400">450 calories</p>
+                      </>
+                    )}
                   </div>
+                  
+                  {/* Dinner */}
                   <div className="bg-[#121212] p-4 rounded-xl">
                     <h4 className="font-bold text-[#F2B33D] mb-2">Dinner</h4>
-                    <p className="text-sm text-gray-300">Salmon with quinoa</p>
-                    <p className="text-xs text-gray-400 mt-1">380 calories</p>
+                    {dietPlan && dietPlan.mealPlan && dietPlan.mealPlan[`day${currentDay}`] ? (
+                      <>
+                        <p className="text-sm text-gray-300">{dietPlan.mealPlan[`day${currentDay}`].dinner?.name || 'Salmon with quinoa'}</p>
+                        <p className="mt-1 text-xs text-gray-400">{dietPlan.mealPlan[`day${currentDay}`].dinner?.calories || 380} calories</p>
+                        {dietPlan.mealPlan[`day${currentDay}`].dinner?.ingredients && (
+                          <p className="mt-1 text-xs text-gray-500">
+                            {dietPlan.mealPlan[`day${currentDay}`].dinner.ingredients.slice(0, 3).join(', ')}
+                          </p>
+                        )}
+                      </>
+                    ) : (
+                      <>
+                        <p className="text-sm text-gray-300">Salmon with quinoa</p>
+                        <p className="mt-1 text-xs text-gray-400">380 calories</p>
+                      </>
+                    )}
                   </div>
                 </div>
+                
+                {/* Additional meals for generated plans */}
+                {dietPlan && dietPlan.mealPlan && dietPlan.mealPlan[`day${currentDay}`] && (
+                  <div className="grid gap-4 mt-4 md:grid-cols-2">
+                    {/* Snack 1 */}
+                    {dietPlan.mealPlan[`day${currentDay}`].snack1 && (
+                      <div className="bg-[#121212] p-4 rounded-xl">
+                        <h4 className="font-bold text-[#62E0A1] mb-2">Morning Snack</h4>
+                        <p className="text-sm text-gray-300">{dietPlan.mealPlan[`day${currentDay}`].snack1.name}</p>
+                        <p className="mt-1 text-xs text-gray-400">{dietPlan.mealPlan[`day${currentDay}`].snack1.calories} calories</p>
+                      </div>
+                    )}
+                    
+                    {/* Snack 2 */}
+                    {dietPlan.mealPlan[`day${currentDay}`].snack2 && (
+                      <div className="bg-[#121212] p-4 rounded-xl">
+                        <h4 className="font-bold text-[#36CFFF] mb-2">Evening Snack</h4>
+                        <p className="text-sm text-gray-300">{dietPlan.mealPlan[`day${currentDay}`].snack2.name}</p>
+                        <p className="mt-1 text-xs text-gray-400">{dietPlan.mealPlan[`day${currentDay}`].snack2.calories} calories</p>
+                      </div>
+                    )}
+                  </div>
+                )}
+                
+                {/* Raw response fallback */}
+                {dietPlan && dietPlan.rawResponse && !dietPlan.mealPlan && (
+                  <div className="bg-[#121212] p-6 rounded-xl">
+                    <h4 className="font-bold text-[#62E0A1] mb-4">Your Personalized Nutrition Plan</h4>
+                    <div className="overflow-y-auto text-sm text-gray-300 whitespace-pre-wrap max-h-96">
+                      {dietPlan.rawResponse}
+                    </div>
+                  </div>
+                )}
               </div>
+
+              {/* Shopping List */}
+              {dietPlan && dietPlan.shoppingList && Object.keys(dietPlan.shoppingList).length > 0 && (
+                <div className="bg-[#121212] p-6 rounded-xl mt-6">
+                  <h4 className="font-bold text-[#F2B33D] mb-4">Shopping List</h4>
+                  <div className="grid gap-4 md:grid-cols-3">
+                    {Object.entries(dietPlan.shoppingList).map(([category, items]) => (
+                      items && items.length > 0 && (
+                        <div key={category} className="space-y-2">
+                          <h5 className="font-semibold text-[#36CFFF] capitalize">{category}</h5>
+                          <ul className="space-y-1 text-sm text-gray-300">
+                            {items.slice(0, 8).map((item, index) => (
+                              <li key={index} className="flex items-center gap-2">
+                                <span className="w-2 h-2 bg-[#62E0A1] rounded-full"></span>
+                                {item}
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      )
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -494,4 +719,4 @@ const Nutrition = () => {
   );
 };
 
-export default Nutrition; 
+export default Nutrition;
