@@ -278,14 +278,14 @@ const Profile = () => {
               Stats
             </button>
             <button
-              onClick={() => setActiveTab('settings')}
+              onClick={() => setActiveTab('workout')}
               className={`flex-1 py-3 px-6 rounded-lg font-medium transition ${
-                activeTab === 'settings' 
+                activeTab === 'workout' 
                   ? 'bg-[#62E0A1] text-black' 
                   : 'text-gray-400 hover:text-white'
               }`}
             >
-              Settings
+              Weekly Workout Plan
             </button>
           </div>
 
@@ -415,78 +415,65 @@ const Profile = () => {
             </div>
           )}
 
-          {activeTab === 'settings' && (
+          {activeTab === 'workout' && (
             <div className="bg-[#121212] rounded-2xl p-6">
-              <h3 className="text-xl font-bold text-white mb-6">Profile Settings</h3>
+              <h3 className="text-xl font-bold text-white mb-6">Weekly Workout Plan</h3>
               <div className="grid md:grid-cols-2 gap-6">
-                <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">Name</label>
-                  <input
-                    type="text"
-                    name="name"
-                    value={profileData.name}
-                    onChange={handleInputChange}
-                    className="w-full px-4 py-2 bg-[#1E1E1E] border border-gray-600 rounded-lg text-white focus:border-[#62E0A1] focus:outline-none"
-                  />
+                {/* Example workout plan for each day */}
+                <div className="bg-[#1E1E1E] rounded-lg p-4 mb-4">
+                  <h4 className="text-lg font-semibold text-[#62E0A1] mb-2">Monday</h4>
+                  <ul className="list-disc list-inside text-gray-300 text-sm space-y-1">
+                    <li>Chest: Bench Press, Push Ups</li>
+                    <li>Triceps: Tricep Dips</li>
+                    <li>Cardio: 20 min HIIT</li>
+                  </ul>
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">Email</label>
-                  <input
-                    type="email"
-                    name="email"
-                    value={profileData.email}
-                    onChange={handleInputChange}
-                    className="w-full px-4 py-2 bg-[#1E1E1E] border border-gray-600 rounded-lg text-white focus:border-[#62E0A1] focus:outline-none"
-                  />
+                <div className="bg-[#1E1E1E] rounded-lg p-4 mb-4">
+                  <h4 className="text-lg font-semibold text-[#36CFFF] mb-2">Tuesday</h4>
+                  <ul className="list-disc list-inside text-gray-300 text-sm space-y-1">
+                    <li>Back: Pull Ups, Deadlifts</li>
+                    <li>Biceps: Dumbbell Curls</li>
+                    <li>Core: Plank, Russian Twists</li>
+                  </ul>
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">Age</label>
-                  <input
-                    type="number"
-                    name="age"
-                    value={profileData.age}
-                    onChange={handleInputChange}
-                    className="w-full px-4 py-2 bg-[#1E1E1E] border border-gray-600 rounded-lg text-white focus:border-[#62E0A1] focus:outline-none"
-                  />
+                <div className="bg-[#1E1E1E] rounded-lg p-4 mb-4">
+                  <h4 className="text-lg font-semibold text-[#F2B33D] mb-2">Wednesday</h4>
+                  <ul className="list-disc list-inside text-gray-300 text-sm space-y-1">
+                    <li>Legs: Squats, Lunges</li>
+                    <li>Glutes: Hip Thrusts</li>
+                    <li>Cardio: 30 min Cycling</li>
+                  </ul>
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">Weight (kg)</label>
-                  <input
-                    type="number"
-                    name="weight"
-                    value={profileData.weight}
-                    onChange={handleInputChange}
-                    className="w-full px-4 py-2 bg-[#1E1E1E] border border-gray-600 rounded-lg text-white focus:border-[#62E0A1] focus:outline-none"
-                  />
+                <div className="bg-[#1E1E1E] rounded-lg p-4 mb-4">
+                  <h4 className="text-lg font-semibold text-[#62E0A1] mb-2">Thursday</h4>
+                  <ul className="list-disc list-inside text-gray-300 text-sm space-y-1">
+                    <li>Shoulders: Overhead Press</li>
+                    <li>Arms: Hammer Curls</li>
+                    <li>Core: Leg Raises</li>
+                  </ul>
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">Height (cm)</label>
-                  <input
-                    type="number"
-                    name="height"
-                    value={profileData.height}
-                    onChange={handleInputChange}
-                    className="w-full px-4 py-2 bg-[#1E1E1E] border border-gray-600 rounded-lg text-white focus:border-[#62E0A1] focus:outline-none"
-                  />
+                <div className="bg-[#1E1E1E] rounded-lg p-4 mb-4">
+                  <h4 className="text-lg font-semibold text-[#36CFFF] mb-2">Friday</h4>
+                  <ul className="list-disc list-inside text-gray-300 text-sm space-y-1">
+                    <li>Full Body: Burpees, Mountain Climbers</li>
+                    <li>Mobility: Stretching</li>
+                    <li>Cardio: 20 min Jog</li>
+                  </ul>
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">Goal</label>
-                  <input
-                    type="text"
-                    name="goal"
-                    value={profileData.goal}
-                    onChange={handleInputChange}
-                    className="w-full px-4 py-2 bg-[#1E1E1E] border border-gray-600 rounded-lg text-white focus:border-[#62E0A1] focus:outline-none"
-                  />
+                <div className="bg-[#1E1E1E] rounded-lg p-4 mb-4">
+                  <h4 className="text-lg font-semibold text-[#F2B33D] mb-2">Saturday</h4>
+                  <ul className="list-disc list-inside text-gray-300 text-sm space-y-1">
+                    <li>Active Recovery: Yoga, Foam Rolling</li>
+                    <li>Light Cardio: Walking</li>
+                  </ul>
                 </div>
-              </div>
-              <div className="mt-6">
-                <button
-                  onClick={handleSave}
-                  className="px-6 py-2 bg-[#62E0A1] text-black font-semibold rounded-lg hover:bg-[#4CAF50] transition"
-                >
-                  Save Changes
-                </button>
+                <div className="bg-[#1E1E1E] rounded-lg p-4 mb-4">
+                  <h4 className="text-lg font-semibold text-[#62E0A1] mb-2">Sunday</h4>
+                  <ul className="list-disc list-inside text-gray-300 text-sm space-y-1">
+                    <li>Rest Day</li>
+                    <li>Optional: Meditation</li>
+                  </ul>
+                </div>
               </div>
             </div>
           )}
