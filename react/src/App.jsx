@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import './App.css';
 
 // Import all the converted components
@@ -17,6 +17,14 @@ import Onboarding from './pages/Onboarding';
 import Nutrition from './pages/Nutrition';
 import Workout from './pages/Workout';
 import Preference from './pages/Preference';
+
+// Component to conditionally render AI Assistant
+const ConditionalAIAssistant = () => {
+  const location = useLocation();
+  const isAICompanionPage = location.pathname === '/ai-companion';
+  
+  return !isAICompanionPage ? <AIAssistant /> : null;
+};
 
 function App() {
   return (
@@ -54,8 +62,8 @@ function App() {
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
         
-        {/* Global AI Assistant - available on all pages */}
-        <AIAssistant />
+        {/* Global AI Assistant - available on all pages except AI Companion */}
+        <ConditionalAIAssistant />
       </div>
     </Router>
   );
