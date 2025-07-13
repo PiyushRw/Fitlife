@@ -175,8 +175,8 @@ const HomePage = () => {
             </div>
             <div className="bg-[#121212] p-6 rounded-xl text-center shadow-md hover:scale-105 transition">
               <img src="https://img.icons8.com/color/96/yoga.png" className="mx-auto mb-4 w-16 h-16" />
-              <h3 className="text-lg font-semibold text-[#36CFFF]">Senior Yoga Plans</h3>
-              <p className="text-gray-400 mt-2 text-sm">Gentle yoga routines to improve flexibility, balance, and mindfulness.</p>
+              <h3 className="text-lg font-semibold text-[#36CFFF]">Exercises for every age group</h3>
+              <p className="text-gray-400 mt-2 text-sm">Exercises for everyone to improve strength, flexibility, balance, and mindfulness.</p>
             </div>
             <div className="bg-[#121212] p-6 rounded-xl text-center shadow-md hover:scale-105 transition">
               <img src="https://img.icons8.com/color/96/vegetarian-food.png" className="mx-auto mb-4 w-16 h-16" />
