@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import FitLifeLogo from '../components/FitLifeLogo';
 import image1 from '../assets/images/1.jpg';
@@ -14,6 +14,8 @@ const HomePage = () => {
   const [currentTestimonial, setCurrentTestimonial] = useState(0);
   const [goalInput, setGoalInput] = useState('');
   const [isAIOpen, setIsAIOpen] = useState(false);
+  const [isImageLoaded, setIsImageLoaded] = useState(false);
+  const [visibleSections, setVisibleSections] = useState(new Set());
   const [aiMessages, setAiMessages] = useState([
     {
       id: 1,
@@ -42,6 +44,15 @@ const HomePage = () => {
     }
   ]);
   const [aiInput, setAiInput] = useState('');
+
+  // Refs for scroll animations
+  const featuresRef = useRef(null);
+  const healthyAgingRef = useRef(null);
+  const testimonialsRef = useRef(null);
+  const motivationRef = useRef(null);
+  const progressRef = useRef(null);
+  const goalSettingRef = useRef(null);
+  const wellnessTipsRef = useRef(null);
 
   const testimonials = [
     {
@@ -74,6 +85,56 @@ const HomePage = () => {
 
     return () => clearInterval(interval);
   }, [testimonials.length]);
+
+  // Handle image loading
+  useEffect(() => {
+    const img = new Image();
+    img.onload = () => {
+      setIsImageLoaded(true);
+    };
+    img.src = heroImage;
+  }, []);
+
+  // Intersection Observer for scroll animations
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            setVisibleSections(prev => new Set([...prev, entry.target.id]));
+          }
+        });
+      },
+      {
+        threshold: 0.1,
+        rootMargin: '0px 0px -50px 0px'
+      }
+    );
+
+    const sections = [
+      featuresRef.current,
+      healthyAgingRef.current,
+      testimonialsRef.current,
+      motivationRef.current,
+      progressRef.current,
+      goalSettingRef.current,
+      wellnessTipsRef.current
+    ];
+
+    sections.forEach(section => {
+      if (section) {
+        observer.observe(section);
+      }
+    });
+
+    return () => {
+      sections.forEach(section => {
+        if (section) {
+          observer.unobserve(section);
+        }
+      });
+    };
+  }, []);
 
   const handleGoalSubmit = (e) => {
     e.preventDefault();
@@ -122,8 +183,28 @@ const HomePage = () => {
         </nav>
       </header>
 
-      {/* Hero Section */}
-      <section className="relative h-[90vh] bg-cover bg-center mt-6 rounded-3xl overflow-hidden shadow-xl" style={{ backgroundImage: `linear-gradient(90deg,rgba(18,18,18,0.85) 60%,rgba(98,224,161,0.12)), url(${heroImage})` }}>
+      {/* Hero Section with Blurry Loading */}
+      <section className="relative h-[90vh] bg-cover bg-center mt-6 rounded-3xl overflow-hidden shadow-xl">
+        {/* Blurry Background Image (always visible) */}
+        <div 
+          className="absolute inset-0 bg-cover bg-center transition-all duration-2000 ease-in-out"
+          style={{ 
+            backgroundImage: `linear-gradient(90deg,rgba(18,18,18,0.85) 60%,rgba(98,224,161,0.12)), url(${heroImage})`,
+            filter: isImageLoaded ? 'blur(0px)' : 'blur(8px)',
+            transform: isImageLoaded ? 'scale(1)' : 'scale(1.1)'
+          }}
+        />
+        
+        {/* Clear Background Image (overlays when loaded) */}
+        <div 
+          className={`absolute inset-0 bg-cover bg-center transition-all duration-2000 ease-in-out ${
+            isImageLoaded ? 'opacity-100' : 'opacity-0'
+          }`}
+          style={{ 
+            backgroundImage: `linear-gradient(90deg,rgba(18,18,18,0.85) 60%,rgba(98,224,161,0.12)), url(${heroImage})`
+          }}
+        />
+        
         <div className="absolute bottom-16 left-8 space-y-6 max-w-xl animate-fade-in-down">
           <h1 className="text-5xl md:text-6xl font-extrabold text-white drop-shadow-lg leading-tight">Personalized fitness & nutrition</h1>
           <p className="text-2xl font-semibold text-white drop-shadow-lg">
@@ -134,7 +215,13 @@ const HomePage = () => {
       </section>
 
       {/* Feature Highlights */}
-      <section className="relative grid md:grid-cols-3 gap-12 p-10 bg-[#121212] max-w-7xl mx-auto my-20 z-10">
+      <section 
+        ref={featuresRef}
+        id="features"
+        className={`relative grid md:grid-cols-3 gap-12 p-10 bg-[#121212] max-w-7xl mx-auto my-20 z-10 transition-all duration-1000 ease-out ${
+          visibleSections.has('features') ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-20'
+        }`}
+      >
         <div className="hidden md:block absolute -top-8 -left-8 w-40 h-40 bg-[#62E0A1]/20 rounded-3xl blur-xl z-0"></div>
         <div className="hidden md:block absolute -bottom-8 -right-8 w-40 h-40 bg-[#36CFFF]/20 rounded-3xl blur-xl z-0"></div>
         
@@ -161,7 +248,13 @@ const HomePage = () => {
       </section>
 
       {/* Healthy Aging Section */}
-      <section className="bg-[#1E1E1E] py-16 px-6 text-white rounded-3xl shadow-inner mt-20">
+      <section 
+        ref={healthyAgingRef}
+        id="healthy-aging"
+        className={`bg-[#1E1E1E] py-16 px-6 text-white rounded-3xl shadow-inner mt-20 transition-all duration-1000 ease-out ${
+          visibleSections.has('healthy-aging') ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-20'
+        }`}
+      >
         <div className="max-w-6xl mx-auto">
           <h2 className="text-3xl font-bold text-[#62E0A1] mb-6 text-center">Healthy Aging with FitLife</h2>
           <p className="text-center text-gray-300 max-w-2xl mx-auto mb-12">
@@ -195,7 +288,13 @@ const HomePage = () => {
       </section>
 
       {/* Testimonial Carousel */}
-      <section className="text-center px-6 py-16 bg-[#1E1E1E] mt-20 rounded-3xl shadow-lg max-w-4xl mx-auto">
+      <section 
+        ref={testimonialsRef}
+        id="testimonials"
+        className={`text-center px-6 py-16 bg-[#1E1E1E] mt-20 rounded-3xl shadow-lg max-w-4xl mx-auto transition-all duration-1000 ease-out ${
+          visibleSections.has('testimonials') ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-20'
+        }`}
+      >
         <div className="relative max-w-2xl mx-auto">
           <blockquote className="text-xl font-semibold leading-relaxed text-white">
             <img 
@@ -222,7 +321,13 @@ const HomePage = () => {
       </section>
 
       {/* Motivation Banner */}
-      <section className="relative bg-gradient-to-r from-[#1E1E1E] via-[#121212] to-[#62E0A1]/60 shadow-xl my-20 py-10 px-16 flex flex-col md:flex-row items-center justify-between max-w-full mx-auto overflow-hidden">
+      <section 
+        ref={motivationRef}
+        id="motivation"
+        className={`relative bg-gradient-to-r from-[#1E1E1E] via-[#121212] to-[#62E0A1]/60 shadow-xl my-20 py-10 px-16 flex flex-col md:flex-row items-center justify-between max-w-full mx-auto overflow-hidden transition-all duration-1000 ease-out ${
+          visibleSections.has('motivation') ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-20'
+        }`}
+      >
         <div className="absolute -top-10 -left-10 w-44 h-44 bg-[#36CFFF]/20 rounded-3xl blur-2xl z-0"></div>
         <div className="absolute -bottom-10 -right-10 w-44 h-44 bg-[#62E0A1]/20 rounded-3xl blur-2xl z-0"></div>
         <div className="flex-1 mb-8 md:mb-0 relative z-10">
@@ -244,7 +349,13 @@ const HomePage = () => {
       </section>
 
       {/* Progress Tracker Preview */}
-      <section className="relative bg-[#1E1E1E] rounded-3xl shadow-2xl max-w-5xl mx-auto my-20 px-8 py-10 overflow-hidden">
+      <section 
+        ref={progressRef}
+        id="progress"
+        className={`relative bg-[#1E1E1E] rounded-3xl shadow-2xl max-w-5xl mx-auto my-20 px-8 py-10 overflow-hidden transition-all duration-1000 ease-out ${
+          visibleSections.has('progress') ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-20'
+        }`}
+      >
         <div className="absolute -top-8 -left-8 w-32 h-32 bg-[#62E0A1]/20 rounded-2xl blur-2xl z-0"></div>
         <div className="absolute -bottom-8 -right-8 w-32 h-32 bg-[#F2B33D]/20 rounded-2xl blur-2xl z-0"></div>
         <h2 className="text-2xl font-bold text-[#62E0A1] mb-6 text-center relative z-10">Your Progress At A Glance</h2>
@@ -272,7 +383,13 @@ const HomePage = () => {
       </section>
 
       {/* Goal Setting */}
-      <section className="relative bg-[#1E1E1E] rounded-3xl shadow-2xl max-w-5xl mx-auto my-20 px-8 py-10 overflow-hidden">
+      <section 
+        ref={goalSettingRef}
+        id="goal-setting"
+        className={`relative bg-[#1E1E1E] rounded-3xl shadow-2xl max-w-5xl mx-auto my-20 px-8 py-10 overflow-hidden transition-all duration-1000 ease-out ${
+          visibleSections.has('goal-setting') ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-20'
+        }`}
+      >
         <div className="absolute -top-8 -right-8 w-32 h-32 bg-[#F2B33D]/20 rounded-2xl blur-2xl z-0"></div>
         <div className="absolute -bottom-8 -left-8 w-32 h-32 bg-[#62E0A1]/20 rounded-2xl blur-2xl z-0"></div>
         <div className="flex-1 mb-8 md:mb-0 relative z-10">
@@ -295,7 +412,13 @@ const HomePage = () => {
       </section>
 
       {/* Wellness Tips */}
-      <section className="relative max-w-7xl mx-auto my-20 px-6 overflow-visible">
+      <section 
+        ref={wellnessTipsRef}
+        id="wellness-tips"
+        className={`relative max-w-7xl mx-auto my-20 px-6 overflow-visible transition-all duration-1000 ease-out ${
+          visibleSections.has('wellness-tips') ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-20'
+        }`}
+      >
         <div className="absolute -top-8 -right-8 w-32 h-32 bg-[#36CFFF]/20 rounded-2xl blur-2xl z-0"></div>
         <div className="absolute -bottom-8 -left-8 w-32 h-32 bg-[#F2B33D]/20 rounded-2xl blur-2xl z-0"></div>
         <h2 className="text-2xl font-bold text-[#36CFFF] mb-6 text-center relative z-10">Today's Wellness Tip</h2>
