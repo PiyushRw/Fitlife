@@ -161,107 +161,99 @@ const Preference = () => {
         {/* Main Content */}
         <main className="flex-1 bg-[#1E1E1E] p-8 ml-6 overflow-y-auto">
           <div className="w-full">
-            {/* Header */}
-            <div className="mb-12 text-center">
-              <h1 className="text-4xl font-bold text-[#62E0A1] mb-3">Preferences</h1>
-              <p className="text-gray-400 text-lg">Customize your fitness journey and app experience</p>
-            </div>
-
-                        {/* Profile Photo Section */}
-            <div className="bg-[#121212] p-8 rounded-2xl mb-10 shadow-lg border border-gray-800 ml-0">
-              <div className="flex flex-col items-start gap-6">
-                <div className="flex items-center gap-6">
-                  <div className="text-left">
-                    <h2 className="text-2xl font-semibold text-[#62E0A1] mb-3">Profile Photo</h2>
-                    <p className="text-gray-400">Update your profile picture</p>
-                  </div>
-                  <img src={profilePhoto} alt="Profile" className="w-24 h-24 rounded-full border-4 border-[#62E0A1] object-cover shadow-xl"/>
-                </div>
-                <div className="flex flex-col items-start gap-3">
-                  <input 
-                    type="file" 
-                    accept="image/*" 
-                    onChange={handlePhotoUpload}
-                    className="text-sm bg-transparent border-0 p-0 file:bg-gradient-to-r file:from-[#62E0A1] file:to-[#36CFFF] file:text-black file:border-0 file:rounded-full file:px-6 file:py-3 file:font-semibold file:cursor-pointer file:hover:scale-105 file:transition-all text-transparent"
-                  />
-                  <p className="text-sm text-gray-400">Choose Picture</p>
-                </div>
+            <form onSubmit={handleSubmit}>
+              {/* Header */}
+              <div className="mb-12 text-center">
+                <h1 className="text-4xl font-bold text-[#62E0A1] mb-3">Preferences</h1>
+                <p className="text-gray-400 text-lg">Customize your fitness journey and app experience</p>
               </div>
-            </div>
 
-            {/* Editable Fields */}
-            <form onSubmit={handleSubmit} className="space-y-10">
-              {/* Personal Information Section */}
-              <div className="bg-[#121212] p-8 rounded-2xl shadow-lg border border-gray-800">
-                <div className="flex items-center mb-8">
-                  <div className="bg-gradient-to-r from-[#62E0A1] to-[#36CFFF] text-black rounded-full w-10 h-10 flex items-center justify-center mr-4 shadow-lg">
-                    <i className="fas fa-user text-lg"></i>
-                  </div>
-                  <h2 className="text-2xl font-semibold text-[#62E0A1]">Personal Information</h2>
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-                  {/* Name */}
-                  <div className="space-y-3">
-                    <label className="block text-sm font-semibold text-gray-300 text-left">Name</label>
-                    <input 
-                      type="text" 
-                      name="name"
-                      value={formData.name}
-                      onChange={handleInputChange}
-                      className="w-full bg-[#1A1A1A] border border-gray-700 rounded-lg focus:outline-none focus:border-[#62E0A1] focus:ring-2 focus:ring-[#62E0A1]/20 text-sm p-3 transition-all"
-                    />
-                  </div>
-                  
-                  {/* Age Range */}
-                  <div className="space-y-3">
-                    <label className="block text-sm font-semibold text-gray-300 text-left">Age Range</label>
-                    <div className="relative">
-                      <button 
-                        type="button" 
-                        className="w-full p-3 bg-[#1A1A1A] text-white border border-gray-700 rounded-lg text-left cursor-pointer flex justify-between items-center text-sm focus:outline-none focus:border-[#62E0A1] focus:ring-2 focus:ring-[#62E0A1]/20 hover:border-[#62E0A1] transition-all"
-                        onClick={() => handleDropdownToggle('age')}
-                      >
-                        <span>{formData.age || 'Select age range'}</span>
-                        <span className="text-gray-400">⌄</span>
-                      </button>
-                      {dropdownOpen.age && (
-                        <div className="absolute top-full left-0 right-0 bg-[#1e1e1e] border border-gray-600 rounded-lg mt-1 max-h-48 overflow-y-auto z-50">
-                          {['Under 18', '18–30', '31–45', '46–60', '60+'].map((age) => (
-                            <div 
-                              key={age}
-                              className="p-3 cursor-pointer hover:bg-[#2a2a2a] rounded-lg m-1 text-sm"
-                              onClick={() => handleDropdownSelect('age', age)}
-                            >
-                              {age}
-                            </div>
-                          ))}
-                        </div>
-                      )}
+              {/* Profile Card: Photo + Personal Info (Modern Layout) */}
+              <div className="bg-[#121212] p-8 rounded-2xl mb-10 shadow-lg border border-gray-800 ml-0">
+                <div className="flex flex-col md:flex-row gap-8 w-full">
+                  {/* Left: Profile Photo */}
+                  <div className="flex flex-col items-center md:items-start w-full md:w-1/4 gap-4">
+                    <img src={profilePhoto} alt="Profile" className="w-28 h-28 rounded-full border-4 border-[#62E0A1] object-cover shadow-xl" />
+                    <div className="text-center md:text-left w-full">
+                      <input 
+                        type="file" 
+                        accept="image/*" 
+                        onChange={handlePhotoUpload}
+                        className="hidden"
+                        id="profile-photo-input"
+                      />
+                      <label htmlFor="profile-photo-input" className="text-sm bg-gradient-to-r from-[#62E0A1] to-[#36CFFF] text-black font-semibold py-2 px-4 rounded-full cursor-pointer inline-block text-center transition-all hover:scale-105">
+                        Change Photo
+                      </label>
+                      <p className="text-xs text-gray-400 mt-2">Update your profile picture</p>
                     </div>
                   </div>
-                  
-                  {/* Weight */}
-                  <div className="space-y-3">
-                    <label className="block text-sm font-semibold text-gray-300 text-left">Weight (kg)</label>
-                    <input 
-                      type="number" 
-                      name="weight"
-                      value={formData.weight}
-                      onChange={handleInputChange}
-                      className="w-full bg-[#1A1A1A] border border-gray-700 rounded-lg focus:outline-none focus:border-[#62E0A1] focus:ring-2 focus:ring-[#62E0A1]/20 text-sm p-3 transition-all"
-                    />
-                  </div>
-                  
-                  {/* Height */}
-                  <div className="space-y-3">
-                    <label className="block text-sm font-semibold text-gray-300 text-left">Height (cm)</label>
-                    <input 
-                      type="number" 
-                      name="height"
-                      value={formData.height}
-                      onChange={handleInputChange}
-                      className="w-full bg-[#1A1A1A] border border-gray-700 rounded-lg focus:outline-none focus:border-[#62E0A1] focus:ring-2 focus:ring-[#62E0A1]/20 text-sm p-3 transition-all"
-                    />
+
+                  {/* Right: Input Fields */}
+                  <div className="w-full md:w-3/4 grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {/* Name */}
+                    <div className="space-y-1">
+                      <label className="block text-sm font-semibold text-gray-300 text-left">Name</label>
+                      <input 
+                        type="text" 
+                        name="name"
+                        value={formData.name}
+                        onChange={handleInputChange}
+                        className="w-full bg-[#1A1A1A] border border-gray-700 rounded-lg focus:outline-none focus:border-[#62E0A1] focus:ring-2 focus:ring-[#62E0A1]/20 text-sm p-3 transition-all"
+                      />
+                    </div>
+
+                    {/* Age Range */}
+                    <div className="space-y-1">
+                      <label className="block text-sm font-semibold text-gray-300 text-left">Age Range</label>
+                      <div className="relative">
+                        <button 
+                          type="button" 
+                          className="w-full p-3 bg-[#1A1A1A] text-white border border-gray-700 rounded-lg text-left cursor-pointer flex justify-between items-center text-sm focus:outline-none focus:border-[#62E0A1] focus:ring-2 focus:ring-[#62E0A1]/20 hover:border-[#62E0A1] transition-all"
+                          onClick={() => handleDropdownToggle('age')}
+                        >
+                          <span>{formData.age || 'Select age range'}</span>
+                          <span className="text-gray-400">⌄</span>
+                        </button>
+                        {dropdownOpen.age && (
+                          <div className="absolute top-full left-0 right-0 bg-[#1e1e1e] border border-gray-600 rounded-lg mt-1 max-h-48 overflow-y-auto z-50">
+                            {['Under 18', '18–30', '31–45', '46–60', '60+'].map((age) => (
+                              <div 
+                                key={age}
+                                className="p-3 cursor-pointer hover:bg-[#2a2a2a] rounded-lg m-1 text-sm"
+                                onClick={() => handleDropdownSelect('age', age)}
+                              >
+                                {age}
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Weight */}
+                    <div className="space-y-1">
+                      <label className="block text-sm font-semibold text-gray-300 text-left">Weight (kg)</label>
+                      <input 
+                        type="number" 
+                        name="weight"
+                        value={formData.weight}
+                        onChange={handleInputChange}
+                        className="w-full bg-[#1A1A1A] border border-gray-700 rounded-lg focus:outline-none focus:border-[#62E0A1] focus:ring-2 focus:ring-[#62E0A1]/20 text-sm p-3 transition-all"
+                      />
+                    </div>
+
+                    {/* Height */}
+                    <div className="space-y-1">
+                      <label className="block text-sm font-semibold text-gray-300 text-left">Height (cm)</label>
+                      <input 
+                        type="number" 
+                        name="height"
+                        value={formData.height}
+                        onChange={handleInputChange}
+                        className="w-full bg-[#1A1A1A] border border-gray-700 rounded-lg focus:outline-none focus:border-[#62E0A1] focus:ring-2 focus:ring-[#62E0A1]/20 text-sm p-3 transition-all"
+                      />
+                    </div>
                   </div>
                 </div>
               </div>
@@ -673,17 +665,18 @@ const Preference = () => {
                 </div>
               </div>
 
-              {/* App Settings Section */}
+              {/* App Settings Section (2 rows x 3 columns: toggles + dropdowns) */}
               <div className="bg-[#121212] p-8 rounded-2xl shadow-lg border border-gray-800">
-                <div className="flex items-center mb-8">
+                <div className="flex items-center mb-6">
                   <div className="bg-gradient-to-r from-[#62E0A1] to-[#36CFFF] text-black rounded-full w-10 h-10 flex items-center justify-center mr-4 shadow-lg">
                     <i className="fas fa-cog text-lg"></i>
                   </div>
                   <h2 className="text-2xl font-semibold text-[#62E0A1]">App Settings</h2>
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                  {/* Notifications */}
-                  <div className="space-y-3">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  {/* Row 1 */}
+                  {/* Notifications Toggle */}
+                  <div className="space-y-2">
                     <label className="block text-sm font-semibold text-gray-300 text-left">Notifications</label>
                     <div className="flex items-center space-x-3">
                       <label className="flex items-center cursor-pointer">
@@ -693,16 +686,33 @@ const Preference = () => {
                           onChange={(e) => setFormData(prev => ({...prev, notifications: e.target.checked}))}
                           className="sr-only"
                         />
-                        <div className={`w-10 h-6 rounded-full transition-colors ${formData.notifications ? 'bg-[#62E0A1]' : 'bg-gray-600'}`}>
+                        <div className={`w-10 h-6 rounded-full transition-colors ${formData.notifications ? 'bg-[#62E0A1]' : 'bg-gray-600'}`}> 
                           <div className={`w-4 h-4 bg-white rounded-full transition-transform transform ${formData.notifications ? 'translate-x-4' : 'translate-x-1'} mt-1`}></div>
                         </div>
                       </label>
                       <span className="text-sm text-gray-300">{formData.notifications ? 'Enabled' : 'Disabled'}</span>
                     </div>
                   </div>
-
-                  {/* Privacy Settings */}
-                  <div className="space-y-3">
+                  {/* Social Sharing Toggle */}
+                  <div className="space-y-2">
+                    <label className="block text-sm font-semibold text-gray-300 text-left">Social Sharing</label>
+                    <div className="flex items-center space-x-3">
+                      <label className="flex items-center cursor-pointer">
+                        <input 
+                          type="checkbox" 
+                          checked={formData.socialSharing}
+                          onChange={(e) => setFormData(prev => ({...prev, socialSharing: e.target.checked}))}
+                          className="sr-only"
+                        />
+                        <div className={`w-10 h-6 rounded-full transition-colors ${formData.socialSharing ? 'bg-[#62E0A1]' : 'bg-gray-600'}`}> 
+                          <div className={`w-4 h-4 bg-white rounded-full transition-transform transform ${formData.socialSharing ? 'translate-x-4' : 'translate-x-1'} mt-1`}></div>
+                        </div>
+                      </label>
+                      <span className="text-sm text-gray-300">{formData.socialSharing ? 'Enabled' : 'Disabled'}</span>
+                    </div>
+                  </div>
+                  {/* Privacy Settings Dropdown */}
+                  <div className="space-y-2">
                     <label className="block text-sm font-semibold text-gray-300 text-left">Privacy Settings</label>
                     <div className="relative">
                       <button 
@@ -728,28 +738,9 @@ const Preference = () => {
                       )}
                     </div>
                   </div>
-
-                  {/* Social Sharing */}
-                  <div className="space-y-3">
-                    <label className="block text-sm font-semibold text-gray-300 text-left">Social Sharing</label>
-                    <div className="flex items-center space-x-3">
-                      <label className="flex items-center cursor-pointer">
-                        <input 
-                          type="checkbox" 
-                          checked={formData.socialSharing}
-                          onChange={(e) => setFormData(prev => ({...prev, socialSharing: e.target.checked}))}
-                          className="sr-only"
-                        />
-                        <div className={`w-10 h-6 rounded-full transition-colors ${formData.socialSharing ? 'bg-[#62E0A1]' : 'bg-gray-600'}`}>
-                          <div className={`w-4 h-4 bg-white rounded-full transition-transform transform ${formData.socialSharing ? 'translate-x-4' : 'translate-x-1'} mt-1`}></div>
-                        </div>
-                      </label>
-                      <span className="text-sm text-gray-300">{formData.socialSharing ? 'Enabled' : 'Disabled'}</span>
-                    </div>
-                  </div>
-
-                  {/* Reminders */}
-                  <div className="space-y-3">
+                  {/* Row 2 */}
+                  {/* Reminders Toggle */}
+                  <div className="space-y-2">
                     <label className="block text-sm font-semibold text-gray-300 text-left">Workout Reminders</label>
                     <div className="flex items-center space-x-3">
                       <label className="flex items-center cursor-pointer">
@@ -759,16 +750,15 @@ const Preference = () => {
                           onChange={(e) => setFormData(prev => ({...prev, reminders: e.target.checked}))}
                           className="sr-only"
                         />
-                        <div className={`w-10 h-6 rounded-full transition-colors ${formData.reminders ? 'bg-[#62E0A1]' : 'bg-gray-600'}`}>
+                        <div className={`w-10 h-6 rounded-full transition-colors ${formData.reminders ? 'bg-[#62E0A1]' : 'bg-gray-600'}`}> 
                           <div className={`w-4 h-4 bg-white rounded-full transition-transform transform ${formData.reminders ? 'translate-x-4' : 'translate-x-1'} mt-1`}></div>
                         </div>
                       </label>
                       <span className="text-sm text-gray-300">{formData.reminders ? 'Enabled' : 'Disabled'}</span>
                     </div>
                   </div>
-
-                  {/* Progress Tracking */}
-                  <div className="space-y-3">
+                  {/* Progress Tracking Toggle */}
+                  <div className="space-y-2">
                     <label className="block text-sm font-semibold text-gray-300 text-left">Progress Tracking</label>
                     <div className="flex items-center space-x-3">
                       <label className="flex items-center cursor-pointer">
@@ -778,16 +768,15 @@ const Preference = () => {
                           onChange={(e) => setFormData(prev => ({...prev, progressTracking: e.target.checked}))}
                           className="sr-only"
                         />
-                        <div className={`w-10 h-6 rounded-full transition-colors ${formData.progressTracking ? 'bg-[#62E0A1]' : 'bg-gray-600'}`}>
+                        <div className={`w-10 h-6 rounded-full transition-colors ${formData.progressTracking ? 'bg-[#62E0A1]' : 'bg-gray-600'}`}> 
                           <div className={`w-4 h-4 bg-white rounded-full transition-transform transform ${formData.progressTracking ? 'translate-x-4' : 'translate-x-1'} mt-1`}></div>
                         </div>
                       </label>
                       <span className="text-sm text-gray-300">{formData.progressTracking ? 'Enabled' : 'Disabled'}</span>
                     </div>
                   </div>
-
-                  {/* Motivation */}
-                  <div className="space-y-3">
+                  {/* Motivation Type Dropdown */}
+                  <div className="space-y-2">
                     <label className="block text-sm font-semibold text-gray-300 text-left">Motivation Type</label>
                     <div className="relative">
                       <button 
