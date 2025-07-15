@@ -15,6 +15,7 @@ const AIAssistant = () => {
   const [isTyping, setIsTyping] = useState(false);
   const [conversations, setConversations] = useState([]);
   const [currentSession, setCurrentSession] = useState(null);
+  const [isClosing, setIsClosing] = useState(false);
   const chatAreaRef = useRef(null);
   const fileInputRef = useRef(null);
 
@@ -35,18 +36,18 @@ const AIAssistant = () => {
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (
-        isOpen &&
+        (isOpen || isClosing) &&
         !event.target.closest('#ai-assistant-box') &&
         !event.target.closest('#aiBox')
       ) {
-        setIsOpen(false);
+        handleClose();
       }
     };
     document.addEventListener('mousedown', handleClickOutside);
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
-  }, [isOpen]);
+  }, [isOpen, isClosing]); // depend on isOpen and isClosing
 
   // Toggle chat visibility
   const toggleChat = () => {
@@ -242,6 +243,15 @@ const AIAssistant = () => {
   const totalSize = conversations.reduce((sum, conv) => sum + JSON.stringify(conv).length, 0);
   const storageUsed = (totalSize / 1024 / 1024).toFixed(1) + ' MB';
 
+  // Handle close with animation
+  const handleClose = () => {
+    setIsClosing(true);
+    setTimeout(() => {
+      setIsOpen(false);
+      setIsClosing(false);
+    }, 300); // match animation duration
+  };
+
   return (
     <>
       {/* Floating AI Assistant Button */}
@@ -261,16 +271,23 @@ const AIAssistant = () => {
       <div
         id="aiBox"
         className={`${
-          isOpen ? 'block' : 'hidden'
-        } fixed bottom-32 right-6 bg-[#1E1E1E]/95 backdrop-blur-md border border-[#2a2a2a] rounded-2xl shadow-2xl w-[430px] max-w-full min-h-[450px] p-5 animate-soft-open z-50 flex flex-col`}
+          isOpen || isClosing ? 'block' : 'hidden'
+        } fixed bottom-32 right-6 bg-[#1E1E1E]/95 backdrop-blur-md border border-[#2a2a2a] rounded-2xl shadow-2xl w-[430px] max-w-full min-h-[450px] p-5 ${
+          isClosing ? 'animate-soft-close' : 'animate-soft-open'
+        } z-50 flex flex-col`}
       >
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
             <i className="fas fa-robot text-[#62E0A1] text-xl"></i>
-            <h3 className="text-lg font-semibold">FitLife AI Companion</h3>
+            <h3
+              className="text-lg font-semibold ai-glow-text"
+              style={{ position: 'relative', zIndex: 1, color: '#111' }}
+            >
+              FitLife AI Companion
+            </h3>
           </div>
           <button
-            onClick={() => setIsOpen(false)}
+            onClick={handleClose}
             className="text-gray-400 hover:text-red-400 transition text-xl"
           >
             ×
@@ -461,6 +478,19 @@ const AIAssistant = () => {
         .animate-soft-open {
           animation: softSlideFade 0.3s ease-out forwards;
         }
+        @keyframes softSlideFadeOut {
+          from {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+          }
+          to {
+            opacity: 0;
+            transform: translateY(30px) scale(0.85);
+          }
+        }
+        .animate-soft-close {
+          animation: softSlideFadeOut 0.3s ease-in forwards;
+        }
         #chatArea::-webkit-scrollbar {
           width: 10px;
           background: #111;
@@ -495,6 +525,13 @@ const AIAssistant = () => {
         }
         .typing-dots span:nth-child(3) {
           animation-delay: 0.4s;
+        }
+        .ai-glow-text {
+          color: #111; /* Black text */
+          text-shadow:
+            0 0 8px #62e0a1 inset,
+            0 0 16px #36cfff88 inset,
+            0 0 2px #fff inset;
         }
       `}</style>
     </>
