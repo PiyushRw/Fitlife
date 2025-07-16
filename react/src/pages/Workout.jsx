@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import FitLifeLogo from '../components/FitLifeLogo';
 import { generateWorkoutPlan, getExerciseRecommendations } from '../utils/geminiApi';
+import CustomDropdown from '../components/CustomDropdown';
 
 const Workout = () => {
   const [workoutList, setWorkoutList] = useState([
@@ -447,89 +448,43 @@ const Workout = () => {
             </div>
             <div className="flex flex-col gap-4 mb-4 md:flex-row">
               {/* Muscle Group Dropdown */}
-              <div className="relative w-full md:w-1/3">
-                <button 
-                  type="button" 
-                  className="w-full p-3 bg-[#1E1E1E] text-white border border-gray-600 rounded-xl text-left flex justify-between items-center"
-                  onClick={() => toggleDropdown('muscleGroup')}
-                >
-                  <span>{selectedMuscleGroup}</span>
-                  <span className="text-gray-400">⌄</span>
-                </button>
-                {showDropdowns.muscleGroup && (
-                  <div className="absolute top-full left-0 right-0 bg-[#1e1e1e] border border-gray-600 rounded-xl mt-1 max-h-48 overflow-y-auto z-50">
-                    {Object.keys(subgroupOptions).map((group) => (
-                      <div 
-                        key={group}
-                        className="p-3 cursor-pointer hover:bg-[#2a2a2a] rounded-lg m-1"
-                        onClick={() => selectDropdownOption('muscleGroup', group)}
-                      >
-                        {group}
-                      </div>
-                    ))}
-                  </div>
-                )}
+              <div className="w-full md:w-1/3">
+                <CustomDropdown
+                  label="Muscle Group"
+                  options={Object.keys(subgroupOptions)}
+                  value={selectedMuscleGroup === 'Select Muscle Group' ? '' : selectedMuscleGroup}
+                  onChange={opt => {
+                    setSelectedMuscleGroup(opt);
+                    setSelectedSubgroup('Select Subgroup');
+                    setSelectedExercise('Select Exercise');
+                  }}
+                  placeholder="Select Muscle Group"
+                />
               </div>
 
               {/* Subgroup Dropdown */}
-              <div className="relative w-full md:w-1/3">
-                <button 
-                  type="button" 
-                  className="w-full p-3 bg-[#1E1E1E] text-white border border-gray-600 rounded-xl text-left flex justify-between items-center"
-                  onClick={() => toggleDropdown('subgroup')}
-                >
-                  <span>{selectedSubgroup}</span>
-                  <span className="text-gray-400">⌄</span>
-                </button>
-                {showDropdowns.subgroup && (
-                  <div className="absolute top-full left-0 right-0 bg-[#1e1e1e] border border-gray-600 rounded-xl mt-1 max-h-48 overflow-y-auto z-50">
-                    {getCurrentSubgroupOptions().map((subgroup) => (
-                      <div 
-                        key={subgroup}
-                        className="p-3 cursor-pointer hover:bg-[#2a2a2a] rounded-lg m-1"
-                        onClick={() => selectDropdownOption('subgroup', subgroup)}
-                      >
-                        {subgroup}
-                      </div>
-                    ))}
-                  </div>
-                )}
+              <div className="w-full md:w-1/3">
+                <CustomDropdown
+                  label="Subgroup"
+                  options={getCurrentSubgroupOptions()}
+                  value={selectedSubgroup === 'Select Subgroup' ? '' : selectedSubgroup}
+                  onChange={opt => {
+                    setSelectedSubgroup(opt);
+                    setSelectedExercise('Select Exercise');
+                  }}
+                  placeholder="Select Subgroup"
+                />
               </div>
 
               {/* Exercise Dropdown */}
-              <div className="relative w-full md:w-1/3">
-                <button 
-                  type="button" 
-                  className="w-full p-3 bg-[#1E1E1E] text-white border border-gray-600 rounded-xl text-left flex justify-between items-center"
-                  onClick={() => toggleDropdown('exercise')}
-                >
-                  <span>{selectedExercise}</span>
-                  <span className="text-gray-400">⌄</span>
-                </button>
-                {showDropdowns.exercise && (
-                  <div className="absolute top-full left-0 right-0 bg-[#1e1e1e] border border-gray-600 rounded-xl mt-1 max-h-48 overflow-y-auto z-50">
-                    <input 
-                      type="text" 
-                      placeholder="Search exercise..." 
-                      value={exerciseSearchTerm}
-                      onChange={(e) => setExerciseSearchTerm(e.target.value)}
-                      className="w-full p-2 mb-2 rounded bg-[#1E1E1E] text-white border border-gray-600"
-                    />
-                    {getCurrentExerciseOptions()
-                      .filter(exercise => 
-                        exercise.toLowerCase().includes(exerciseSearchTerm.toLowerCase())
-                      )
-                      .map((exercise) => (
-                      <div 
-                        key={exercise}
-                        className="p-3 cursor-pointer hover:bg-[#2a2a2a] rounded-lg m-1"
-                        onClick={() => selectDropdownOption('exercise', exercise)}
-                      >
-                        {exercise}
-                      </div>
-                    ))}
-                  </div>
-                )}
+              <div className="w-full md:w-1/3">
+                <CustomDropdown
+                  label="Exercise"
+                  options={getCurrentExerciseOptions()}
+                  value={selectedExercise === 'Select Exercise' ? '' : selectedExercise}
+                  onChange={opt => setSelectedExercise(opt)}
+                  placeholder="Select Exercise"
+                />
               </div>
             </div>
             
