@@ -4,15 +4,24 @@ import FitLifeLogo from '../components/FitLifeLogo';
 
 const Profile = () => {
   const [activeTab, setActiveTab] = useState('overview');
-  const [profileData] = useState({
+  const [profileData, setProfileData] = useState({
     name: 'Nitish',
     email: 'nitish@example.com',
     age: 28,
     weight: 75,
     height: 175,
     goal: 'Build Muscle',
-    activityLevel: 'Moderate'
+    activityLevel: 'Moderate',
+    rest: 8,
+    heartRate: 72,
+    caloriesBurnt: 450,
+    maxBench: 185,
+    maxSquat: 225,
+    fiveKTime: '22:30'
   });
+
+  const [isEditing, setIsEditing] = useState(false);
+  const [editableProfileData, setEditableProfileData] = useState(profileData);
 
   const [mood, setMood] = useState('happy');
   const [workoutStreak] = useState(7);
@@ -129,6 +138,154 @@ const Profile = () => {
                 <p className="text-xs">Today is Monday, January 12. You have 3 workouts scheduled, your next meal prep is in 2 hours, and you need to drink 1 liter more water today. Keep pushing!</p>
               </div>
             </div>
+          {isEditing ? (
+            <div className="mt-4 space-y-3 text-black">
+              <div>
+                <label className="block text-xs font-semibold mb-1">Name</label>
+                <input
+                  type="text"
+                  value={editableProfileData.name}
+                  onChange={(e) => setEditableProfileData({...editableProfileData, name: e.target.value})}
+                  className="w-full rounded px-2 py-1"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-semibold mb-1">Email</label>
+                <input
+                  type="email"
+                  value={editableProfileData.email}
+                  onChange={(e) => setEditableProfileData({...editableProfileData, email: e.target.value})}
+                  className="w-full rounded px-2 py-1"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-semibold mb-1">Age</label>
+                <input
+                  type="number"
+                  value={editableProfileData.age}
+                  onChange={(e) => setEditableProfileData({...editableProfileData, age: parseInt(e.target.value) || 0})}
+                  className="w-full rounded px-2 py-1"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-semibold mb-1">Weight (kg)</label>
+                <input
+                  type="number"
+                  value={editableProfileData.weight}
+                  onChange={(e) => setEditableProfileData({...editableProfileData, weight: parseInt(e.target.value) || 0})}
+                  className="w-full rounded px-2 py-1"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-semibold mb-1">Height (cm)</label>
+                <input
+                  type="number"
+                  value={editableProfileData.height}
+                  onChange={(e) => setEditableProfileData({...editableProfileData, height: parseInt(e.target.value) || 0})}
+                  className="w-full rounded px-2 py-1"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-semibold mb-1">Goal</label>
+                <input
+                  type="text"
+                  value={editableProfileData.goal}
+                  onChange={(e) => setEditableProfileData({...editableProfileData, goal: e.target.value})}
+                  className="w-full rounded px-2 py-1"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-semibold mb-1">Activity Level</label>
+                <input
+                  type="text"
+                  value={editableProfileData.activityLevel}
+                  onChange={(e) => setEditableProfileData({...editableProfileData, activityLevel: e.target.value})}
+                  className="w-full rounded px-2 py-1"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-semibold mb-1">Rest (hrs)</label>
+                <input
+                  type="number"
+                  value={editableProfileData.rest}
+                  onChange={(e) => setEditableProfileData({...editableProfileData, rest: parseInt(e.target.value) || 0})}
+                  className="w-full rounded px-2 py-1"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-semibold mb-1">Heart Rate (bpm)</label>
+                <input
+                  type="number"
+                  value={editableProfileData.heartRate}
+                  onChange={(e) => setEditableProfileData({...editableProfileData, heartRate: parseInt(e.target.value) || 0})}
+                  className="w-full rounded px-2 py-1"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-semibold mb-1">Calories Burnt (kcal)</label>
+                <input
+                  type="number"
+                  value={editableProfileData.caloriesBurnt}
+                  onChange={(e) => setEditableProfileData({...editableProfileData, caloriesBurnt: parseInt(e.target.value) || 0})}
+                  className="w-full rounded px-2 py-1"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-semibold mb-1">Max Bench Press (lbs)</label>
+                <input
+                  type="number"
+                  value={editableProfileData.maxBench}
+                  onChange={(e) => setEditableProfileData({...editableProfileData, maxBench: parseInt(e.target.value) || 0})}
+                  className="w-full rounded px-2 py-1"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-semibold mb-1">Max Squat (lbs)</label>
+                <input
+                  type="number"
+                  value={editableProfileData.maxSquat}
+                  onChange={(e) => setEditableProfileData({...editableProfileData, maxSquat: parseInt(e.target.value) || 0})}
+                  className="w-full rounded px-2 py-1"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-semibold mb-1">5K Time</label>
+                <input
+                  type="text"
+                  value={editableProfileData.fiveKTime}
+                  onChange={(e) => setEditableProfileData({...editableProfileData, fiveKTime: e.target.value})}
+                  className="w-full rounded px-2 py-1"
+                />
+              </div>
+              <div className="flex space-x-2 mt-3">
+                <button
+                  className="bg-[#36CFFF] text-black px-4 py-2 rounded font-semibold hover:bg-[#24a0d4] transition"
+                  onClick={() => {
+                    setProfileData(editableProfileData);
+                    setIsEditing(false);
+                  }}
+                >
+                  Save
+                </button>
+                <button
+                  className="bg-gray-600 text-white px-4 py-2 rounded font-semibold hover:bg-gray-700 transition"
+                  onClick={() => {
+                    setEditableProfileData(profileData);
+                    setIsEditing(false);
+                  }}
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          ) : (
+            <button
+              className="mt-4 bg-[#36CFFF] text-black px-4 py-2 rounded-2xl font-semibold hover:bg-[#24a0d4] transition"
+              onClick={() => setIsEditing(true)}
+            >
+              Edit Profile
+            </button>
+          )}
           </section>
 
           {/* Stats */}
@@ -166,7 +323,7 @@ const Profile = () => {
                 <i className="fas fa-fire"></i>
               </div>
               <p className="text-sm">Calories Burnt</p>
-              <p className="text-lg font-bold">450 kcal</p>
+              <p className="text-lg font-bold">{profileData.caloriesBurnt} kcal</p>
             </div>
           </section>
 
@@ -217,42 +374,42 @@ const Profile = () => {
               </div>
             </div>
 
-            {/* Recovery Status / Muscle Recovery */}
-            <div className="bg-[#121212] p-4 rounded-xl space-y-3">
-              <div className="flex items-center mb-1">
-                <p className="font-semibold text-sm mr-2">Recovery Status</p>
-                <span className="ml-1 text-xs text-gray-400 cursor-pointer" title="Good recovery = better muscle growth and performance">
-                  <i className="fas fa-info-circle"></i>
-                </span>
+          {/* Recovery Status / Muscle Recovery */}
+          <div className="bg-[#121212] p-4 rounded-xl space-y-3">
+            <div className="flex items-center mb-1">
+              <p className="font-semibold text-sm mr-2">Recovery Status</p>
+              <span className="ml-1 text-xs text-gray-400 cursor-pointer" title="Good recovery = better muscle growth and performance">
+                <i className="fas fa-info-circle"></i>
+              </span>
+            </div>
+            <div className="flex items-center space-x-3">
+              <div className="bg-[#62E0A1] w-8 h-8 rounded-full text-black flex items-center justify-center">
+                <i className="fas fa-bed text-xs"></i>
               </div>
-              <div className="flex items-center space-x-3">
-                <div className="bg-[#62E0A1] w-8 h-8 rounded-full text-black flex items-center justify-center">
-                  <i className="fas fa-bed text-xs"></i>
-                </div>
-                <div>
-                  <p className="text-xs">Rest</p>
-                  <p className="text-sm font-bold" id="restScore">8 hrs <span className="text-[10px] text-gray-400">(Goal: 7+ hrs)</span></p>
-                </div>
-              </div>
-              <div className="flex items-center space-x-3">
-                <div className="bg-[#36CFFF] w-8 h-8 rounded-full text-black flex items-center justify-center">
-                  <i className="fas fa-drumstick-bite text-xs"></i>
-                </div>
-                <div>
-                  <p className="text-xs">Protein Intake</p>
-                  <p className="text-sm font-bold" id="proteinScore">120g <span className="text-[10px] text-gray-400">(Goal: 100g+)</span></p>
-                </div>
-              </div>
-              <div className="flex items-center space-x-3">
-                <div className="bg-[#F2B33D] w-8 h-8 rounded-full text-black flex items-center justify-center">
-                  <i className="fas fa-heartbeat text-xs"></i>
-                </div>
-                <div>
-                  <p className="text-xs">Heart Rate</p>
-                  <p className="text-sm font-bold" id="heartRateScore">72 bpm <span className="text-[10px] text-gray-400">(Resting)</span></p>
-                </div>
+              <div>
+                <p className="text-xs">Rest</p>
+                <p className="text-sm font-bold" id="restScore">{profileData.rest} hrs <span className="text-[10px] text-gray-400">(Goal: 7+ hrs)</span></p>
               </div>
             </div>
+            <div className="flex items-center space-x-3">
+              <div className="bg-[#36CFFF] w-8 h-8 rounded-full text-black flex items-center justify-center">
+                <i className="fas fa-drumstick-bite text-xs"></i>
+              </div>
+              <div>
+                <p className="text-xs">Protein Intake</p>
+                <p className="text-sm font-bold" id="proteinScore">120g <span className="text-[10px] text-gray-400">(Goal: 100g+)</span></p>
+              </div>
+            </div>
+            <div className="flex items-center space-x-3">
+              <div className="bg-[#F2B33D] w-8 h-8 rounded-full text-black flex items-center justify-center">
+                <i className="fas fa-heartbeat text-xs"></i>
+              </div>
+              <div>
+                <p className="text-xs">Heart Rate</p>
+                <p className="text-sm font-bold" id="heartRateScore">{profileData.heartRate} bpm <span className="text-[10px] text-gray-400">(Resting)</span></p>
+              </div>
+            </div>
+          </div>
           </section>
 
           {/* Tab Navigation */}
