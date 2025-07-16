@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import FitLifeLogo from '../components/FitLifeLogo';
 import { generateDietPlan, analyzeFoodImage } from '../utils/geminiApi';
 
@@ -150,6 +150,8 @@ const Nutrition = () => {
     ...selectedTags.lifestyle
   ];
 
+  const location = useLocation();
+
   return (
     <div className="bg-[#121212] text-white font-sans">
       {/* Navigation Bar */}
@@ -172,24 +174,24 @@ const Nutrition = () => {
           <div className="flex items-center space-x-3 bg-[#121212] p-2 rounded-lg">
             <div className="relative">
               <img src="https://storage.googleapis.com/a1aa/image/d2cfe623-1544-4224-2da4-46a005423708.jpg" alt="Profile" className="w-10 h-10 rounded-md" />
-              <button title="Edit Profile Picture" className="absolute bottom-0 right-0 bg-[#62E0A1] text-black rounded-full w-5 h-5 flex items-center justify-center text-xs border border-white">
+              <Link to="/preference" title="Preferences" className="absolute bottom-0 right-0 bg-[#62E0A1] text-black rounded-full w-5 h-5 flex items-center justify-center text-xs border border-white hover:bg-[#36CFFF] transition">
                 <i className="fas fa-edit"></i>
-              </button>
+              </Link>
             </div>
             <div className="hidden text-xs text-gray-300 md:block">
               <p className="font-normal">Nitish</p>
             </div>
           </div>
           <nav className="flex flex-col mt-6 space-y-2 text-sm">
-            <Link to="/profile" className="flex items-center space-x-2 hover:bg-[#121212] px-3 py-2 rounded-full">
+            <Link to="/profile" className={`flex items-center space-x-2 px-3 py-2 rounded-full ${location.pathname === '/profile' ? 'bg-[#62E0A1] text-black' : 'hover:bg-[#121212]'}`}>
               <i className="fas fa-calendar-alt"></i>
               <span className="hidden md:inline">Schedule</span>
             </Link>
-            <Link to="/workout" className="flex items-center space-x-2 hover:bg-[#121212] px-3 py-2 rounded-full">
+            <Link to="/workout" className={`flex items-center space-x-2 px-3 py-2 rounded-full ${location.pathname === '/workout' ? 'bg-[#62E0A1] text-black' : 'hover:bg-[#121212]'}`}>
               <i className="fas fa-dumbbell"></i>
               <span className="hidden md:inline">Workouts</span>
             </Link>
-            <button className="flex items-center space-x-2 bg-[#36CFFF] text-black px-3 py-2 rounded-full">
+            <button className={`flex items-center space-x-2 px-3 py-2 rounded-full ${location.pathname === '/nutrition' ? 'bg-[#62E0A1] text-black' : 'hover:bg-[#121212]'}`}>
               <i className="fas fa-utensils"></i>
               <span className="hidden md:inline">Nutrition</span>
             </button>
