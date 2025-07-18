@@ -58,7 +58,7 @@ const Contact = () => {
         <main className="max-w-4xl mx-auto text-center mb-12 sm:mb-16">
           <h1 className="text-2xl sm:text-3xl font-extrabold text-white mb-2">Get In Touch</h1>
           <p className="text-[13px] sm:text-sm text-gray-400 max-w-[480px] mx-auto leading-tight">
-            We would love to hear from you! Whether you have a question, feedback, or just want to say hello, feel free to reach out. Our team is here to assist you with anything you need.
+            We would love to hear from you! Whether you have a question, feedback, or just want to say hello, feel free to reach us. Our team is here to assist you with anything you need.
           </p>
         </main>
 
