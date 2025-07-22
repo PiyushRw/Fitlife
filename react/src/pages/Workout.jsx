@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+
+// Removed unused state variables exerciseSearchTerm and setExerciseSearchTerm to fix lint errors
 import { Link, useLocation } from 'react-router-dom';
 import FitLifeLogo from '../components/FitLifeLogo';
 import { generateWorkoutPlan, getExerciseRecommendations } from '../utils/geminiApi';
