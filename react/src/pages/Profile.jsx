@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import FitLifeLogo from '../components/FitLifeLogo';
 import CustomDropdown from '../components/CustomDropdown';
@@ -20,6 +20,26 @@ const Profile = () => {
     maxSquat: 225,
     fiveKTime: '22:30'
   });
+
+  useEffect(() => {
+    const storedUser = localStorage.getItem('fitlife_user');
+    if (storedUser) {
+      try {
+        const userData = JSON.parse(storedUser);
+        setProfileData(prev => ({
+          ...prev,
+          name: userData.name || prev.name,
+          age: userData.age ? parseInt(userData.age) : prev.age,
+          weight: userData.weight ? parseInt(userData.weight) : prev.weight,
+          height: userData.height ? parseInt(userData.height) : prev.height,
+          goal: userData.goal || prev.goal,
+          // Map other fields if needed
+        }));
+      } catch (error) {
+        console.error('Error parsing user data from localStorage:', error);
+      }
+    }
+  }, []);
 
   const [isEditing, setIsEditing] = useState(false);
   const [editableProfileData, setEditableProfileData] = useState(profileData);
