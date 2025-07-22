@@ -16,7 +16,8 @@ import userRoutes from './routes/users.js';
 import workoutRoutes from './routes/workouts.js';
 import nutritionRoutes from './routes/nutrition.js';
 import aiAssistantRoutes from './routes/aiAssistant.js';
-import fitnessAdviceRoutes from './routes/fitnessAdviceRoutes.js';
+import fitnessAdviceRouter from './routes/fitnessAdviceRoutes.js'; // ✅ must be "default"
+
 
 
 // Load environment variables
@@ -30,7 +31,6 @@ connectDB();
 
 // Security middleware
 app.use(helmet());
-app.use(`/api/${apiVersion}/ai-companion`, fitnessAdviceRoutes);
 
 // CORS configuration
 app.use(cors({
