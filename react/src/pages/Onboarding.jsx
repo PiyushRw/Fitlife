@@ -220,14 +220,40 @@ const Onboarding = () => {
 
   const finish = () => {
     if (!validateStep4()) return;
-    
+
     // Save data to localStorage
     const userData = {
       ...formData,
       ...dropdownValues
     };
     localStorage.setItem('fitlife_user', JSON.stringify(userData));
-    
+
+    // Send preferences to backend
+    const token = localStorage.getItem('fitlife_token');
+    fetch('http://127.0.0.1:5001/api/v1/users/preferences', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+      },
+      body: JSON.stringify(userData),
+      credentials: 'include'
+    })
+      .then(async (res) => {
+        if (!res.ok) {
+          const error = await res.json();
+          alert(error.error || 'Failed to save preferences');
+          return;
+        }
+        return res.json();
+      })
+      .then((data) => {
+        // Optionally handle response
+      })
+      .catch((err) => {
+        alert('Error saving preferences: ' + err.message);
+      });
+
     // Show overview with countdown
     setShowOverview(true);
   };

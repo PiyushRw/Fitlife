@@ -13,7 +13,25 @@ const generateToken = (id) => {
 // @access  Public
 export const register = async (req, res, next) => {
   try {
-    const { firstName, lastName, email, password, fitnessGoals, fitnessLevel } = req.body;
+    let { firstName, lastName, name, email, password, fitnessGoals, fitnessLevel } = req.body;
+
+    // If 'name' is provided, split it into firstName and lastName
+    if (name && (!firstName || !lastName)) {
+      const parts = name.trim().split(' ');
+      firstName = parts[0] || '';
+      lastName = parts.slice(1).join(' ');
+    }
+    // Ensure firstName is set
+    if (!firstName) {
+      return res.status(400).json({
+        success: false,
+        error: 'First name is required.'
+      });
+    }
+    // Default lastName to empty string if missing
+    if (!lastName) {
+      lastName = '';
+    }
 
     // Check if user already exists
     const existingUser = await User.findOne({ email });

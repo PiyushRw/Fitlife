@@ -4,6 +4,28 @@ import User from '../models/User.js';
 
 const router = express.Router();
 
+// @desc    Save onboarding preferences
+// @route   POST /api/v1/users/preferences
+// @access  Private
+router.post('/preferences', protect, async (req, res, next) => {
+  try {
+    const userId = req.user.id;
+    const newPreferences = req.body;
+    console.log('Received preferences:', newPreferences);
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ success: false, error: 'User not found' });
+    }
+    console.log('User preferences before:', user.preferences);
+    user.preferences = { ...user.preferences, ...newPreferences };
+    await user.save();
+    console.log('User preferences after:', user.preferences);
+    res.status(200).json({ success: true, data: { user: user.getPublicProfile() } });
+  } catch (error) {
+    next(error);
+  }
+});
+
 // @desc    Get user profile
 // @route   GET /api/v1/users/profile/:id
 // @access  Public

@@ -10,9 +10,10 @@ const userSchema = new mongoose.Schema({
   },
   lastName: {
     type: String,
-    required: [true, 'Last name is required'],
+    required: false,
     trim: true,
-    maxlength: [50, 'Last name cannot be more than 50 characters']
+    maxlength: [50, 'Last name cannot be more than 50 characters'],
+    default: ''
   },
   email: {
     type: String,
@@ -76,22 +77,8 @@ const userSchema = new mongoose.Schema({
     default: 'beginner'
   },
   preferences: {
-    workoutDuration: {
-      type: Number,
-      min: [10, 'Workout duration must be at least 10 minutes'],
-      max: [180, 'Workout duration cannot exceed 180 minutes'],
-      default: 45
-    },
-    workoutDays: {
-      type: Number,
-      min: [1, 'Must workout at least 1 day per week'],
-      max: [7, 'Cannot workout more than 7 days per week'],
-      default: 3
-    },
-    preferredWorkoutTypes: [{
-      type: String,
-      enum: ['cardio', 'strength', 'yoga', 'pilates', 'hiit', 'sports']
-    }]
+    type: mongoose.Schema.Types.Mixed,
+    default: {}
   },
   isActive: {
     type: Boolean,

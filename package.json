@@ -4,7 +4,10 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start:backend": "npm start --prefix backend",
+    "start:frontend": "npm start --prefix react",
+    "dev": "concurrently \"npm run start:backend\" \"npm run start:frontend\""
   },
   "repository": {
     "type": "git",
@@ -20,5 +23,8 @@
   "homepage": "https://github.com/PiyushRw/Fitlife#readme",
   "dependencies": {
     "express": "^5.1.0"
+  },
+  "devDependencies": {
+    "concurrently": "^9.2.0"
   }
 }
