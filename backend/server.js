@@ -9,12 +9,15 @@ import { connectDB } from './config/database.js';
 import { errorHandler } from './middleware/errorHandler.js';
 import { notFound } from './middleware/notFound.js';
 
+
 // Import routes
 import authRoutes from './routes/auth.js';
 import userRoutes from './routes/users.js';
 import workoutRoutes from './routes/workouts.js';
 import nutritionRoutes from './routes/nutrition.js';
 import aiAssistantRoutes from './routes/aiAssistant.js';
+import fitnessAdviceRoutes from './routes/fitnessAdviceRoutes.js';
+
 
 // Load environment variables
 dotenv.config();
@@ -27,6 +30,7 @@ connectDB();
 
 // Security middleware
 app.use(helmet());
+app.use(`/api/${apiVersion}/ai-companion`, fitnessAdviceRoutes);
 
 // CORS configuration
 app.use(cors({
