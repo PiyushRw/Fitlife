@@ -1,0 +1,7 @@
+{
+  "title": "Test Workout",
+  "description": "This is a test workout",
+  "duration": 30,
+  "difficulty": "beginner",
+  "type": "strength"
+}
