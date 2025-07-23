@@ -302,19 +302,7 @@ const Profile = () => {
             </div>
             <div className="bg-[#121212] rounded-xl p-4 text-center">
               <div className="bg-[#36CFFF] text-black rounded-full w-8 h-8 flex items-center justify-center mx-auto">
-                {/* Mood Emoji Selector */}
-                <select 
-                  value={mood}
-                  onChange={(e) => {
-                    setMood(e.target.value);
-                    updateHealthScore();
-                  }}
-                  className="bg-transparent text-lg text-black font-bold focus:outline-none"
-                >
-                  <option value="happy">😄</option>
-                  <option value="neutral">😐</option>
-                  <option value="sad">😞</option>
-                </select>
+                {mood === 'happy' ? '😄' : mood === 'neutral' ? '😐' : '😞'}
               </div>
               <p className="text-sm">Mood</p>
               <p id="moodInsight" className="text-xs mt-1 text-[#36CFFF]">{updateMoodInsight()}</p>
@@ -498,79 +486,9 @@ const Profile = () => {
           )}
 
           {activeTab === 'stats' && (
-            <div className="grid md:grid-cols-3 gap-6">
-              <div className="bg-[#121212] rounded-2xl p-6">
-                <h3 className="text-lg font-bold text-white mb-4">Weekly Progress</h3>
-                <div className="space-y-3">
-                  <div className="flex justify-between">
-                    <span className="text-gray-400">Mon</span>
-                    <div className="w-20 bg-gray-700 rounded-full h-2">
-                      <div className="bg-[#62E0A1] h-2 rounded-full" style={{ width: '80%' }}></div>
-                    </div>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-400">Tue</span>
-                    <div className="w-20 bg-gray-700 rounded-full h-2">
-                      <div className="bg-[#62E0A1] h-2 rounded-full" style={{ width: '60%' }}></div>
-                    </div>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-400">Wed</span>
-                    <div className="w-20 bg-gray-700 rounded-full h-2">
-                      <div className="bg-[#62E0A1] h-2 rounded-full" style={{ width: '90%' }}></div>
-                    </div>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-400">Thu</span>
-                    <div className="w-20 bg-gray-700 rounded-full h-2">
-                      <div className="bg-[#62E0A1] h-2 rounded-full" style={{ width: '70%' }}></div>
-                    </div>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-400">Fri</span>
-                    <div className="w-20 bg-gray-700 rounded-full h-2">
-                      <div className="bg-[#62E0A1] h-2 rounded-full" style={{ width: '85%' }}></div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div className="bg-[#121212] rounded-2xl p-6">
-                <h3 className="text-lg font-bold text-white mb-4">Body Metrics</h3>
-                <div className="space-y-4">
-                  <div>
-                    <span className="text-gray-400 text-sm">Weight</span>
-                    <p className="text-2xl font-bold text-[#62E0A1]">{profileData.weight} kg</p>
-                  </div>
-                  <div>
-                    <span className="text-gray-400 text-sm">Height</span>
-                    <p className="text-2xl font-bold text-[#36CFFF]">{profileData.height} cm</p>
-                  </div>
-                  <div>
-                    <span className="text-gray-400 text-sm">BMI</span>
-                    <p className="text-2xl font-bold text-[#F2B33D]">24.5</p>
-                  </div>
-                </div>
-              </div>
-
-              <div className="bg-[#121212] rounded-2xl p-6">
-                <h3 className="text-lg font-bold text-white mb-4">Performance</h3>
-                <div className="space-y-4">
-                  <div>
-                    <span className="text-gray-400 text-sm">Max Bench Press</span>
-                    <p className="text-2xl font-bold text-[#62E0A1]">185 lbs</p>
-                  </div>
-                  <div>
-                    <span className="text-gray-400 text-sm">Max Squat</span>
-                    <p className="text-2xl font-bold text-[#36CFFF]">225 lbs</p>
-                  </div>
-                  <div>
-                    <span className="text-gray-400 text-sm">5K Time</span>
-                    <p className="text-2xl font-bold text-[#F2B33D]">22:30</p>
-                  </div>
-                </div>
-              </div>
-            </div>
+            <ErrorBoundary>
+              <StatsTabContent profileData={profileData} />
+            </ErrorBoundary>
           )}
 
           {activeTab === 'workout' && (
@@ -816,5 +734,123 @@ const Profile = () => {
     </div>
   );
 };
+
+// ErrorBoundary class for catching errors in Stats tab
+
+class ErrorBoundary extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { hasError: false, error: null };
+  }
+
+  static getDerivedStateFromError(error) {
+    return { hasError: true, error };
+  }
+
+  componentDidCatch(error, errorInfo) {
+    console.error('Error in Stats tab:', error, errorInfo);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return <div className="text-red-500 p-4">An error occurred in the Stats tab. Please contact support.<br/>{this.state.error && this.state.error.toString()}</div>;
+    }
+    return this.props.children;
+  }
+}
+
+function StatsTabContent({ profileData }) {
+  if (!profileData) {
+    return <div className="text-white">No profile data available.</div>;
+  }
+  // Helper to safely render any value (string, number, or fallback for object)
+  function safeDisplay(val) {
+    if (val == null) return 'N/A';
+    if (typeof val === 'string' || typeof val === 'number') return val;
+    if (typeof val === 'object') {
+      // Try to display value or fallback to JSON
+      if ('value' in val) return val.value;
+      if ('display' in val) return val.display;
+      if ('unit' in val && 'value' in val) return `${val.value} ${val.unit}`;
+      return JSON.stringify(val);
+    }
+    return String(val);
+  }
+  return (
+    <div className="grid md:grid-cols-3 gap-6">
+      <div className="bg-[#121212] rounded-2xl p-6">
+        <h3 className="text-lg font-bold text-white mb-4">Weekly Progress</h3>
+        <div className="space-y-3">
+          <div className="flex justify-between">
+            <span className="text-gray-400">Mon</span>
+            <div className="w-20 bg-gray-700 rounded-full h-2">
+              <div className="bg-[#62E0A1] h-2 rounded-full" style={{ width: '80%' }}></div>
+            </div>
+          </div>
+          <div className="flex justify-between">
+            <span className="text-gray-400">Tue</span>
+            <div className="w-20 bg-gray-700 rounded-full h-2">
+              <div className="bg-[#62E0A1] h-2 rounded-full" style={{ width: '60%' }}></div>
+            </div>
+          </div>
+          <div className="flex justify-between">
+            <span className="text-gray-400">Wed</span>
+            <div className="w-20 bg-gray-700 rounded-full h-2">
+              <div className="bg-[#62E0A1] h-2 rounded-full" style={{ width: '90%' }}></div>
+            </div>
+          </div>
+          <div className="flex justify-between">
+            <span className="text-gray-400">Thu</span>
+            <div className="w-20 bg-gray-700 rounded-full h-2">
+              <div className="bg-[#62E0A1] h-2 rounded-full" style={{ width: '70%' }}></div>
+            </div>
+          </div>
+          <div className="flex justify-between">
+            <span className="text-gray-400">Fri</span>
+            <div className="w-20 bg-gray-700 rounded-full h-2">
+              <div className="bg-[#62E0A1] h-2 rounded-full" style={{ width: '85%' }}></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="bg-[#121212] rounded-2xl p-6">
+        <h3 className="text-lg font-bold text-white mb-4">Body Metrics</h3>
+        <div className="space-y-4">
+          <div>
+            <span className="text-gray-400 text-sm">Weight</span>
+            <p className="text-2xl font-bold text-[#62E0A1]">{safeDisplay(profileData.weight)} kg</p>
+          </div>
+          <div>
+            <span className="text-gray-400 text-sm">Height</span>
+            <p className="text-2xl font-bold text-[#36CFFF]">{safeDisplay(profileData.height)} cm</p>
+          </div>
+          <div>
+            <span className="text-gray-400 text-sm">BMI</span>
+            <p className="text-2xl font-bold text-[#F2B33D]">24.5</p>
+          </div>
+        </div>
+      </div>
+
+      <div className="bg-[#121212] rounded-2xl p-6">
+        <h3 className="text-lg font-bold text-white mb-4">Performance</h3>
+        <div className="space-y-4">
+          <div>
+            <span className="text-gray-400 text-sm">Max Bench Press</span>
+            <p className="text-2xl font-bold text-[#62E0A1]">{safeDisplay(profileData.maxBench)} lbs</p>
+          </div>
+          <div>
+            <span className="text-gray-400 text-sm">Max Squat</span>
+            <p className="text-2xl font-bold text-[#36CFFF]">{safeDisplay(profileData.maxSquat)} lbs</p>
+          </div>
+          <div>
+            <span className="text-gray-400 text-sm">5K Time</span>
+            <p className="text-2xl font-bold text-[#F2B33D]">{safeDisplay(profileData.fiveKTime)}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export default Profile;
