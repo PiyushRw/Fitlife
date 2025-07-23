@@ -3,6 +3,7 @@ import ApiService from '../utils/api';
 import { Listbox } from '@headlessui/react';
 import { Link, useLocation } from 'react-router-dom';
 import FitLifeLogo from '../components/FitLifeLogo';
+import Sidebar from '../components/Sidebar';
 
 const defaultFormData = {
   name: '',
@@ -37,6 +38,43 @@ const defaultFormData = {
 };
 
 const Preference = () => {
+  const [profileData, setProfileData] = useState(null);
+  const [loadingSidebar, setLoadingSidebar] = useState(true);
+  const [errorSidebar, setErrorSidebar] = useState(null);
+  const navigate = useLocation();
+
+  React.useEffect(() => {
+    const fetchUserData = async () => {
+      setLoadingSidebar(true);
+      setErrorSidebar(null);
+      try {
+        const token = localStorage.getItem('fitlife_token');
+        if (!token) {
+          window.location.href = '/login';
+          return;
+        }
+        const response = await fetch('http://127.0.0.1:5001/api/v1/auth/me', {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+        if (!response.ok) {
+          throw new Error('Failed to fetch user data');
+        }
+        const data = await response.json();
+        if (data && data.success && data.data && data.data.user) {
+          setProfileData(data.data.user);
+        } else {
+          throw new Error('Invalid user data received');
+        }
+      } catch (err) {
+        setErrorSidebar(err.message);
+      } finally {
+        setLoadingSidebar(false);
+      }
+    };
+    fetchUserData();
+  }, []);
   const [formData, setFormData] = useState(defaultFormData);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -52,19 +90,33 @@ const Preference = () => {
         if (user) {
           // Flatten any nested objects to their primitive values for form fields
           const flatten = (obj) => {
-            const flat = {};
-            for (const key in obj) {
-              if (typeof obj[key] === 'object' && obj[key] !== null) {
-                // If the value is an object, try to use .value, .name, or fallback to empty string
-                if ('value' in obj[key]) flat[key] = obj[key].value;
-                else if ('name' in obj[key]) flat[key] = obj[key].name;
-                else flat[key] = '';
-              } else {
-                flat[key] = obj[key];
-              }
-            }
-            return flat;
-          };
+  const flat = {};
+  for (const key in obj) {
+    if (typeof obj[key] === 'object' && obj[key] !== null) {
+      // Handle height/weight: {unit: 'cm', value: 180}
+      if ('value' in obj[key]) flat[key] = obj[key].value;
+      else if ('name' in obj[key]) flat[key] = obj[key].name;
+      // Handle preferences object (nested)
+      else if (key === 'preferences') {
+        for (const prefKey in obj[key]) {
+          if (typeof obj[key][prefKey] === 'object' && obj[key][prefKey] !== null) {
+            if ('value' in obj[key][prefKey]) flat[prefKey] = obj[key][prefKey].value;
+            else if ('name' in obj[key][prefKey]) flat[prefKey] = obj[key][prefKey].name;
+            else flat[prefKey] = '';
+          } else {
+            flat[prefKey] = obj[key][prefKey];
+          }
+        }
+      } else {
+        // Fallback for other objects
+        flat[key] = '';
+      }
+    } else {
+      flat[key] = obj[key];
+    }
+  }
+  return flat;
+};
           setFormData({
             ...defaultFormData,
             ...flatten(user)
@@ -159,48 +211,12 @@ const Preference = () => {
   };
 
   return (
-    <div className="bg-[#121212] text-white font-sans min-h-screen">
+    <div className="bg-[#121212] text-white font-sans">
 
 
-      <div className="flex min-h-screen">
+      <div className="flex">
         {/* Sidebar */}
-        <aside className="flex flex-col bg-[#1E1E1E] w-20 md:w-48 p-4">
-          <div className="flex items-center space-x-3 bg-[#121212] p-2 rounded-lg">
-            <div className="relative border border-white rounded-lg">
-              <img src={profilePhoto} alt="Profile" className="rounded-md w-10 h-10" />
-              <Link to="/preference" title="Preferences" className="absolute bottom-0 right-0 bg-[#62E0A1] text-black rounded-full w-5 h-5 flex items-center justify-center text-xs border border-white hover:bg-[#36CFFF] transition">
-                <i className="fas fa-edit"></i>
-              </Link>
-            </div>
-            <div className="hidden md:block text-xs text-gray-300">
-              <p className="font-normal">Nitish</p>
-            </div>
-          </div>
-          <nav className="flex flex-col space-y-2 text-sm mt-6">
-            <Link to="/profile" className={`flex items-center space-x-2 px-3 py-2 rounded-full ${location.pathname === '/profile' ? 'bg-[#62E0A1] text-black' : 'hover:bg-[#121212]'}`}>
-              <i className="fas fa-calendar-alt"></i>
-              <span className="hidden md:inline">Schedule</span>
-            </Link>
-            <Link to="/workout" className={`flex items-center space-x-2 px-3 py-2 rounded-full ${location.pathname === '/workout' ? 'bg-[#62E0A1] text-black' : 'hover:bg-[#121212]'}`}>
-              <i className="fas fa-dumbbell"></i>
-              <span className="hidden md:inline">Workouts</span>
-            </Link>
-            <Link to="/nutrition" className={`flex items-center space-x-2 px-3 py-2 rounded-full ${location.pathname === '/nutrition' ? 'bg-[#62E0A1] text-black' : 'hover:bg-[#121212]'}`}>
-              <i className="fas fa-utensils"></i>
-              <span className="hidden md:inline">Nutrition</span>
-            </Link>
-          </nav>
-          <div className="mt-auto pt-8 space-y-2">
-            <button className="flex items-center space-x-2 bg-[#62E0A1] text-black px-3 py-2 rounded-full">
-              <i className="fas fa-cog"></i>
-              <span className="hidden md:inline">Preferences</span>
-            </button>
-            <Link to="/signout" className="flex items-center space-x-2 hover:bg-[#121212] px-3 py-2 rounded-full">
-              <i className="fas fa-sign-out-alt"></i>
-              <span className="hidden md:inline">Sign out</span>
-            </Link>
-          </div>
-        </aside>
+        <Sidebar profilePhoto={profilePhoto} userName={formData.name || "User"} />
 
         {/* Main Content */}
         <main className="flex-1 bg-[#1E1E1E] p-8 ml-6 overflow-y-auto">
