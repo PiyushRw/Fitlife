@@ -1,49 +1,56 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Link, useLocation } from 'react-router-dom';
 import FitLifeLogo from '../components/FitLifeLogo';
 import CustomDropdown from '../components/CustomDropdown';
 
 const Profile = () => {
   const [activeTab, setActiveTab] = useState('overview');
-  const [profileData, setProfileData] = useState({
-    name: 'Nitish',
-    email: 'nitish@example.com',
-    age: 28,
-    weight: 75,
-    height: 175,
-    goal: 'Build Muscle',
-    activityLevel: 'Moderate',
-    rest: 8,
-    heartRate: 72,
-    caloriesBurnt: 450,
-    maxBench: 185,
-    maxSquat: 225,
-    fiveKTime: '22:30'
-  });
+  const [profileData, setProfileData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
-    const storedUser = localStorage.getItem('fitlife_user');
-    if (storedUser) {
+    const fetchUserData = async () => {
+      setLoading(true);
+      setError(null);
       try {
-        const userData = JSON.parse(storedUser);
-        setProfileData(prev => ({
-          ...prev,
-          name: userData.name || prev.name,
-          age: userData.age ? parseInt(userData.age) : prev.age,
-          weight: userData.weight ? parseInt(userData.weight) : prev.weight,
-          height: userData.height ? parseInt(userData.height) : prev.height,
-          goal: userData.goal || prev.goal,
-          // Map other fields if needed
-        }));
-      } catch (error) {
-        console.error('Error parsing user data from localStorage:', error);
+        const token = localStorage.getItem('fitlife_token');
+        if (!token) {
+          navigate('/login');
+          return;
+        }
+        const response = await fetch('http://127.0.0.1:5001/api/v1/auth/me', {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+        if (!response.ok) {
+          throw new Error('Failed to fetch user data');
+        }
+        const data = await response.json();
+        if (data && data.success && data.data && data.data.user) {
+          setProfileData(data.data.user);
+        } else {
+          throw new Error('Invalid user data received');
+        }
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
       }
-    }
-  }, []);
+    };
+    fetchUserData();
+  }, [navigate]);
 
   const [isEditing, setIsEditing] = useState(false);
   const [editableProfileData, setEditableProfileData] = useState(profileData);
   const [showEditModal, setShowEditModal] = useState(false);
+
+  useEffect(() => {
+    setEditableProfileData(profileData);
+  }, [profileData]);
 
   const [mood, setMood] = useState('happy');
   const [workoutStreak] = useState(7);
@@ -89,6 +96,18 @@ const Profile = () => {
   const [draggedPart, setDraggedPart] = useState(null);
   const location = useLocation();
 
+  if (loading) {
+    return <div className="text-white p-4">Loading profile...</div>;
+  }
+
+  if (error) {
+    return <div className="text-red-500 p-4">Error: {error}</div>;
+  }
+
+  if (!profileData) {
+    return <div className="text-white p-4">No profile data available.</div>;
+  }
+
   return (
     <div className="bg-[#121212] text-white font-sans">
       {/* Navigation Bar */}
@@ -106,7 +125,7 @@ const Profile = () => {
       </header>
 
       <div className="flex min-h-screen p-4">
-        {/* Sidebar */}
+        {/* Sidebar */} 
         <aside className="flex flex-col bg-[#1E1E1E] w-20 md:w-48 p-4 rounded-2xl">
           <div className="flex items-center space-x-3 bg-[#121212] p-2 rounded-lg">
             <div className="relative">
@@ -116,7 +135,7 @@ const Profile = () => {
               </Link>
             </div>
             <div className="hidden md:block text-xs text-gray-300">
-              <p className="font-normal">Nitish</p>
+              <p className="font-normal">{profileData.fullName || profileData.firstName}</p>
             </div>
           </div>
           <nav className="flex flex-col space-y-2 text-sm mt-6">
@@ -166,7 +185,7 @@ const Profile = () => {
                 <i className="fas fa-smile"></i>
               </div>
               <div className="text-sm">
-                <p className="font-bold">Welcome, Nitish!</p>
+                <p className="font-bold">Welcome, {profileData.fullName || profileData.firstName}!</p>
                 <p className="text-xs">Today is Monday, January 12. You have 3 workouts scheduled, your next meal prep is in 2 hours, and you need to drink 1 liter more water today. Keep pushing!</p>
               </div>
             </div>
