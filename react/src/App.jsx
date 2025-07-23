@@ -2,6 +2,7 @@ import React, { Suspense, lazy } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import './App.css';
 import Spinner from './components/Spinner';
+import Navigation from './components/Navigation';
 
 // Lazy load all the converted components
 const Welcome = lazy(() => import('./pages/Welcome'));
@@ -27,10 +28,23 @@ const ConditionalAIAssistant = () => {
   return !isAICompanionPage ? <AIAssistant /> : null;
 };
 
+function AppLayout({ children }) {
+  const location = useLocation();
+  const hideNavPaths = ['/login', '/register', '/onboarding', '/signout'];
+  const hideNav = hideNavPaths.includes(location.pathname);
+
+  return (
+    <>
+      {!hideNav && <Navigation />}
+      {children}
+    </>
+  );
+}
+
 function App() {
   return (
     <Router>
-      <div className="App">
+      <AppLayout>
         <Suspense fallback={<Spinner />}>
           <Routes>
             {/* Main routes */}
@@ -48,7 +62,6 @@ function App() {
             <Route path="/nutrition" element={<Nutrition />} />
             <Route path="/workout" element={<Workout />} />
             <Route path="/preference" element={<Preference />} />
-            
             {/* Redirect old HTML routes to React routes */}
             <Route path="/HomePage.html" element={<Navigate to="/" replace />} />
             <Route path="/login.html" element={<Navigate to="/login" replace />} />
@@ -58,7 +71,6 @@ function App() {
             <Route path="/ai-companion-page.html" element={<Navigate to="/ai-companion" replace />} />
             <Route path="/profile.html" element={<Navigate to="/profile" replace />} />
             <Route path="/signout.html" element={<Navigate to="/signout" replace />} />
-            
             {/* Catch all route - redirect to home */}
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
@@ -67,7 +79,7 @@ function App() {
         <Suspense fallback={null}>
           <ConditionalAIAssistant />
         </Suspense>
-      </div>
+      </AppLayout>
     </Router>
   );
 }
