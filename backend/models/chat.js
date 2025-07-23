@@ -1,11 +1,25 @@
-// models/chat.js
 import mongoose from 'mongoose';
 
 const chatSchema = new mongoose.Schema(
   {
-    userId: { type: String, required: false },
-    question: { type: String, required: true },
-    response: { type: String, required: true },
+    userId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+      required: true
+    },
+    type: {
+      type: String,
+      required: true,
+      enum: ['workout-recommendation', 'nutrition-recommendation', 'fitness-advice']
+    },
+    content: {
+      type: mongoose.Schema.Types.Mixed,
+      required: true
+    },
+    metadata: {
+      type: mongoose.Schema.Types.Mixed,
+      default: {}
+    }
   },
   { timestamps: true }
 );
