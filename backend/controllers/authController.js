@@ -147,15 +147,43 @@ export const updateProfile = async (req, res, next) => {
     const fieldsToUpdate = {
       firstName: req.body.firstName,
       lastName: req.body.lastName,
-      dateOfBirth: req.body.dateOfBirth,
+      age: req.body.age,
       gender: req.body.gender,
       height: req.body.height,
       weight: req.body.weight,
       fitnessGoals: req.body.fitnessGoals,
       fitnessLevel: req.body.fitnessLevel,
       preferences: req.body.preferences,
-      profilePicture: req.body.profilePicture
+      profilePicture: req.body.profilePicture,
+      goal: req.body.goal,
+      workout: req.body.workout,
+      diet: req.body.diet,
+      healthFocus: req.body.healthFocus,
+      concerns: req.body.concerns,
+      otherDietaryPreferences: req.body.otherDietaryPreferences,
+      otherHealthFocus: req.body.otherHealthFocus,
+      activityLevel: req.body.activityLevel,
+      experienceLevel: req.body.experienceLevel,
+      preferredTime: req.body.preferredTime,
+      notifications: req.body.notifications,
+      privacySettings: req.body.privacySettings,
+      workoutFrequency: req.body.workoutFrequency,
+      workoutDuration: req.body.workoutDuration,
+      equipment: req.body.equipment,
+      medicalConditions: req.body.medicalConditions,
+      allergies: req.body.allergies,
+      supplements: req.body.supplements,
+      sleepGoal: req.body.sleepGoal,
+      stressLevel: req.body.stressLevel,
+      motivation: req.body.motivation,
+      socialSharing: req.body.socialSharing,
+      reminders: req.body.reminders,
+      progressTracking: req.body.progressTracking
     };
+    // Explicitly remove only undefined (not empty string/false/0) so empty string can overwrite
+    Object.keys(fieldsToUpdate).forEach(key =>
+      typeof fieldsToUpdate[key] === 'undefined' && delete fieldsToUpdate[key]
+    );
 
     // Remove undefined fields
     Object.keys(fieldsToUpdate).forEach(key => 

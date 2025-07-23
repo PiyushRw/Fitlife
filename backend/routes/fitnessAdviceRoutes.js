@@ -3,6 +3,7 @@ import { protect } from '../middleware/auth.js';
 import User from '../models/User.js';
 import Chat from '../models/Chat.js';
 
+const fitnessAdviceRouter = express.Router();
 
 export const saveFitnessAdvice = async (req, res, next) => {
   try {
@@ -66,5 +67,9 @@ export const saveFitnessAdvice = async (req, res, next) => {
 };
 
 // ... other functions (saveWorkoutRecommendation, saveNutritionRecommendation, etc.) remain as provided
+
+// Attach routes
+fitnessAdviceRouter.post('/advice', protect, saveFitnessAdvice);
+// Attach other routes here as needed
 
 export default fitnessAdviceRouter;

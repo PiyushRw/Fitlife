@@ -35,8 +35,10 @@ const userSchema = new mongoose.Schema({
     type: String,
     default: ''
   },
-  dateOfBirth: {
-    type: Date
+  age: {
+    type: String,
+    enum: ['Under 18', '18–30', '31–45', '46–60', '60+', ''],
+    default: ''
   },
   gender: {
     type: String,
@@ -91,7 +93,33 @@ const userSchema = new mongoose.Schema({
   lastLogin: {
     type: Date,
     default: Date.now
-  }
+  },
+  // Additional fields from frontend Preference page
+  goal: { type: String, default: '' },
+  workout: { type: String, default: '' },
+  diet: { type: String, default: '' },
+  healthFocus: { type: String, default: '' },
+  concerns: { type: String, default: '' },
+  otherDietaryPreferences: { type: String, default: '' },
+  otherHealthFocus: { type: String, default: '' },
+  activityLevel: { type: String, default: '' },
+  experienceLevel: { type: String, default: '' },
+  preferredTime: { type: String, default: '' },
+  notifications: { type: Boolean, default: true },
+  privacySettings: { type: String, default: 'public' },
+  workoutFrequency: { type: String, default: '' },
+  workoutDuration: { type: String, default: '' },
+  equipment: { type: String, default: '' },
+  medicalConditions: { type: String, default: '' },
+  allergies: { type: String, default: '' },
+  supplements: { type: String, default: '' },
+  sleepGoal: { type: String, default: '' },
+  stressLevel: { type: String, default: '' },
+  motivation: { type: String, default: '' },
+  socialSharing: { type: Boolean, default: true },
+  reminders: { type: Boolean, default: true },
+  progressTracking: { type: Boolean, default: true }
+
 }, {
   timestamps: true,
   toJSON: { virtuals: true },
@@ -101,21 +129,6 @@ const userSchema = new mongoose.Schema({
 // Virtual for full name
 userSchema.virtual('fullName').get(function() {
   return `${this.firstName} ${this.lastName}`;
-});
-
-// Virtual for age
-userSchema.virtual('age').get(function() {
-  if (!this.dateOfBirth) return null;
-  const today = new Date();
-  const birthDate = new Date(this.dateOfBirth);
-  let age = today.getFullYear() - birthDate.getFullYear();
-  const monthDiff = today.getMonth() - birthDate.getMonth();
-  
-  if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
-    age--;
-  }
-  
-  return age;
 });
 
 // Index for better query performance (email index is already created by unique: true)

@@ -88,38 +88,95 @@ const Preference = () => {
         const user = await ApiService.getProfile();
         console.log('Fetched user in Preference:', user);
         if (user) {
+          console.log('DEBUG: Raw user object from backend:', user);
+          console.log('DEBUG: Dropdown fields:', {
+            age: user.age,
+            goal: user.goal,
+            workout: user.workout,
+            diet: user.diet,
+            healthFocus: user.healthFocus,
+            activityLevel: user.activityLevel,
+            experienceLevel: user.experienceLevel,
+            preferredTime: user.preferredTime,
+            privacySettings: user.privacySettings,
+            workoutFrequency: user.workoutFrequency,
+            workoutDuration: user.workoutDuration,
+            equipment: user.equipment,
+            fitnessLevel: user.fitnessLevel,
+            sleepGoal: user.sleepGoal,
+            stressLevel: user.stressLevel,
+            motivation: user.motivation
+          });
           // Flatten any nested objects to their primitive values for form fields
           const flatten = (obj) => {
-  const flat = {};
-  for (const key in obj) {
-    if (typeof obj[key] === 'object' && obj[key] !== null) {
-      // Handle height/weight: {unit: 'cm', value: 180}
-      if ('value' in obj[key]) flat[key] = obj[key].value;
-      else if ('name' in obj[key]) flat[key] = obj[key].name;
-      // Handle preferences object (nested)
-      else if (key === 'preferences') {
-        for (const prefKey in obj[key]) {
-          if (typeof obj[key][prefKey] === 'object' && obj[key][prefKey] !== null) {
-            if ('value' in obj[key][prefKey]) flat[prefKey] = obj[key][prefKey].value;
-            else if ('name' in obj[key][prefKey]) flat[prefKey] = obj[key][prefKey].name;
-            else flat[prefKey] = '';
-          } else {
-            flat[prefKey] = obj[key][prefKey];
+            const flat = {};
+            for (const key in obj) {
+              if (typeof obj[key] === 'object' && obj[key] !== null) {
+                // Handle height/weight: {unit: 'cm', value: 180}
+                if ('value' in obj[key]) flat[key] = obj[key].value;
+                else if (key === 'height' || key === 'weight') flat[key] = (obj[key].unit || '');
+                else if ('name' in obj[key]) flat[key] = obj[key].name;
+                // Handle preferences object (nested)
+                else if (key === 'preferences') {
+                  for (const prefKey in obj[key]) {
+                    if (typeof obj[key][prefKey] === 'object' && obj[key][prefKey] !== null) {
+                      if ('value' in obj[key][prefKey]) flat[prefKey] = obj[key][prefKey].value;
+                      else if ('name' in obj[key][prefKey]) flat[prefKey] = obj[key][prefKey].name;
+                      else flat[prefKey] = '';
+                    } else {
+                      flat[prefKey] = obj[key][prefKey];
+                    }
+                  }
+                } else {
+                  // Fallback for other objects
+                  flat[key] = '';
+                }
+              } else {
+                flat[key] = obj[key];
+              }
+            }
+            return flat;
+          };
+          // Calculate age range if dateOfBirth exists
+          let ageRange = '';
+          if (user.dateOfBirth) {
+            const today = new Date();
+            const birthDate = new Date(user.dateOfBirth);
+            let age = today.getFullYear() - birthDate.getFullYear();
+            const monthDiff = today.getMonth() - birthDate.getMonth();
+            if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+              age--;
+            }
+            if (age < 18) ageRange = 'Under 18';
+            else if (age <= 30) ageRange = '18–30';
+            else if (age <= 45) ageRange = '31–45';
+            else if (age <= 60) ageRange = '46–60';
+            else ageRange = '60+';
           }
-        }
-      } else {
-        // Fallback for other objects
-        flat[key] = '';
-      }
-    } else {
-      flat[key] = obj[key];
-    }
-  }
-  return flat;
-};
+          // Normalization helpers for dropdowns
+          const normalize = (val, options) => options.find(opt => (val || '').toLowerCase() === opt.toLowerCase()) || '';
           setFormData({
             ...defaultFormData,
-            ...flatten(user)
+            ...flatten(user),
+            name: user.fullName || (user.firstName ? (user.firstName + (user.lastName ? ' ' + user.lastName : '')) : ''),
+            age: normalize(ageRange || user.age, ['Under 18', '18–30', '31–45', '46–60', '60+']),
+            goal: normalize(user.goal, ['Lose weight', 'Gain muscle', 'Improve flexibility', 'Stay active', 'Build strength', 'Improve endurance', 'Maintain fitness', 'Rehabilitation']),
+            workout: normalize(user.workout, ['Calisthenics', 'Yoga', 'Weight training', 'Mixed', 'Cardio', 'HIIT', 'Pilates', 'CrossFit', 'Swimming', 'Running']),
+            diet: normalize(user.diet, ['None', 'Vegetarian', 'Vegan', 'Gluten-free', 'Dairy-free', 'Low-carb', 'Keto', 'Paleo', 'Mediterranean', 'Other']),
+            healthFocus: normalize(user.healthFocus, ['Bone strength', 'Eye health', 'Joint mobility', 'Cholesterol/Blood pressure', 'Diabetes', 'Heart health', 'Mental health', 'Other']),
+            activityLevel: normalize(user.activityLevel, ['Sedentary', 'Lightly active', 'Moderately active', 'Very active', 'Extremely active']),
+            experienceLevel: normalize(user.experienceLevel, ['Beginner', 'Intermediate', 'Advanced', 'Expert']),
+            preferredTime: normalize(user.preferredTime, ['Early morning', 'Morning', 'Afternoon', 'Evening', 'Late night', 'Flexible']),
+            privacySettings: normalize(user.privacySettings, ['public', 'private']),
+            workoutFrequency: normalize(user.workoutFrequency, ['1-2 times/week', '3-4 times/week', '5-6 times/week', 'Daily', 'Flexible']),
+            workoutDuration: normalize(user.workoutDuration, ['15-30 minutes', '30-45 minutes', '45-60 minutes', '60+ minutes', 'Flexible']),
+            equipment: normalize(user.equipment, ['None', 'Basic home equipment', 'Full home gym', 'Gym membership', 'Outdoor only', 'Mixed']),
+            fitnessLevel: normalize(user.fitnessLevel, ['beginner', 'intermediate', 'advanced']),
+            sleepGoal: normalize(user.sleepGoal, ['Less than 6 hours', '6-7 hours', '7-8 hours', '8+ hours']),
+            stressLevel: normalize(user.stressLevel, ['Low', 'Moderate', 'High']),
+            motivation: normalize(user.motivation, ['Health', 'Appearance', 'Performance', 'Social', 'Other']),
+            weight: (user.weight && user.weight.value) ? user.weight.value : '',
+            height: (user.height && user.height.value) ? user.height.value : '',
           });
         }
       } catch (err) {
@@ -131,7 +188,6 @@ const Preference = () => {
     fetchProfile();
     // eslint-disable-next-line
   }, []);
-
 
   const [dropdownOpen, setDropdownOpen] = useState({
     age: false,
@@ -152,7 +208,7 @@ const Preference = () => {
     motivation: false
   });
 
-  const [profilePhoto, setProfilePhoto] = useState('https://storage.googleapis.com/a1aa/image/d2cfe623-1544-4224-2da4-46a005423708.jpg');
+  const [profilePhoto, setProfilePhoto] = useState(profileData?.profilePicture || 'https://storage.googleapis.com/a1aa/image/d2cfe623-1544-4224-2da4-46a005423708.jpg');
 
   const location = useLocation();
 
@@ -200,8 +256,68 @@ const Preference = () => {
     e.preventDefault();
     setSaving(true);
     setError(null);
+
+    // Split name if present, else use firstName/lastName
+    let firstName = formData.firstName || '';
+    let lastName = formData.lastName || '';
+    if (!firstName && formData.name) {
+      const parts = formData.name.trim().split(' ');
+      firstName = parts[0] || '';
+      lastName = parts.slice(1).join(' ');
+    }
+
+    // Ensure age is valid
+    const validAges = ['Under 18', '18–30', '31–45', '46–60', '60+'];
+    const age = validAges.includes(formData.age) ? formData.age : '';
+
+    // Build payload for backend
+    const payload = {
+      firstName,
+      lastName,
+      age,
+      gender: formData.gender || '',
+      height: {
+        value: formData.height || '',
+        unit: 'cm',
+      },
+      weight: {
+        value: formData.weight || '',
+        unit: 'kg',
+      },
+      fitnessGoals: formData.fitnessGoals || [],
+      fitnessLevel: formData.fitnessLevel || 'beginner',
+      preferences: {},
+      profilePicture: formData.profilePicture || '',
+      goal: formData.goal || '',
+      workout: formData.workout || '',
+      diet: formData.diet || '',
+      healthFocus: formData.healthFocus || '',
+      concerns: formData.concerns || '',
+      otherDietaryPreferences: formData.otherDietaryPreferences || '',
+      otherHealthFocus: formData.otherHealthFocus || '',
+      activityLevel: formData.activityLevel || '',
+      experienceLevel: formData.experienceLevel || '',
+      preferredTime: formData.preferredTime || '',
+      notifications: formData.notifications,
+      privacySettings: formData.privacySettings || 'public',
+      workoutFrequency: formData.workoutFrequency || '',
+      workoutDuration: formData.workoutDuration || '',
+      equipment: formData.equipment || '',
+      medicalConditions: formData.medicalConditions || '',
+      allergies: formData.allergies || '',
+      supplements: formData.supplements || '',
+      sleepGoal: formData.sleepGoal || '',
+      stressLevel: formData.stressLevel || '',
+      motivation: formData.motivation || '',
+      socialSharing: formData.socialSharing,
+      reminders: formData.reminders,
+      progressTracking: formData.progressTracking
+    };
+
     try {
-      await ApiService.updateProfile(formData);
+      console.log('DEBUG: Submitting payload to backend:', payload);
+      const updated = await ApiService.updateProfile(payload);
+      console.log('DEBUG: Backend response after updateProfile:', updated);
       // Optionally show success feedback (toast/snackbar)
     } catch (err) {
       setError(err.message || 'Failed to update profile');
@@ -216,7 +332,10 @@ const Preference = () => {
 
       <div className="flex">
         {/* Sidebar */}
-        <Sidebar profilePhoto={profilePhoto} userName={formData.name || "User"} />
+        <Sidebar
+          profilePhoto={profileData?.profilePicture || profilePhoto}
+          userName={profileData?.firstName || profileData?.fullName || formData.name || "User"}
+        />
 
         {/* Main Content */}
         <main className="flex-1 bg-[#1E1E1E] p-8 ml-6 overflow-y-auto">
