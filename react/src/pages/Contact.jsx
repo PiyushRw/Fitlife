@@ -23,9 +23,37 @@ const Contact = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    setSubmitted(true);
-    // You can add API call here
-    setTimeout(() => setSubmitted(false), 3000);
+    // Send contact form data to backend
+    fetch('http://127.0.0.1:5001/api/v1/contact', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(formData),
+    })
+      .then(async (res) => {
+        if (!res.ok) {
+          const error = await res.json();
+          alert(error.error || 'Failed to send message');
+          return;
+        }
+        return res.json();
+      })
+      .then((data) => {
+        if (data && data.success) {
+          setSubmitted(true);
+          setTimeout(() => setSubmitted(false), 3000);
+          setFormData({
+            name: '',
+            email: '',
+            subject: '',
+            message: ''
+          });
+        }
+      })
+      .catch((err) => {
+        alert('Error: ' + err.message);
+      });
   };
 
   return (
