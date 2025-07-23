@@ -1,8 +1,10 @@
 import express from 'express';
 import { protect } from '../middleware/auth.js';
 import User from '../models/User.js';
+import Chat from '../models/chat.js';
 
 const router = express.Router();
+
 
 // @desc    Get AI workout recommendation
 // @route   POST /api/v1/ai-assistant/workout-recommendation
@@ -170,4 +172,19 @@ router.post('/fitness-advice', protect, async (req, res, next) => {
   }
 });
 
-export default router; 
+// @desc    Get chat history for user
+// @route   GET /api/v1/ai-assistant/chat-history
+// @access  Private
+router.get('/chat-history', protect, async (req, res, next) => {
+  try {
+    const chatHistory = await Chat.find({ userId: req.user.id }).sort({ createdAt: 1 });
+    res.status(200).json({
+      success: true,
+      data: chatHistory
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
+export default router;

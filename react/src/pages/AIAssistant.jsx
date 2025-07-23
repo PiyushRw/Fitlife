@@ -19,8 +19,51 @@ const AIAssistant = () => {
   const chatAreaRef = useRef(null);
   const fileInputRef = useRef(null);
 
-  // Load conversations from localStorage on mount
+  // Load conversations from localStorage on mount and fetch from backend
   useEffect(() => {
+    const fetchChatHistory = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        if (!token) {
+          console.warn('No auth token found, skipping fetch chat history');
+          return;
+        }
+        const res = await fetch('/api/v1/ai-assistant/chat-history', {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`
+          }
+        });
+        const data = await res.json();
+        if (data.success) {
+          // Map backend chat history to conversation format
+          const backendConversations = data.data.map((chat) => ({
+            id: chat._id,
+            title: chat.question.substring(0, 30) + (chat.question.length > 30 ? '...' : ''),
+            messages: [
+              { id: chat._id + '-q', type: 'user', content: chat.question },
+              { id: chat._id + '-r', type: 'ai', content: chat.response }
+            ],
+            timestamp: chat.createdAt,
+            lastMessage: chat.response
+          }));
+          setConversations(backendConversations);
+          if (backendConversations.length > 0) {
+            setCurrentSession(backendConversations[0].id);
+            setMessages(backendConversations[0].messages);
+          }
+        } else {
+          console.error('Failed to fetch chat history:', data.error);
+        }
+      } catch (error) {
+        console.error('Error fetching chat history:', error);
+      }
+    };
+
+    fetchChatHistory();
+
+    // Also load localStorage conversations as fallback
     const savedConversations = JSON.parse(localStorage.getItem('fitlife_chat_history') || '[]');
     setConversations(savedConversations);
   }, []);
@@ -127,6 +170,31 @@ const AIAssistant = () => {
     setSelectedFiles(files);
   };
 
+  // Save chat message to backend
+  const saveChatToBackend = async (question, response) => {
+    try {
+      const token = localStorage.getItem('token'); // Assuming token is stored in localStorage
+      if (!token) {
+        console.warn('No auth token found, skipping chat save');
+        return;
+      }
+      const res = await fetch('/api/v1/ai-assistant/save-chat', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({ question, response })
+      });
+      const data = await res.json();
+      if (!data.success) {
+        console.error('Failed to save chat:', data.error);
+      }
+    } catch (error) {
+      console.error('Error saving chat to backend:', error);
+    }
+  };
+
   // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault(); // Prevent page reload - ensure this works
@@ -226,6 +294,9 @@ const AIAssistant = () => {
         const allMessages = [...newMessages, aiResponse];
         const title = userMessage.substring(0, 30) + (userMessage.length > 30 ? '...' : '');
         saveConversation(title, allMessages);
+
+        // Save chat to backend
+        await saveChatToBackend(userMessage, chatResponse.response);
       } catch (error) {
         console.error('Chat response error:', error);
         const errorResponse = {
