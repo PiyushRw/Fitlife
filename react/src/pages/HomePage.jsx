@@ -172,7 +172,8 @@ const HomePage = () => {
 
 
       {/* Hero Section with Blurry Loading */}
-      <section className="relative h-[90vh] bg-cover bg-center overflow-hidden shadow-xl">
+      <div className="bg-[#121212] w-full h-6"></div>
+<section className="relative h-[90vh] bg-cover bg-center overflow-hidden shadow-xl">
         {/* Blurry Background Image (always visible) */}
         <div 
           className="absolute inset-0 bg-cover bg-center transition-all duration-2000 ease-in-out"

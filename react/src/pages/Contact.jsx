@@ -60,7 +60,8 @@ const Contact = () => {
     <div className="bg-[#121212] text-white font-sans min-h-screen w-full">
 
 
-      <div className="relative max-w-7xl mx-auto w-full px-6 sm:px-10 lg:px-16 py-10 sm:py-16 bg-[#1e1e1e] rounded-[32px] overflow-visible mt-6 shadow-2xl">
+      <div className="bg-[#121212] w-full h-6"></div>
+<div className="relative max-w-7xl mx-auto w-full px-6 sm:px-10 lg:px-16 py-10 sm:py-16 bg-[#1e1e1e] rounded-[32px] overflow-visible mt-6 shadow-2xl">
         {/* Decorative Contact Agent Icon */}
         <div className="absolute -bottom-20 -right-20 w-72 h-72 bg-[#1e1e1e] rounded-[64px] overflow-hidden flex items-center justify-center">
           <img 
