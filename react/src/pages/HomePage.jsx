@@ -168,23 +168,12 @@ const HomePage = () => {
   };
 
   return (
-    <div className="bg-[#121212] text-white font-sans">
-      {/* Navigation Bar */}
-      <header className="flex items-center justify-between px-6 sm:px-10 py-4 bg-[#1E1E1E] shadow-md sticky top-0 z-50 rounded-b-xl">
-        <div className="flex items-center space-x-3">
-          <FitLifeLogo />
-        </div>
-        <nav className="space-x-6 text-lg">
-          <Link to="/" className="hover:text-[#62E0A1] transition border-b-2 border-[#24d0a4] pb-1">Home</Link>
-          <Link to="/profile" className="hover:text-[#62E0A1] transition">Profile</Link>
-          <Link to="/contact" className="hover:text-[#62E0A1] transition">Contact</Link>
-          <Link to="/ai-companion" className="hover:text-[#62E0A1] transition">AI Companion</Link>
-          <Link to="/login" className="bg-gradient-to-r from-[#62E0A1] to-[#F2B33D] text-black px-5 py-2 rounded-full font-semibold hover:scale-105 transition shadow-md">Get Started</Link>
-        </nav>
-      </header>
+    <div className="bg-[#121212] text-white font-sans w-full min-h-screen">
+
 
       {/* Hero Section with Blurry Loading */}
-      <section className="relative h-[90vh] bg-cover bg-center mt-6 rounded-3xl overflow-hidden shadow-xl">
+      <div className="bg-[#121212] w-full h-6"></div>
+<section className="relative h-[90vh] bg-cover bg-center overflow-hidden shadow-xl">
         {/* Blurry Background Image (always visible) */}
         <div 
           className="absolute inset-0 bg-cover bg-center transition-all duration-2000 ease-in-out"

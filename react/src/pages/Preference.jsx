@@ -1,39 +1,85 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import ApiService from '../utils/api';
+import { Listbox } from '@headlessui/react';
 import { Link, useLocation } from 'react-router-dom';
 import FitLifeLogo from '../components/FitLifeLogo';
 
+const defaultFormData = {
+  name: '',
+  age: '',
+  weight: '',
+  height: '',
+  goal: '',
+  workout: '',
+  diet: '',
+  healthFocus: '',
+  concerns: '',
+  otherDietaryPreferences: '',
+  otherHealthFocus: '',
+  activityLevel: '',
+  experienceLevel: '',
+  preferredTime: '',
+  notifications: true,
+  privacySettings: 'public',
+  workoutFrequency: '',
+  workoutDuration: '',
+  equipment: '',
+  fitnessLevel: '',
+  medicalConditions: '',
+  allergies: '',
+  supplements: '',
+  sleepGoal: '',
+  stressLevel: '',
+  motivation: '',
+  socialSharing: true,
+  reminders: true,
+  progressTracking: true
+};
+
 const Preference = () => {
-  const [formData, setFormData] = useState({
-    name: 'Nitish',
-    age: '',
-    weight: '60',
-    height: '177',
-    goal: '',
-    workout: '',
-    diet: '',
-    healthFocus: '',
-    concerns: '',
-    otherDietaryPreferences: '',
-    otherHealthFocus: '',
-    activityLevel: '',
-    experienceLevel: '',
-    preferredTime: '',
-    notifications: true,
-    privacySettings: 'public',
-    workoutFrequency: '',
-    workoutDuration: '',
-    equipment: '',
-    fitnessLevel: '',
-    medicalConditions: '',
-    allergies: '',
-    supplements: '',
-    sleepGoal: '',
-    stressLevel: '',
-    motivation: '',
-    socialSharing: true,
-    reminders: true,
-    progressTracking: true
-  });
+  const [formData, setFormData] = useState(defaultFormData);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    const fetchProfile = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const user = await ApiService.getProfile();
+        console.log('Fetched user in Preference:', user);
+        if (user) {
+          // Flatten any nested objects to their primitive values for form fields
+          const flatten = (obj) => {
+            const flat = {};
+            for (const key in obj) {
+              if (typeof obj[key] === 'object' && obj[key] !== null) {
+                // If the value is an object, try to use .value, .name, or fallback to empty string
+                if ('value' in obj[key]) flat[key] = obj[key].value;
+                else if ('name' in obj[key]) flat[key] = obj[key].name;
+                else flat[key] = '';
+              } else {
+                flat[key] = obj[key];
+              }
+            }
+            return flat;
+          };
+          setFormData({
+            ...defaultFormData,
+            ...flatten(user)
+          });
+        }
+      } catch (err) {
+        setError(err.message || 'Failed to fetch user data');
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchProfile();
+    // eslint-disable-next-line
+  }, []);
+
 
   const [dropdownOpen, setDropdownOpen] = useState({
     age: false,
@@ -98,33 +144,29 @@ const Preference = () => {
     }
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log('Form submitted:', formData);
-    // Handle form submission
+    setSaving(true);
+    setError(null);
+    try {
+      await ApiService.updateProfile(formData);
+      // Optionally show success feedback (toast/snackbar)
+    } catch (err) {
+      setError(err.message || 'Failed to update profile');
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (
     <div className="bg-[#121212] text-white font-sans min-h-screen">
-      {/* Navigation Bar */}
-      <header className="flex items-center justify-between px-6 sm:px-10 py-4 bg-[#1E1E1E] shadow-md sticky top-0 z-50">
-        <div className="flex items-center space-x-3">
-          <FitLifeLogo />
-        </div>
-        <nav className="space-x-6 text-lg">
-          <Link to="/" className="hover:text-[#62E0A1] transition">Home</Link>
-          <Link to="/profile" className="hover:text-[#62E0A1] transition border-b-2 border-[#24d0a4] pb-1">Profile</Link>
-          <Link to="/contact" className="hover:text-[#62E0A1] transition">Contact</Link>
-          <Link to="/ai-companion" className="hover:text-[#62E0A1] transition">AI Companion</Link>
-          <Link to="/login" className="bg-gradient-to-r from-[#62E0A1] to-[#F2B33D] text-black px-5 py-2 rounded-full font-semibold hover:scale-105 transition shadow-md">Get Started</Link>
-        </nav>
-      </header>
+
 
       <div className="flex min-h-screen">
         {/* Sidebar */}
         <aside className="flex flex-col bg-[#1E1E1E] w-20 md:w-48 p-4">
           <div className="flex items-center space-x-3 bg-[#121212] p-2 rounded-lg">
-            <div className="relative">
+            <div className="relative border border-white rounded-lg">
               <img src={profilePhoto} alt="Profile" className="rounded-md w-10 h-10" />
               <Link to="/preference" title="Preferences" className="absolute bottom-0 right-0 bg-[#62E0A1] text-black rounded-full w-5 h-5 flex items-center justify-center text-xs border border-white hover:bg-[#36CFFF] transition">
                 <i className="fas fa-edit"></i>
@@ -175,7 +217,7 @@ const Preference = () => {
                 <div className="flex flex-col md:flex-row gap-8 w-full">
                   {/* Left: Profile Photo */}
                   <div className="flex flex-col items-center md:items-start w-full md:w-1/4 gap-4">
-                    <img src={profilePhoto} alt="Profile" className="w-28 h-28 rounded-full border-4 border-[#62E0A1] object-cover shadow-xl" />
+                    <img src={profilePhoto} alt="Profile" className="w-28 h-28 rounded-full border-4 border-[#62E0A1] object-cover shadow-xl border border-white" />
                     <div className="text-center md:text-left w-full">
                       <input 
                         type="file" 
@@ -201,36 +243,34 @@ const Preference = () => {
                         name="name"
                         value={formData.name}
                         onChange={handleInputChange}
-                        className="w-full bg-[#1A1A1A] border border-gray-700 rounded-lg focus:outline-none focus:border-[#62E0A1] focus:ring-2 focus:ring-[#62E0A1]/20 text-sm p-3 transition-all"
+                        className="fitlife-input w-full border border-white rounded-lg p-4 text-white"
                       />
                     </div>
 
                     {/* Age Range */}
                     <div className="space-y-1">
                       <label className="block text-sm font-semibold text-gray-300 text-left">Age Range</label>
-                      <div className="relative">
-                        <button 
-                          type="button" 
-                          className="w-full p-3 bg-[#1A1A1A] text-white border border-gray-700 rounded-lg text-left cursor-pointer flex justify-between items-center text-sm focus:outline-none focus:border-[#62E0A1] focus:ring-2 focus:ring-[#62E0A1]/20 hover:border-[#62E0A1] transition-all"
-                          onClick={() => handleDropdownToggle('age')}
-                        >
-                          <span>{formData.age || 'Select age range'}</span>
-                          <span className="text-gray-400">⌄</span>
-                        </button>
-                        {dropdownOpen.age && (
-                          <div className="absolute top-full left-0 right-0 bg-[#1e1e1e] border border-gray-600 rounded-lg mt-1 max-h-48 overflow-y-auto z-50">
+                      <Listbox value={formData.age} onChange={value => setFormData(prev => ({ ...prev, age: value }))}>
+                        <div className="relative border border-white rounded-lg">
+                          <Listbox.Button className="fitlife-input w-full border border-white text-left cursor-pointer flex justify-between items-center rounded-lg p-4 text-white">
+                            <span>{formData.age || 'Select age range'}</span>
+                            <span className="text-gray-400">⌄</span>
+                          </Listbox.Button>
+                          <Listbox.Options className="absolute top-full left-0 right-0 bg-[#1A1A1A] border border-white rounded-lg mt-1 max-h-48 overflow-y-auto z-50">
                             {['Under 18', '18–30', '31–45', '46–60', '60+'].map((age) => (
-                              <div 
+                              <Listbox.Option
                                 key={age}
-                                className="p-3 cursor-pointer hover:bg-[#2a2a2a] rounded-lg m-1 text-sm"
-                                onClick={() => handleDropdownSelect('age', age)}
+                                value={age}
+                                className={({ active, selected }) =>
+                                  `p-3 cursor-pointer rounded-lg m-1 text-sm border-none ${active ? 'bg-[#2a2a2a]' : 'bg-[#1A1A1A]'} ${selected ? 'text-[#62E0A1]' : 'text-white'}`
+                                }
                               >
                                 {age}
-                              </div>
+                              </Listbox.Option>
                             ))}
-                          </div>
-                        )}
-                      </div>
+                          </Listbox.Options>
+                        </div>
+                      </Listbox>
                     </div>
 
                     {/* Weight */}
@@ -241,7 +281,7 @@ const Preference = () => {
                         name="weight"
                         value={formData.weight}
                         onChange={handleInputChange}
-                        className="w-full bg-[#1A1A1A] border border-gray-700 rounded-lg focus:outline-none focus:border-[#62E0A1] focus:ring-2 focus:ring-[#62E0A1]/20 text-sm p-3 transition-all"
+                        className="fitlife-input w-full border border-white rounded-lg p-4 text-white"
                       />
                     </div>
 
@@ -253,7 +293,7 @@ const Preference = () => {
                         name="height"
                         value={formData.height}
                         onChange={handleInputChange}
-                        className="w-full bg-[#1A1A1A] border border-gray-700 rounded-lg focus:outline-none focus:border-[#62E0A1] focus:ring-2 focus:ring-[#62E0A1]/20 text-sm p-3 transition-all"
+                        className="fitlife-input w-full border border-white rounded-lg p-4 text-white"
                       />
                     </div>
                   </div>
@@ -272,21 +312,21 @@ const Preference = () => {
                   {/* Primary Goal */}
                   <div className="space-y-3">
                     <label className="block text-sm font-semibold text-gray-300 text-left">Primary Goal</label>
-                    <div className="relative">
+                    <div className="relative border border-white rounded-lg">
                       <button 
                         type="button" 
-                        className="w-full p-3 bg-[#1A1A1A] text-white border border-gray-700 rounded-lg text-left cursor-pointer flex justify-between items-center text-sm focus:outline-none focus:border-[#36CFFF] focus:ring-2 focus:ring-[#36CFFF]/20 hover:border-[#36CFFF] transition-all"
+                        className="fitlife-input w-full border border-white text-left cursor-pointer flex justify-between items-center rounded-lg p-4 text-white"
                         onClick={() => handleDropdownToggle('goal')}
                       >
                         <span>{formData.goal || 'Select goal'}</span>
                         <span className="text-gray-400">⌄</span>
                       </button>
                       {dropdownOpen.goal && (
-                        <div className="absolute top-full left-0 right-0 bg-[#1e1e1e] border border-gray-600 rounded-lg mt-1 max-h-48 overflow-y-auto z-50">
+                        <div className="absolute top-full left-0 right-0 bg-[#1A1A1A] border border-white rounded-lg mt-1 max-h-48 overflow-y-auto z-50">
                           {['Lose weight', 'Gain muscle', 'Improve flexibility', 'Stay active', 'Build strength', 'Improve endurance', 'Maintain fitness', 'Rehabilitation'].map((goal) => (
                             <div 
                               key={goal}
-                              className="p-3 cursor-pointer hover:bg-[#2a2a2a] rounded-lg m-1 text-sm"
+                              className="p-3 cursor-pointer bg-[#1A1A1A] text-white hover:bg-[#2a2a2a] rounded-lg m-1 text-sm border-none"
                               onClick={() => handleDropdownSelect('goal', goal)}
                             >
                               {goal}
@@ -300,21 +340,21 @@ const Preference = () => {
                   {/* Workout Type */}
                   <div className="space-y-3">
                     <label className="block text-sm font-semibold text-gray-300 text-left">Workout Type</label>
-                    <div className="relative">
+                    <div className="relative border border-white rounded-lg">
                       <button 
                         type="button" 
-                        className="w-full p-3 bg-[#1A1A1A] text-white border border-gray-700 rounded-lg text-left cursor-pointer flex justify-between items-center text-sm focus:outline-none focus:border-[#36CFFF] focus:ring-2 focus:ring-[#36CFFF]/20 hover:border-[#36CFFF] transition-all"
+                        className="fitlife-input w-full border border-white text-left cursor-pointer flex justify-between items-center rounded-lg p-4 text-white"
                         onClick={() => handleDropdownToggle('workout')}
                       >
                         <span>{formData.workout || 'Select workout type'}</span>
                         <span className="text-gray-400">⌄</span>
                       </button>
                       {dropdownOpen.workout && (
-                        <div className="absolute top-full left-0 right-0 bg-[#1e1e1e] border border-gray-600 rounded-lg mt-1 max-h-48 overflow-y-auto z-50">
+                        <div className="absolute top-full left-0 right-0 bg-[#1A1A1A] border border-white rounded-lg mt-1 max-h-48 overflow-y-auto z-50">
                           {['Calisthenics', 'Yoga', 'Weight training', 'Mixed', 'Cardio', 'HIIT', 'Pilates', 'CrossFit', 'Swimming', 'Running'].map((workout) => (
                             <div 
                               key={workout}
-                              className="p-3 cursor-pointer hover:bg-[#2a2a2a] rounded-lg m-1 text-sm"
+                              className="p-3 cursor-pointer bg-[#1A1A1A] text-white hover:bg-[#2a2a2a] rounded-lg m-1 text-sm border-none"
                               onClick={() => handleDropdownSelect('workout', workout)}
                             >
                               {workout}
@@ -328,21 +368,21 @@ const Preference = () => {
                   {/* Activity Level */}
                   <div className="space-y-3">
                     <label className="block text-sm font-semibold text-gray-300 text-left">Activity Level</label>
-                    <div className="relative">
+                    <div className="relative border border-white rounded-lg">
                       <button 
                         type="button" 
-                        className="w-full p-3 bg-[#1A1A1A] text-white border border-gray-700 rounded-lg text-left cursor-pointer flex justify-between items-center text-sm focus:outline-none focus:border-[#36CFFF] focus:ring-2 focus:ring-[#36CFFF]/20 hover:border-[#36CFFF] transition-all"
+                        className="fitlife-input w-full border border-white text-left cursor-pointer flex justify-between items-center rounded-lg p-4 text-white"
                         onClick={() => handleDropdownToggle('activityLevel')}
                       >
                         <span>{formData.activityLevel || 'Select activity level'}</span>
                         <span className="text-gray-400">⌄</span>
                       </button>
                       {dropdownOpen.activityLevel && (
-                        <div className="absolute top-full left-0 right-0 bg-[#1e1e1e] border border-gray-600 rounded-lg mt-1 max-h-48 overflow-y-auto z-50">
+                        <div className="absolute top-full left-0 right-0 bg-[#1A1A1A] border border-white rounded-lg mt-1 max-h-48 overflow-y-auto z-50">
                           {['Sedentary', 'Lightly active', 'Moderately active', 'Very active', 'Extremely active'].map((level) => (
                             <div 
                               key={level}
-                              className="p-3 cursor-pointer hover:bg-[#2a2a2a] rounded-lg m-1 text-sm"
+                              className="p-3 cursor-pointer bg-[#1A1A1A] text-white hover:bg-[#2a2a2a] rounded-lg m-1 text-sm border-none"
                               onClick={() => handleDropdownSelect('activityLevel', level)}
                             >
                               {level}
@@ -356,21 +396,21 @@ const Preference = () => {
                   {/* Experience Level */}
                   <div className="space-y-3">
                     <label className="block text-sm font-semibold text-gray-300 text-left">Experience Level</label>
-                    <div className="relative">
+                    <div className="relative border border-white rounded-lg">
                       <button 
                         type="button" 
-                        className="w-full p-3 bg-[#1A1A1A] text-white border border-gray-700 rounded-lg text-left cursor-pointer flex justify-between items-center text-sm focus:outline-none focus:border-[#36CFFF] focus:ring-2 focus:ring-[#36CFFF]/20 hover:border-[#36CFFF] transition-all"
+                        className="fitlife-input w-full border border-white text-left cursor-pointer flex justify-between items-center rounded-lg p-4 text-white"
                         onClick={() => handleDropdownToggle('experienceLevel')}
                       >
                         <span>{formData.experienceLevel || 'Select experience level'}</span>
                         <span className="text-gray-400">⌄</span>
                       </button>
                       {dropdownOpen.experienceLevel && (
-                        <div className="absolute top-full left-0 right-0 bg-[#1e1e1e] border border-gray-600 rounded-lg mt-1 max-h-48 overflow-y-auto z-50">
+                        <div className="absolute top-full left-0 right-0 bg-[#1A1A1A] border border-white rounded-lg mt-1 max-h-48 overflow-y-auto z-50">
                           {['Beginner', 'Intermediate', 'Advanced', 'Expert'].map((level) => (
                             <div 
                               key={level}
-                              className="p-3 cursor-pointer hover:bg-[#2a2a2a] rounded-lg m-1 text-sm"
+                              className="p-3 cursor-pointer bg-[#1A1A1A] text-white hover:bg-[#2a2a2a] rounded-lg m-1 text-sm border-none"
                               onClick={() => handleDropdownSelect('experienceLevel', level)}
                             >
                               {level}
@@ -384,21 +424,21 @@ const Preference = () => {
                   {/* Workout Frequency */}
                   <div className="space-y-3">
                     <label className="block text-sm font-semibold text-gray-300 text-left">Workout Frequency</label>
-                    <div className="relative">
+                    <div className="relative border border-white rounded-lg">
                       <button 
                         type="button" 
-                        className="w-full p-3 bg-[#1A1A1A] text-white border border-gray-700 rounded-lg text-left cursor-pointer flex justify-between items-center text-sm focus:outline-none focus:border-[#36CFFF] focus:ring-2 focus:ring-[#36CFFF]/20 hover:border-[#36CFFF] transition-all"
+                        className="fitlife-input w-full border border-white text-left cursor-pointer flex justify-between items-center rounded-lg p-4 text-white"
                         onClick={() => handleDropdownToggle('workoutFrequency')}
                       >
                         <span>{formData.workoutFrequency || 'Select frequency'}</span>
                         <span className="text-gray-400">⌄</span>
                       </button>
                       {dropdownOpen.workoutFrequency && (
-                        <div className="absolute top-full left-0 right-0 bg-[#1e1e1e] border border-gray-600 rounded-lg mt-1 max-h-48 overflow-y-auto z-50">
+                        <div className="absolute top-full left-0 right-0 bg-[#1A1A1A] border border-white rounded-lg mt-1 max-h-48 overflow-y-auto z-50">
                           {['1-2 times/week', '3-4 times/week', '5-6 times/week', 'Daily', 'Flexible'].map((freq) => (
                             <div 
                               key={freq}
-                              className="p-3 cursor-pointer hover:bg-[#2a2a2a] rounded-lg m-1 text-sm"
+                              className="p-3 cursor-pointer bg-[#1A1A1A] text-white hover:bg-[#2a2a2a] rounded-lg m-1 text-sm border-none"
                               onClick={() => handleDropdownSelect('workoutFrequency', freq)}
                             >
                               {freq}
@@ -412,21 +452,21 @@ const Preference = () => {
                   {/* Workout Duration */}
                   <div className="space-y-3">
                     <label className="block text-sm font-semibold text-gray-300 text-left">Preferred Duration</label>
-                    <div className="relative">
+                    <div className="relative border border-white rounded-lg">
                       <button 
                         type="button" 
-                        className="w-full p-3 bg-[#1A1A1A] text-white border border-gray-700 rounded-lg text-left cursor-pointer flex justify-between items-center text-sm focus:outline-none focus:border-[#36CFFF] focus:ring-2 focus:ring-[#36CFFF]/20 hover:border-[#36CFFF] transition-all"
+                        className="fitlife-input w-full border border-white text-left cursor-pointer flex justify-between items-center rounded-lg p-4 text-white"
                         onClick={() => handleDropdownToggle('workoutDuration')}
                       >
                         <span>{formData.workoutDuration || 'Select duration'}</span>
                         <span className="text-gray-400">⌄</span>
                       </button>
                       {dropdownOpen.workoutDuration && (
-                        <div className="absolute top-full left-0 right-0 bg-[#1e1e1e] border border-gray-600 rounded-lg mt-1 max-h-48 overflow-y-auto z-50">
+                        <div className="absolute top-full left-0 right-0 bg-[#1A1A1A] border border-white rounded-lg mt-1 max-h-48 overflow-y-auto z-50">
                           {['15-30 minutes', '30-45 minutes', '45-60 minutes', '60+ minutes', 'Flexible'].map((duration) => (
                             <div 
                               key={duration}
-                              className="p-3 cursor-pointer hover:bg-[#2a2a2a] rounded-lg m-1 text-sm"
+                              className="p-3 cursor-pointer bg-[#1A1A1A] text-white hover:bg-[#2a2a2a] rounded-lg m-1 text-sm border-none"
                               onClick={() => handleDropdownSelect('workoutDuration', duration)}
                             >
                               {duration}
@@ -451,21 +491,21 @@ const Preference = () => {
                   {/* Dietary Preferences */}
                   <div className="space-y-3">
                     <label className="block text-sm font-semibold text-gray-300 text-left">Dietary Preferences</label>
-                    <div className="relative">
+                    <div className="relative border border-white rounded-lg">
                       <button 
                         type="button" 
-                        className="w-full p-3 bg-[#1A1A1A] text-white border border-gray-700 rounded-lg text-left cursor-pointer flex justify-between items-center text-sm focus:outline-none focus:border-[#F2B33D] focus:ring-2 focus:ring-[#F2B33D]/20 hover:border-[#F2B33D] transition-all"
+                        className="fitlife-input w-full border border-white text-left cursor-pointer flex justify-between items-center rounded-lg p-4 text-white"
                         onClick={() => handleDropdownToggle('diet')}
                       >
                         <span>{formData.diet || 'Select dietary preference'}</span>
                         <span className="text-gray-400">⌄</span>
                       </button>
                       {dropdownOpen.diet && (
-                        <div className="absolute top-full left-0 right-0 bg-[#1e1e1e] border border-gray-600 rounded-lg mt-1 max-h-48 overflow-y-auto z-50">
+                        <div className="absolute top-full left-0 right-0 bg-[#1A1A1A] border border-white rounded-lg mt-1 max-h-48 overflow-y-auto z-50">
                           {['None', 'Vegetarian', 'Vegan', 'Gluten-free', 'Dairy-free', 'Low-carb', 'Keto', 'Paleo', 'Mediterranean', 'Other'].map((diet) => (
                             <div 
                               key={diet}
-                              className="p-3 cursor-pointer hover:bg-[#2a2a2a] rounded-lg m-1 text-sm"
+                              className="p-3 cursor-pointer bg-[#1A1A1A] text-white hover:bg-[#2a2a2a] rounded-lg m-1 text-sm border-none"
                               onClick={() => handleDropdownSelect('diet', diet)}
                             >
                               {diet}
@@ -480,7 +520,7 @@ const Preference = () => {
                           value={formData.otherDietaryPreferences}
                           onChange={handleInputChange}
                           placeholder="Please specify..." 
-                          className="w-full bg-[#1A1A1A] border border-gray-700 rounded-lg focus:outline-none focus:border-[#F2B33D] focus:ring-2 focus:ring-[#F2B33D]/20 text-sm p-3 transition-all mt-3"
+                          className="w-full bg-[#1A1A1A] rounded-lg p-4 text-white border border-white focus:outline-none focus:ring-2 focus:ring-[#62E0A1] focus:ring-2 focus:ring-[#62E0A1]/20 text-sm p-3 transition-all mt-3"
                         />
                       )}
                     </div>
@@ -489,21 +529,21 @@ const Preference = () => {
                   {/* Health Focus */}
                   <div className="space-y-3">
                     <label className="block text-sm font-semibold text-gray-300 text-left">Health Focus</label>
-                    <div className="relative">
+                    <div className="relative border border-white rounded-lg">
                       <button 
                         type="button" 
-                        className="w-full p-3 bg-[#1A1A1A] text-white border border-gray-700 rounded-lg text-left cursor-pointer flex justify-between items-center text-sm focus:outline-none focus:border-[#F2B33D] focus:ring-2 focus:ring-[#F2B33D]/20 hover:border-[#F2B33D] transition-all"
+                        className="fitlife-input w-full border border-white text-left cursor-pointer flex justify-between items-center rounded-lg p-4 text-white"
                         onClick={() => handleDropdownToggle('healthFocus')}
                       >
                         <span>{formData.healthFocus || 'Select health focus'}</span>
                         <span className="text-gray-400">⌄</span>
                       </button>
                       {dropdownOpen.healthFocus && (
-                        <div className="absolute top-full left-0 right-0 bg-[#1e1e1e] border border-gray-600 rounded-lg mt-1 max-h-48 overflow-y-auto z-50">
+                        <div className="absolute top-full left-0 right-0 bg-[#1A1A1A] border border-white rounded-lg mt-1 max-h-48 overflow-y-auto z-50">
                           {['Bone strength', 'Eye health', 'Joint mobility', 'Cholesterol/Blood pressure', 'Diabetes', 'Heart health', 'Mental health', 'Other'].map((focus) => (
                             <div 
                               key={focus}
-                              className="p-3 cursor-pointer hover:bg-[#2a2a2a] rounded-lg m-1 text-sm"
+                              className="p-3 cursor-pointer bg-[#1A1A1A] text-white hover:bg-[#2a2a2a] rounded-lg m-1 text-sm border-none"
                               onClick={() => handleDropdownSelect('healthFocus', focus)}
                             >
                               {focus}
@@ -518,7 +558,7 @@ const Preference = () => {
                           value={formData.otherHealthFocus}
                           onChange={handleInputChange}
                           placeholder="Please specify..." 
-                          className="w-full bg-transparent border-b border-gray-500 focus:outline-none focus:border-[#F2B33D] text-sm p-2 transition-colors mt-2"
+                          className="w-full bg-[#1A1A1A] rounded-lg p-4 text-white border border-white focus:outline-none focus:ring-2 focus:ring-[#62E0A1] focus:ring-2 focus:ring-[#62E0A1]/20 text-sm p-3 transition-all mt-2"
                         />
                       )}
                     </div>
@@ -527,21 +567,21 @@ const Preference = () => {
                   {/* Preferred Workout Time */}
                   <div className="space-y-3">
                     <label className="block text-sm font-semibold text-gray-300 text-left">Preferred Time</label>
-                    <div className="relative">
+                    <div className="relative border border-white rounded-lg">
                       <button 
                         type="button" 
-                        className="w-full p-3 bg-[#1A1A1A] text-white border border-gray-700 rounded-lg text-left cursor-pointer flex justify-between items-center text-sm focus:outline-none focus:border-[#F2B33D] focus:ring-2 focus:ring-[#F2B33D]/20 hover:border-[#F2B33D] transition-all"
+                        className="fitlife-input w-full border border-white text-left cursor-pointer flex justify-between items-center rounded-lg p-4 text-white"
                         onClick={() => handleDropdownToggle('preferredTime')}
                       >
                         <span>{formData.preferredTime || 'Select preferred time'}</span>
                         <span className="text-gray-400">⌄</span>
                       </button>
                       {dropdownOpen.preferredTime && (
-                        <div className="absolute top-full left-0 right-0 bg-[#1e1e1e] border border-gray-600 rounded-lg mt-1 max-h-48 overflow-y-auto z-50">
+                        <div className="absolute top-full left-0 right-0 bg-[#1A1A1A] border border-white rounded-lg mt-1 max-h-48 overflow-y-auto z-50">
                           {['Early morning', 'Morning', 'Afternoon', 'Evening', 'Late night', 'Flexible'].map((time) => (
                             <div 
                               key={time}
-                              className="p-3 cursor-pointer hover:bg-[#2a2a2a] rounded-lg m-1 text-sm"
+                              className="p-3 cursor-pointer bg-[#1A1A1A] text-white hover:bg-[#2a2a2a] rounded-lg m-1 text-sm border-none"
                               onClick={() => handleDropdownSelect('preferredTime', time)}
                             >
                               {time}
@@ -555,21 +595,21 @@ const Preference = () => {
                   {/* Equipment */}
                   <div className="space-y-3">
                     <label className="block text-sm font-semibold text-gray-300 text-left">Available Equipment</label>
-                    <div className="relative">
+                    <div className="relative border border-white rounded-lg">
                       <button 
                         type="button" 
-                        className="w-full p-3 bg-[#1A1A1A] text-white border border-gray-700 rounded-lg text-left cursor-pointer flex justify-between items-center text-sm focus:outline-none focus:border-[#F2B33D] focus:ring-2 focus:ring-[#F2B33D]/20 hover:border-[#F2B33D] transition-all"
+                        className="fitlife-input w-full border border-white text-left cursor-pointer flex justify-between items-center rounded-lg p-4 text-white"
                         onClick={() => handleDropdownToggle('equipment')}
                       >
                         <span>{formData.equipment || 'Select equipment'}</span>
                         <span className="text-gray-400">⌄</span>
                       </button>
                       {dropdownOpen.equipment && (
-                        <div className="absolute top-full left-0 right-0 bg-[#1e1e1e] border border-gray-600 rounded-lg mt-1 max-h-48 overflow-y-auto z-50">
+                        <div className="absolute top-full left-0 right-0 bg-[#1A1A1A] border border-white rounded-lg mt-1 max-h-48 overflow-y-auto z-50">
                           {['None', 'Basic home equipment', 'Full home gym', 'Gym membership', 'Outdoor only', 'Mixed'].map((equipment) => (
                             <div 
                               key={equipment}
-                              className="p-3 cursor-pointer hover:bg-[#2a2a2a] rounded-lg m-1 text-sm"
+                              className="p-3 cursor-pointer bg-[#1A1A1A] text-white hover:bg-[#2a2a2a] rounded-lg m-1 text-sm border-none"
                               onClick={() => handleDropdownSelect('equipment', equipment)}
                             >
                               {equipment}
@@ -583,21 +623,21 @@ const Preference = () => {
                   {/* Sleep Goal */}
                   <div className="space-y-3">
                     <label className="block text-sm font-semibold text-gray-300 text-left">Sleep Goal</label>
-                    <div className="relative">
+                    <div className="relative border border-white rounded-lg">
                       <button 
                         type="button" 
-                        className="w-full p-3 bg-[#1A1A1A] text-white border border-gray-700 rounded-lg text-left cursor-pointer flex justify-between items-center text-sm focus:outline-none focus:border-[#F2B33D] focus:ring-2 focus:ring-[#F2B33D]/20 hover:border-[#F2B33D] transition-all"
+                        className="fitlife-input w-full border border-white text-left cursor-pointer flex justify-between items-center rounded-lg p-4 text-white"
                         onClick={() => handleDropdownToggle('sleepGoal')}
                       >
                         <span>{formData.sleepGoal || 'Select sleep goal'}</span>
                         <span className="text-gray-400">⌄</span>
                       </button>
                       {dropdownOpen.sleepGoal && (
-                        <div className="absolute top-full left-0 right-0 bg-[#1e1e1e] border border-gray-600 rounded-lg mt-1 max-h-48 overflow-y-auto z-50">
+                        <div className="absolute top-full left-0 right-0 bg-[#1A1A1A] border border-white rounded-lg mt-1 max-h-48 overflow-y-auto z-50">
                           {['6-7 hours', '7-8 hours', '8-9 hours', '9+ hours', 'Improve quality'].map((goal) => (
                             <div 
                               key={goal}
-                              className="p-3 cursor-pointer hover:bg-[#2a2a2a] rounded-lg m-1 text-sm"
+                              className="p-3 cursor-pointer bg-[#1A1A1A] text-white hover:bg-[#2a2a2a] rounded-lg m-1 text-sm border-none"
                               onClick={() => handleDropdownSelect('sleepGoal', goal)}
                             >
                               {goal}
@@ -611,21 +651,21 @@ const Preference = () => {
                   {/* Stress Level */}
                   <div className="space-y-3">
                     <label className="block text-sm font-semibold text-gray-300 text-left">Stress Level</label>
-                    <div className="relative">
+                    <div className="relative border border-white rounded-lg">
                       <button 
                         type="button" 
-                        className="w-full p-3 bg-[#1A1A1A] text-white border border-gray-700 rounded-lg text-left cursor-pointer flex justify-between items-center text-sm focus:outline-none focus:border-[#F2B33D] focus:ring-2 focus:ring-[#F2B33D]/20 hover:border-[#F2B33D] transition-all"
+                        className="fitlife-input w-full border border-white text-left cursor-pointer flex justify-between items-center rounded-lg p-4 text-white"
                         onClick={() => handleDropdownToggle('stressLevel')}
                       >
                         <span>{formData.stressLevel || 'Select stress level'}</span>
                         <span className="text-gray-400">⌄</span>
                       </button>
                       {dropdownOpen.stressLevel && (
-                        <div className="absolute top-full left-0 right-0 bg-[#1e1e1e] border border-gray-600 rounded-lg mt-1 max-h-48 overflow-y-auto z-50">
+                        <div className="absolute top-full left-0 right-0 bg-[#1A1A1A] border border-white rounded-lg mt-1 max-h-48 overflow-y-auto z-50">
                           {['Low', 'Moderate', 'High', 'Very high', 'Managing well'].map((level) => (
                             <div 
                               key={level}
-                              className="p-3 cursor-pointer hover:bg-[#2a2a2a] rounded-lg m-1 text-sm"
+                              className="p-3 cursor-pointer bg-[#1A1A1A] text-white hover:bg-[#2a2a2a] rounded-lg m-1 text-sm border-none"
                               onClick={() => handleDropdownSelect('stressLevel', level)}
                             >
                               {level}
@@ -648,7 +688,7 @@ const Preference = () => {
                       value={formData.concerns}
                       onChange={handleInputChange}
                       placeholder="Any health concerns or conditions..."
-                      className="w-full bg-[#1A1A1A] border border-gray-700 rounded-lg focus:outline-none focus:border-[#F2B33D] focus:ring-2 focus:ring-[#F2B33D]/20 text-sm p-3 transition-all"
+                      className="fitlife-input w-full border border-white rounded-lg p-4 text-white"
                     />
                   </div>
 
@@ -661,7 +701,7 @@ const Preference = () => {
                       value={formData.allergies}
                       onChange={handleInputChange}
                       placeholder="Food or other allergies..."
-                      className="w-full bg-[#1A1A1A] border border-gray-700 rounded-lg focus:outline-none focus:border-[#F2B33D] focus:ring-2 focus:ring-[#F2B33D]/20 text-sm p-3 transition-all"
+                      className="fitlife-input w-full border border-white rounded-lg p-4 text-white"
                     />
                   </div>
                 </div>
@@ -716,21 +756,21 @@ const Preference = () => {
                   {/* Privacy Settings Dropdown */}
                   <div className="space-y-2">
                     <label className="block text-sm font-semibold text-gray-300 text-left">Privacy Settings</label>
-                    <div className="relative">
+                    <div className="relative border border-white rounded-lg">
                       <button 
                         type="button" 
-                        className="w-full p-3 bg-[#1A1A1A] text-white border border-gray-700 rounded-lg text-left cursor-pointer flex justify-between items-center text-sm focus:outline-none focus:border-[#62E0A1] focus:ring-2 focus:ring-[#62E0A1]/20 hover:border-[#62E0A1] transition-all"
+                        className="fitlife-input w-full border border-white text-left cursor-pointer flex justify-between items-center rounded-lg p-4 text-white"
                         onClick={() => handleDropdownToggle('privacySettings')}
                       >
                         <span>{formData.privacySettings === 'public' ? 'Public' : formData.privacySettings === 'private' ? 'Private' : 'Friends only'}</span>
                         <span className="text-gray-400">⌄</span>
                       </button>
                       {dropdownOpen.privacySettings && (
-                        <div className="absolute top-full left-0 right-0 bg-[#1e1e1e] border border-gray-600 rounded-lg mt-1 max-h-48 overflow-y-auto z-50">
+                        <div className="absolute top-full left-0 right-0 bg-[#1A1A1A] border border-white rounded-lg mt-1 max-h-48 overflow-y-auto z-50">
                           {['Public', 'Private', 'Friends only'].map((setting) => (
                             <div 
                               key={setting}
-                              className="p-3 cursor-pointer hover:bg-[#2a2a2a] rounded-lg m-1 text-sm"
+                              className="p-3 cursor-pointer bg-[#1A1A1A] text-white hover:bg-[#2a2a2a] rounded-lg m-1 text-sm border-none"
                               onClick={() => handleDropdownSelect('privacySettings', setting.toLowerCase().replace(' ', ''))}
                             >
                               {setting}
@@ -780,21 +820,21 @@ const Preference = () => {
                   {/* Motivation Type Dropdown */}
                   <div className="space-y-2">
                     <label className="block text-sm font-semibold text-gray-300 text-left">Motivation Type</label>
-                    <div className="relative">
+                    <div className="relative border border-white rounded-lg">
                       <button 
                         type="button" 
-                        className="w-full p-3 bg-[#1A1A1A] text-white border border-gray-700 rounded-lg text-left cursor-pointer flex justify-between items-center text-sm focus:outline-none focus:border-[#62E0A1] focus:ring-2 focus:ring-[#62E0A1]/20 hover:border-[#62E0A1] transition-all"
+                        className="fitlife-input w-full border border-white text-left cursor-pointer flex justify-between items-center rounded-lg p-4 text-white"
                         onClick={() => handleDropdownToggle('motivation')}
                       >
                         <span>{formData.motivation || 'Select motivation type'}</span>
                         <span className="text-gray-400">⌄</span>
                       </button>
                       {dropdownOpen.motivation && (
-                        <div className="absolute top-full left-0 right-0 bg-[#1e1e1e] border border-gray-600 rounded-lg mt-1 max-h-48 overflow-y-auto z-50">
+                        <div className="absolute top-full left-0 right-0 bg-[#1A1A1A] border border-white rounded-lg mt-1 max-h-48 overflow-y-auto z-50">
                           {['Competitive', 'Supportive', 'Educational', 'Social', 'Personal goals', 'Health focus'].map((motivation) => (
                             <div 
                               key={motivation}
-                              className="p-3 cursor-pointer hover:bg-[#2a2a2a] rounded-lg m-1 text-sm"
+                              className="p-3 cursor-pointer bg-[#1A1A1A] text-white hover:bg-[#2a2a2a] rounded-lg m-1 text-sm border-none"
                               onClick={() => handleDropdownSelect('motivation', motivation)}
                             >
                               {motivation}
@@ -808,13 +848,16 @@ const Preference = () => {
               </div>
 
               {/* Submit Button */}
-              <div className="flex justify-center pt-12">
+              <div className="flex flex-col items-center pt-12 space-y-2">
                 <button 
                   type="submit" 
-                  className="bg-gradient-to-r from-[#62E0A1] to-[#36CFFF] text-black px-16 py-5 rounded-full font-bold hover:scale-105 transition-all duration-300 shadow-xl hover:shadow-2xl text-xl"
+                  className={`bg-gradient-to-r from-[#62E0A1] to-[#36CFFF] text-black px-16 py-5 rounded-full font-bold hover:scale-105 transition-all duration-300 shadow-xl hover:shadow-2xl text-xl ${saving ? 'opacity-60 cursor-not-allowed' : ''}`}
+                  disabled={saving}
                 >
-                  Save All Changes
+                  {saving ? 'Saving...' : 'Save All Changes'}
                 </button>
+                {loading && <div className="text-gray-400 pt-2">Loading user data...</div>}
+                {error && <div className="text-red-400 pt-2">{error}</div>}
               </div>
             </form>
           </div>

@@ -16,7 +16,9 @@ import userRoutes from './routes/users.js';
 import workoutRoutes from './routes/workouts.js';
 import nutritionRoutes from './routes/nutrition.js';
 import aiAssistantRoutes from './routes/aiAssistant.js';
+
 import fitnessAdviceRouter from './routes/fitnessAdviceRoutes.js'; // ✅ must be "default"
+import contactRoutes from './routes/contact.js';
 
 
 
@@ -34,7 +36,13 @@ app.use(helmet());
 
 // CORS configuration
 app.use(cors({
-  origin: process.env.CORS_ORIGIN || 'http://localhost:3000',
+  origin: [
+    'http://localhost:3000',
+    'http://localhost:5173',
+    'http://localhost:5174',
+    'http://127.0.0.1:5173',
+    'http://127.0.0.1:5174'
+  ],
   credentials: true
 }));
 
@@ -66,7 +74,9 @@ app.use(`/api/${apiVersion}/auth`, authRoutes);
 app.use(`/api/${apiVersion}/users`, userRoutes);
 app.use(`/api/${apiVersion}/workouts`, workoutRoutes);
 app.use(`/api/${apiVersion}/nutrition`, nutritionRoutes);
+
 app.use(`/api/${apiVersion}/ai-assistant`, aiAssistantRoutes);
+app.use(`/api/${apiVersion}/contact`, contactRoutes);
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {

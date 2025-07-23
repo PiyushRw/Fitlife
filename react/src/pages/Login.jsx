@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
 
 const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -7,6 +8,8 @@ const Login = () => {
     email: '',
     password: ''
   });
+  const { login } = useAuth();
+  const navigate = useNavigate();
 
   const togglePassword = () => {
     setShowPassword(!showPassword);
@@ -20,36 +23,14 @@ const Login = () => {
     }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Send login data to backend
-    fetch('http://127.0.0.1:5001/api/v1/auth/login', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(formData),
-    })
-      .then(async (res) => {
-        if (!res.ok) {
-          const error = await res.json();
-          alert(error.error || 'Login failed');
-          return;
-        }
-        return res.json();
-      })
-      .then((data) => {
-        if (data && data.success !== false) {
-          // Save token for authenticated requests
-          if (data.data && data.data.token) {
-            localStorage.setItem('fitlife_token', data.data.token);
-          }
-          window.location.href = '/profile';
-        }
-      })
-      .catch((err) => {
-        alert('Login error: ' + err.message);
-      });
+    try {
+      await login(formData);
+      navigate('/profile');
+    } catch (err) {
+      alert('Login error: ' + err.message);
+    }
   };
 
   return (

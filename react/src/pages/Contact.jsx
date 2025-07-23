@@ -23,28 +23,45 @@ const Contact = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    setSubmitted(true);
-    // You can add API call here
-    setTimeout(() => setSubmitted(false), 3000);
+    // Send contact form data to backend
+    fetch('http://127.0.0.1:5001/api/v1/contact', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(formData),
+    })
+      .then(async (res) => {
+        if (!res.ok) {
+          const error = await res.json();
+          alert(error.error || 'Failed to send message');
+          return;
+        }
+        return res.json();
+      })
+      .then((data) => {
+        if (data && data.success) {
+          setSubmitted(true);
+          setTimeout(() => setSubmitted(false), 3000);
+          setFormData({
+            name: '',
+            email: '',
+            subject: '',
+            message: ''
+          });
+        }
+      })
+      .catch((err) => {
+        alert('Error: ' + err.message);
+      });
   };
 
   return (
-    <div className="bg-[#121212] text-white font-sans min-h-screen">
-      {/* Navigation Bar */}
-      <header className="flex items-center justify-between px-6 sm:px-10 py-4 bg-[#1E1E1E] shadow-md sticky top-0 z-50 rounded-b-xl">
-        <div className="flex items-center space-x-3">
-          <FitLifeLogo />
-        </div>
-        <nav className="space-x-6 text-lg">
-          <Link to="/" className="hover:text-[#62E0A1] transition">Home</Link>
-          <Link to="/profile" className="hover:text-[#62E0A1] transition">Profile</Link>
-          <Link to="/contact" className="hover:text-[#62E0A1] transition border-b-2 border-[#24d0a4] pb-1">Contact</Link>
-          <Link to="/ai-companion" className="hover:text-[#62E0A1] transition">AI Companion</Link>
-          <Link to="/login" className="bg-gradient-to-r from-[#62E0A1] to-[#F2B33D] text-black px-5 py-2 rounded-full font-semibold hover:scale-105 transition shadow-md">Get Started</Link>
-        </nav>
-      </header>
+    <div className="bg-[#121212] text-white font-sans min-h-screen w-full">
 
-      <div className="relative max-w-7xl mx-auto w-full px-6 sm:px-10 lg:px-16 py-10 sm:py-16 bg-[#1e1e1e] rounded-[32px] overflow-visible mt-6 shadow-2xl">
+
+      <div className="bg-[#121212] w-full h-6"></div>
+<div className="relative max-w-7xl mx-auto w-full px-6 sm:px-10 lg:px-16 py-10 sm:py-16 bg-[#1e1e1e] rounded-[32px] overflow-visible mt-6 shadow-2xl">
         {/* Decorative Contact Agent Icon */}
         <div className="absolute -bottom-20 -right-20 w-72 h-72 bg-[#1e1e1e] rounded-[64px] overflow-hidden flex items-center justify-center">
           <img 

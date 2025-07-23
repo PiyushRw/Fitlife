@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
 
 const Register = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -8,6 +9,7 @@ const Register = () => {
     email: '',
     password: ''
   });
+  const { register } = useAuth();
   const navigate = useNavigate();
 
   const togglePassword = () => {
@@ -22,59 +24,14 @@ const Register = () => {
     }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Send registration data to backend
-    fetch('http://127.0.0.1:5001/api/v1/auth/register', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(formData),
-    })
-      .then(async (res) => {
-        if (!res.ok) {
-          const error = await res.json();
-          alert(error.error || 'Registration failed');
-          return;
-        }
-        return res.json();
-      })
-      .then((data) => {
-        if (data && data.success !== false) {
-          // Automatically log in after registration
-          fetch('http://127.0.0.1:5001/api/v1/auth/login', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              email: formData.email,
-              password: formData.password
-            })
-          })
-            .then(async (res) => {
-              if (!res.ok) {
-                const error = await res.json();
-                alert(error.error || 'Login after registration failed');
-                return;
-              }
-              return res.json();
-            })
-            .then((loginData) => {
-              if (loginData && loginData.success !== false && loginData.data && loginData.data.token) {
-                localStorage.setItem('fitlife_token', loginData.data.token);
-                window.location.href = '/onboarding';
-              }
-            })
-            .catch((err) => {
-              alert('Login error: ' + err.message);
-            });
-        }
-      })
-      .catch((err) => {
-        alert('Registration error: ' + err.message);
-      });
+    try {
+      await register(formData);
+      navigate('/onboarding');
+    } catch (err) {
+      alert('Registration error: ' + err.message);
+    }
   };
 
   return (

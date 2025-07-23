@@ -1,49 +1,56 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Link, useLocation } from 'react-router-dom';
 import FitLifeLogo from '../components/FitLifeLogo';
 import CustomDropdown from '../components/CustomDropdown';
 
 const Profile = () => {
   const [activeTab, setActiveTab] = useState('overview');
-  const [profileData, setProfileData] = useState({
-    name: 'Nitish',
-    email: 'nitish@example.com',
-    age: 28,
-    weight: 75,
-    height: 175,
-    goal: 'Build Muscle',
-    activityLevel: 'Moderate',
-    rest: 8,
-    heartRate: 72,
-    caloriesBurnt: 450,
-    maxBench: 185,
-    maxSquat: 225,
-    fiveKTime: '22:30'
-  });
+  const [profileData, setProfileData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
-    const storedUser = localStorage.getItem('fitlife_user');
-    if (storedUser) {
+    const fetchUserData = async () => {
+      setLoading(true);
+      setError(null);
       try {
-        const userData = JSON.parse(storedUser);
-        setProfileData(prev => ({
-          ...prev,
-          name: userData.name || prev.name,
-          age: userData.age ? parseInt(userData.age) : prev.age,
-          weight: userData.weight ? parseInt(userData.weight) : prev.weight,
-          height: userData.height ? parseInt(userData.height) : prev.height,
-          goal: userData.goal || prev.goal,
-          // Map other fields if needed
-        }));
-      } catch (error) {
-        console.error('Error parsing user data from localStorage:', error);
+        const token = localStorage.getItem('fitlife_token');
+        if (!token) {
+          navigate('/login');
+          return;
+        }
+        const response = await fetch('http://127.0.0.1:5001/api/v1/auth/me', {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+        if (!response.ok) {
+          throw new Error('Failed to fetch user data');
+        }
+        const data = await response.json();
+        if (data && data.success && data.data && data.data.user) {
+          setProfileData(data.data.user);
+        } else {
+          throw new Error('Invalid user data received');
+        }
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
       }
-    }
-  }, []);
+    };
+    fetchUserData();
+  }, [navigate]);
 
   const [isEditing, setIsEditing] = useState(false);
   const [editableProfileData, setEditableProfileData] = useState(profileData);
   const [showEditModal, setShowEditModal] = useState(false);
+
+  useEffect(() => {
+    setEditableProfileData(profileData);
+  }, [profileData]);
 
   const [mood, setMood] = useState('happy');
   const [workoutStreak] = useState(7);
@@ -89,24 +96,24 @@ const Profile = () => {
   const [draggedPart, setDraggedPart] = useState(null);
   const location = useLocation();
 
+  if (loading) {
+    return <div className="text-white p-4">Loading profile...</div>;
+  }
+
+  if (error) {
+    return <div className="text-red-500 p-4">Error: {error}</div>;
+  }
+
+  if (!profileData) {
+    return <div className="text-white p-4">No profile data available.</div>;
+  }
+
   return (
     <div className="bg-[#121212] text-white font-sans">
-      {/* Navigation Bar */}
-      <header className="flex items-center justify-between px-6 sm:px-10 py-4 bg-[#1E1E1E] shadow-md sticky top-0 z-50 rounded-b-xl">
-        <div className="flex items-center space-x-3">
-          <FitLifeLogo />
-        </div>
-        <nav className="space-x-6 text-lg">
-          <Link to="/" className="hover:text-[#62E0A1] transition">Home</Link>
-          <Link to="/profile" className="hover:text-[#62E0A1] transition border-b-2 border-[#24d0a4] pb-1">Profile</Link>
-          <Link to="/contact" className="hover:text-[#62E0A1] transition">Contact</Link>
-          <Link to="/ai-companion" className="hover:text-[#62E0A1] transition">AI Companion</Link>
-          <Link to="/login" className="bg-gradient-to-r from-[#62E0A1] to-[#F2B33D] text-black px-5 py-2 rounded-full font-semibold hover:scale-105 transition shadow-md">Get Started</Link>
-        </nav>
-      </header>
+
 
       <div className="flex min-h-screen p-4">
-        {/* Sidebar */}
+        {/* Sidebar */} 
         <aside className="flex flex-col bg-[#1E1E1E] w-20 md:w-48 p-4 rounded-2xl">
           <div className="flex items-center space-x-3 bg-[#121212] p-2 rounded-lg">
             <div className="relative">
@@ -116,7 +123,7 @@ const Profile = () => {
               </Link>
             </div>
             <div className="hidden md:block text-xs text-gray-300">
-              <p className="font-normal">Nitish</p>
+              <p className="font-normal">{profileData.fullName || profileData.firstName}</p>
             </div>
           </div>
           <nav className="flex flex-col space-y-2 text-sm mt-6">
@@ -166,7 +173,7 @@ const Profile = () => {
                 <i className="fas fa-smile"></i>
               </div>
               <div className="text-sm">
-                <p className="font-bold">Welcome, Nitish!</p>
+                <p className="font-bold">Welcome, {profileData.fullName || profileData.firstName}!</p>
                 <p className="text-xs">Today is Monday, January 12. You have 3 workouts scheduled, your next meal prep is in 2 hours, and you need to drink 1 liter more water today. Keep pushing!</p>
               </div>
             </div>
@@ -295,19 +302,7 @@ const Profile = () => {
             </div>
             <div className="bg-[#121212] rounded-xl p-4 text-center">
               <div className="bg-[#36CFFF] text-black rounded-full w-8 h-8 flex items-center justify-center mx-auto">
-                {/* Mood Emoji Selector */}
-                <select 
-                  value={mood}
-                  onChange={(e) => {
-                    setMood(e.target.value);
-                    updateHealthScore();
-                  }}
-                  className="bg-transparent text-lg text-black font-bold focus:outline-none"
-                >
-                  <option value="happy">😄</option>
-                  <option value="neutral">😐</option>
-                  <option value="sad">😞</option>
-                </select>
+                {mood === 'happy' ? '😄' : mood === 'neutral' ? '😐' : '😞'}
               </div>
               <p className="text-sm">Mood</p>
               <p id="moodInsight" className="text-xs mt-1 text-[#36CFFF]">{updateMoodInsight()}</p>
@@ -491,79 +486,9 @@ const Profile = () => {
           )}
 
           {activeTab === 'stats' && (
-            <div className="grid md:grid-cols-3 gap-6">
-              <div className="bg-[#121212] rounded-2xl p-6">
-                <h3 className="text-lg font-bold text-white mb-4">Weekly Progress</h3>
-                <div className="space-y-3">
-                  <div className="flex justify-between">
-                    <span className="text-gray-400">Mon</span>
-                    <div className="w-20 bg-gray-700 rounded-full h-2">
-                      <div className="bg-[#62E0A1] h-2 rounded-full" style={{ width: '80%' }}></div>
-                    </div>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-400">Tue</span>
-                    <div className="w-20 bg-gray-700 rounded-full h-2">
-                      <div className="bg-[#62E0A1] h-2 rounded-full" style={{ width: '60%' }}></div>
-                    </div>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-400">Wed</span>
-                    <div className="w-20 bg-gray-700 rounded-full h-2">
-                      <div className="bg-[#62E0A1] h-2 rounded-full" style={{ width: '90%' }}></div>
-                    </div>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-400">Thu</span>
-                    <div className="w-20 bg-gray-700 rounded-full h-2">
-                      <div className="bg-[#62E0A1] h-2 rounded-full" style={{ width: '70%' }}></div>
-                    </div>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-400">Fri</span>
-                    <div className="w-20 bg-gray-700 rounded-full h-2">
-                      <div className="bg-[#62E0A1] h-2 rounded-full" style={{ width: '85%' }}></div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div className="bg-[#121212] rounded-2xl p-6">
-                <h3 className="text-lg font-bold text-white mb-4">Body Metrics</h3>
-                <div className="space-y-4">
-                  <div>
-                    <span className="text-gray-400 text-sm">Weight</span>
-                    <p className="text-2xl font-bold text-[#62E0A1]">{profileData.weight} kg</p>
-                  </div>
-                  <div>
-                    <span className="text-gray-400 text-sm">Height</span>
-                    <p className="text-2xl font-bold text-[#36CFFF]">{profileData.height} cm</p>
-                  </div>
-                  <div>
-                    <span className="text-gray-400 text-sm">BMI</span>
-                    <p className="text-2xl font-bold text-[#F2B33D]">24.5</p>
-                  </div>
-                </div>
-              </div>
-
-              <div className="bg-[#121212] rounded-2xl p-6">
-                <h3 className="text-lg font-bold text-white mb-4">Performance</h3>
-                <div className="space-y-4">
-                  <div>
-                    <span className="text-gray-400 text-sm">Max Bench Press</span>
-                    <p className="text-2xl font-bold text-[#62E0A1]">185 lbs</p>
-                  </div>
-                  <div>
-                    <span className="text-gray-400 text-sm">Max Squat</span>
-                    <p className="text-2xl font-bold text-[#36CFFF]">225 lbs</p>
-                  </div>
-                  <div>
-                    <span className="text-gray-400 text-sm">5K Time</span>
-                    <p className="text-2xl font-bold text-[#F2B33D]">22:30</p>
-                  </div>
-                </div>
-              </div>
-            </div>
+            <ErrorBoundary>
+              <StatsTabContent profileData={profileData} />
+            </ErrorBoundary>
           )}
 
           {activeTab === 'workout' && (
@@ -809,5 +734,123 @@ const Profile = () => {
     </div>
   );
 };
+
+// ErrorBoundary class for catching errors in Stats tab
+
+class ErrorBoundary extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { hasError: false, error: null };
+  }
+
+  static getDerivedStateFromError(error) {
+    return { hasError: true, error };
+  }
+
+  componentDidCatch(error, errorInfo) {
+    console.error('Error in Stats tab:', error, errorInfo);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return <div className="text-red-500 p-4">An error occurred in the Stats tab. Please contact support.<br/>{this.state.error && this.state.error.toString()}</div>;
+    }
+    return this.props.children;
+  }
+}
+
+function StatsTabContent({ profileData }) {
+  if (!profileData) {
+    return <div className="text-white">No profile data available.</div>;
+  }
+  // Helper to safely render any value (string, number, or fallback for object)
+  function safeDisplay(val) {
+    if (val == null) return 'N/A';
+    if (typeof val === 'string' || typeof val === 'number') return val;
+    if (typeof val === 'object') {
+      // Try to display value or fallback to JSON
+      if ('value' in val) return val.value;
+      if ('display' in val) return val.display;
+      if ('unit' in val && 'value' in val) return `${val.value} ${val.unit}`;
+      return JSON.stringify(val);
+    }
+    return String(val);
+  }
+  return (
+    <div className="grid md:grid-cols-3 gap-6">
+      <div className="bg-[#121212] rounded-2xl p-6">
+        <h3 className="text-lg font-bold text-white mb-4">Weekly Progress</h3>
+        <div className="space-y-3">
+          <div className="flex justify-between">
+            <span className="text-gray-400">Mon</span>
+            <div className="w-20 bg-gray-700 rounded-full h-2">
+              <div className="bg-[#62E0A1] h-2 rounded-full" style={{ width: '80%' }}></div>
+            </div>
+          </div>
+          <div className="flex justify-between">
+            <span className="text-gray-400">Tue</span>
+            <div className="w-20 bg-gray-700 rounded-full h-2">
+              <div className="bg-[#62E0A1] h-2 rounded-full" style={{ width: '60%' }}></div>
+            </div>
+          </div>
+          <div className="flex justify-between">
+            <span className="text-gray-400">Wed</span>
+            <div className="w-20 bg-gray-700 rounded-full h-2">
+              <div className="bg-[#62E0A1] h-2 rounded-full" style={{ width: '90%' }}></div>
+            </div>
+          </div>
+          <div className="flex justify-between">
+            <span className="text-gray-400">Thu</span>
+            <div className="w-20 bg-gray-700 rounded-full h-2">
+              <div className="bg-[#62E0A1] h-2 rounded-full" style={{ width: '70%' }}></div>
+            </div>
+          </div>
+          <div className="flex justify-between">
+            <span className="text-gray-400">Fri</span>
+            <div className="w-20 bg-gray-700 rounded-full h-2">
+              <div className="bg-[#62E0A1] h-2 rounded-full" style={{ width: '85%' }}></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="bg-[#121212] rounded-2xl p-6">
+        <h3 className="text-lg font-bold text-white mb-4">Body Metrics</h3>
+        <div className="space-y-4">
+          <div>
+            <span className="text-gray-400 text-sm">Weight</span>
+            <p className="text-2xl font-bold text-[#62E0A1]">{safeDisplay(profileData.weight)} kg</p>
+          </div>
+          <div>
+            <span className="text-gray-400 text-sm">Height</span>
+            <p className="text-2xl font-bold text-[#36CFFF]">{safeDisplay(profileData.height)} cm</p>
+          </div>
+          <div>
+            <span className="text-gray-400 text-sm">BMI</span>
+            <p className="text-2xl font-bold text-[#F2B33D]">24.5</p>
+          </div>
+        </div>
+      </div>
+
+      <div className="bg-[#121212] rounded-2xl p-6">
+        <h3 className="text-lg font-bold text-white mb-4">Performance</h3>
+        <div className="space-y-4">
+          <div>
+            <span className="text-gray-400 text-sm">Max Bench Press</span>
+            <p className="text-2xl font-bold text-[#62E0A1]">{safeDisplay(profileData.maxBench)} lbs</p>
+          </div>
+          <div>
+            <span className="text-gray-400 text-sm">Max Squat</span>
+            <p className="text-2xl font-bold text-[#36CFFF]">{safeDisplay(profileData.maxSquat)} lbs</p>
+          </div>
+          <div>
+            <span className="text-gray-400 text-sm">5K Time</span>
+            <p className="text-2xl font-bold text-[#F2B33D]">{safeDisplay(profileData.fiveKTime)}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export default Profile;
