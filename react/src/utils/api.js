@@ -109,6 +109,34 @@ class ApiService {
   static logout() {
     this.removeToken();
   }
+
+  // Fetch chat history for the logged-in user
+  static async getChatHistory() {
+    return this.makeRequest('/ai-assistant/chat-history');
+  }
+
+  // Save a new chat message (workout, nutrition, advice, etc.)
+  // type: 'workout-recommendation' | 'nutrition-recommendation' | 'fitness-advice'
+  static async saveChatMessage(type, payload) {
+    let endpoint = '';
+    switch (type) {
+      case 'workout-recommendation':
+        endpoint = '/ai-assistant/workout-recommendation';
+        break;
+      case 'nutrition-recommendation':
+        endpoint = '/ai-assistant/nutrition-recommendation';
+        break;
+      case 'fitness-advice':
+        endpoint = '/ai-assistant/fitness-advice';
+        break;
+      default:
+        throw new Error('Invalid chat type');
+    }
+    return this.makeRequest(endpoint, {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    });
+  }
 }
 
 export default ApiService;

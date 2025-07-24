@@ -17,7 +17,7 @@ import workoutRoutes from './routes/workouts.js';
 import nutritionRoutes from './routes/nutrition.js';
 import aiAssistantRoutes from './routes/aiAssistant.js';
 
-import fitnessAdviceRouter from './routes/fitnessAdviceRoutes.js'; // ✅ must be "default"
+import fitnessAdviceRouter from './routes/fitnessAdviceRoutes.js'; 
 import contactRoutes from './routes/contact.js';
 
 

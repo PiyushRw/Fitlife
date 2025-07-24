@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import FitLifeLogo from '../components/FitLifeLogo';
 import { getFitnessChat, analyzeWorkoutImage } from '../utils/geminiApi';
+import ApiService from '../utils/api';
 
 const AICompanion = () => {
   const [conversations, setConversations] = useState([]);
@@ -19,10 +20,34 @@ const AICompanion = () => {
   const chatWindowRef = useRef(null);
   const fileInputRef = useRef(null);
 
+  // Fetch chat history from backend on mount
   useEffect(() => {
-    // Load conversations from localStorage
-    const savedConversations = JSON.parse(localStorage.getItem('fitlife_chat_history') || '[]');
-    setConversations(savedConversations);
+    const fetchChatHistory = async () => {
+      try {
+        const data = await ApiService.getChatHistory();
+        if (data.success && Array.isArray(data.data)) {
+          // Map backend chat history to conversation format
+          const backendConversations = data.data.map((chat) => ({
+            id: chat._id,
+            title: chat.type.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase()),
+            messages: [
+              { id: chat._id + '-user', sender: 'user', content: chat.metadata?.question || chat.metadata?.fitnessGoals || '' },
+              { id: chat._id + '-ai', sender: 'ai', content: typeof chat.content === 'string' ? chat.content : JSON.stringify(chat.content) }
+            ],
+            timestamp: chat.createdAt,
+            lastMessage: typeof chat.content === 'string' ? chat.content : JSON.stringify(chat.content)
+          }));
+          setConversations(backendConversations);
+          if (backendConversations.length > 0) {
+            setCurrentSession(backendConversations[0].id);
+            setMessages(backendConversations[0].messages);
+          }
+        }
+      } catch (error) {
+        console.error('Failed to fetch chat history:', error);
+      }
+    };
+    fetchChatHistory();
   }, []);
 
   useEffect(() => {
@@ -39,20 +64,6 @@ const AICompanion = () => {
     if (diffInMinutes < 60) return `${diffInMinutes} min ago`;
     if (diffInMinutes < 1440) return `${Math.floor(diffInMinutes / 60)} hours ago`;
     return `${Math.floor(diffInMinutes / 1440)} days ago`;
-  };
-
-  const saveConversation = (title, messages) => {
-    const conversation = {
-      id: Date.now().toString(),
-      title: title,
-      messages: messages,
-      timestamp: new Date().toISOString(),
-      lastMessage: messages[messages.length - 1]?.content || ''
-    };
-    
-    const updatedConversations = [conversation, ...conversations.slice(0, 49)]; // Keep only 50 conversations
-    setConversations(updatedConversations);
-    localStorage.setItem('fitlife_chat_history', JSON.stringify(updatedConversations));
   };
 
   const loadConversation = (conversationId) => {
@@ -80,19 +91,17 @@ const AICompanion = () => {
     }
   };
 
-  const clearHistory = () => {
-    if (window.confirm('Are you sure you want to clear all chat history?')) {
-      setConversations([]);
-      localStorage.removeItem('fitlife_chat_history');
-      setCurrentSession(null);
-      setMessages([
-        {
-          id: 1,
-          sender: 'ai',
-          content: "Hi! I'm your FitLife AI companion! 💪 I'm here to help you with workouts, nutrition, form checks, and all your fitness goals. You can upload workout photos for form analysis, ask about exercises, get meal suggestions, or just chat about your fitness journey. What would you like to work on today?"
-        }
-      ]);
-    }
+  const clearHistory = async () => {
+    // Optionally, implement a backend endpoint to clear all chat history for the user
+    setConversations([]);
+    setCurrentSession(null);
+    setMessages([
+      {
+        id: 1,
+        sender: 'ai',
+        content: "Hi! I'm your FitLife AI companion! 💪 I'm here to help you with workouts, nutrition, form checks, and all your fitness goals. You can upload workout photos for form analysis, ask about exercises, get meal suggestions, or just chat about your fitness journey. What would you like to work on today?"
+      }
+    ]);
   };
 
   const handleFileChange = (e) => {
@@ -103,105 +112,53 @@ const AICompanion = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!inputMessage.trim() && selectedFiles.length === 0) return;
-
-    // Start new session if none exists
-    if (!currentSession) {
-      setCurrentSession(Date.now().toString());
-    }
-
-    const newMessages = [...messages];
     let userMessage = inputMessage.trim();
-
-    // Add user message
-    if (userMessage) {
-      newMessages.push({
-        id: Date.now(),
-        sender: 'user',
-        content: userMessage
-      });
-    }
-
-    // Handle file uploads
-    for (const file of selectedFiles) {
-      const fileMessage = {
-        id: Date.now() + Math.random(),
-        sender: 'user',
-        content: file.name,
-        file: file,
-        fileType: file.type.startsWith('image/') ? 'image' : 'document'
-      };
-      newMessages.push(fileMessage);
-
-      // If it's an image, analyze it for fitness context
-      if (file.type.startsWith('image/')) {
-        try {
-          const reader = new FileReader();
-          reader.onload = async () => {
-            const base64 = reader.result.split(',')[1];
-            setIsTyping(true);
-            
-            try {
-              const analysis = await analyzeWorkoutImage(base64);
-              const analysisMessage = {
-                id: Date.now() + Math.random(),
-                sender: 'ai',
-                content: `🏋️ **Exercise Analysis:**\n\n**Exercise:** ${analysis.exerciseIdentified}\n\n**Form Assessment:** ${analysis.formAnalysis}\n\n**Target Muscles:** ${analysis.targetMuscles.join(', ')}\n\n**Overall Rating:** ${analysis.overallRating}\n\n**Improvement Tips:**\n${analysis.improvements.map(tip => `• ${tip}`).join('\n')}\n\n**Safety Reminders:**\n${analysis.safetyTips.map(tip => `• ${tip}`).join('\n')}`
-              };
-              setMessages(prev => [...prev, analysisMessage]);
-            } catch (analysisError) {
-              console.error('Error analyzing image:', analysisError);
-              const errorMessage = {
-                id: Date.now() + Math.random(),
-                sender: 'ai',
-                content: "I can see you've uploaded an image! While I'm having trouble analyzing it right now, feel free to describe what you're working on and I'll help with form tips, exercise suggestions, or any fitness questions you have! 💪"
-              };
-              setMessages(prev => [...prev, errorMessage]);
-            }
-            setIsTyping(false);
+    let aiResponse = null;
+    setIsTyping(true);
+    try {
+      // For now, only handle text messages for backend chat
+      if (userMessage) {
+        // Save to backend as fitness advice (or workout/nutrition as needed)
+        const backendRes = await ApiService.saveChatMessage('fitness-advice', { question: userMessage });
+        if (backendRes.success && backendRes.data && backendRes.data.advice) {
+          aiResponse = {
+            id: Date.now() + Math.random(),
+            sender: 'ai',
+            content: backendRes.data.advice.answer || 'Advice generated.'
           };
-          reader.readAsDataURL(file);
-        } catch (error) {
-          console.error('Error reading image file:', error);
+          setMessages(prev => [
+            ...prev,
+            { id: Date.now(), sender: 'user', content: userMessage },
+            aiResponse
+          ]);
+          // Optionally, refetch chat history to update sidebar
+          const data = await ApiService.getChatHistory();
+          if (data.success && Array.isArray(data.data)) {
+            const backendConversations = data.data.map((chat) => ({
+              id: chat._id,
+              title: chat.type.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase()),
+              messages: [
+                { id: chat._id + '-user', sender: 'user', content: chat.metadata?.question || chat.metadata?.fitnessGoals || '' },
+                { id: chat._id + '-ai', sender: 'ai', content: typeof chat.content === 'string' ? chat.content : JSON.stringify(chat.content) }
+              ],
+              timestamp: chat.createdAt,
+              lastMessage: typeof chat.content === 'string' ? chat.content : JSON.stringify(chat.content)
+            }));
+            setConversations(backendConversations);
+          }
         }
       }
+    } catch (error) {
+      console.error('Error sending message:', error);
+      setMessages(prev => [
+        ...prev,
+        { id: Date.now(), sender: 'ai', content: "I'm having trouble connecting right now. Please try again in a moment!" }
+      ]);
     }
-
-    setMessages(newMessages);
     setInputMessage('');
     setSelectedFiles([]);
-    if (fileInputRef.current) {
-      fileInputRef.current.value = '';
-    }
-
-    // Get AI response for text messages
-    if (userMessage) {
-      setIsTyping(true);
-      try {
-        const chatResponse = await getFitnessChat(userMessage, messages);
-        const aiResponse = {
-          id: Date.now() + Math.random(),
-          sender: 'ai',
-          content: chatResponse.response
-        };
-        
-        setMessages(prev => [...prev, aiResponse]);
-        
-        // Save conversation
-        const allMessages = [...newMessages, aiResponse];
-        const title = userMessage.substring(0, 30) + (userMessage.length > 30 ? '...' : '');
-        saveConversation(title, allMessages);
-        
-      } catch (error) {
-        console.error('Error getting AI response:', error);
-        const errorResponse = {
-          id: Date.now() + Math.random(),
-          sender: 'ai',
-          content: "I'm having trouble connecting right now, but I'm here to help with all your fitness questions! Please try again in a moment. 💪"
-        };
-        setMessages(prev => [...prev, errorResponse]);
-      }
-      setIsTyping(false);
-    }
+    if (fileInputRef.current) fileInputRef.current.value = '';
+    setIsTyping(false);
   };
 
   const totalSize = conversations.reduce((sum, conv) => sum + JSON.stringify(conv).length, 0);
