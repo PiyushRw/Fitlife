@@ -137,6 +137,15 @@ class ApiService {
       body: JSON.stringify(payload),
     });
   }
+
+  // Get public fitness advice (no auth, no DB save)
+  static async getPublicFitnessAdvice(question, context = null) {
+    return this.makeRequest('/ai-assistant/public/fitness-advice', {
+      method: 'POST',
+      body: JSON.stringify({ question, context }),
+      headers: { 'Content-Type': 'application/json' },
+    });
+  }
 }
 
 export default ApiService;

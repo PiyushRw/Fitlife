@@ -291,6 +291,45 @@ export const getFitnessAdvice = async (req, res, next) => {
   }
 };
 
+// @desc    Generate fitness advice (public, no DB save)
+// @route   POST /api/v1/ai-assistant/public/fitness-advice
+// @access  Public
+export const publicFitnessAdvice = async (req, res, next) => {
+  try {
+    const { question, context } = req.body;
+    if (!question) {
+      return res.status(400).json({
+        success: false,
+        error: 'Please provide a question'
+      });
+    }
+    // Mock advice (same as private)
+    const advice = {
+      question,
+      answer: "Based on your fitness level and goals, I recommend focusing on consistency over intensity.",
+      tips: [
+        "Stay hydrated throughout your workouts",
+        "Listen to your body and rest when needed",
+        "Focus on proper form over heavy weights",
+        "Include warm-up and cool-down in your routine"
+      ],
+      relatedTopics: [
+        "Proper form techniques",
+        "Recovery strategies",
+        "Progressive overload",
+        "Nutrition timing"
+      ]
+    };
+    res.status(200).json({
+      success: true,
+      message: 'Fitness advice generated successfully',
+      data: { advice }
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 // @desc    Get chat history for user
 // @route   GET /api/v1/ai-assistant/chat-history
 // @access  Private

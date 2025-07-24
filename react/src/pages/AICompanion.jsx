@@ -116,35 +116,51 @@ const AICompanion = () => {
     let aiResponse = null;
     setIsTyping(true);
     try {
-      // For now, only handle text messages for backend chat
       if (userMessage) {
-        // Save to backend as fitness advice (or workout/nutrition as needed)
-        const backendRes = await ApiService.saveChatMessage('fitness-advice', { question: userMessage });
-        if (backendRes.success && backendRes.data && backendRes.data.advice) {
-          aiResponse = {
-            id: Date.now() + Math.random(),
-            sender: 'ai',
-            content: backendRes.data.advice.answer || 'Advice generated.'
-          };
-          setMessages(prev => [
-            ...prev,
-            { id: Date.now(), sender: 'user', content: userMessage },
-            aiResponse
-          ]);
-          // Optionally, refetch chat history to update sidebar
-          const data = await ApiService.getChatHistory();
-          if (data.success && Array.isArray(data.data)) {
-            const backendConversations = data.data.map((chat) => ({
-              id: chat._id,
-              title: chat.type.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase()),
-              messages: [
-                { id: chat._id + '-user', sender: 'user', content: chat.metadata?.question || chat.metadata?.fitnessGoals || '' },
-                { id: chat._id + '-ai', sender: 'ai', content: typeof chat.content === 'string' ? chat.content : JSON.stringify(chat.content) }
-              ],
-              timestamp: chat.createdAt,
-              lastMessage: typeof chat.content === 'string' ? chat.content : JSON.stringify(chat.content)
-            }));
-            setConversations(backendConversations);
+        if (ApiService.isAuthenticated()) {
+          // Authenticated: save to backend and get response
+          const backendRes = await ApiService.saveChatMessage('fitness-advice', { question: userMessage });
+          if (backendRes.success && backendRes.data && backendRes.data.advice) {
+            aiResponse = {
+              id: Date.now() + Math.random(),
+              sender: 'ai',
+              content: backendRes.data.advice.answer || 'Advice generated.'
+            };
+            setMessages(prev => [
+              ...prev,
+              { id: Date.now(), sender: 'user', content: userMessage },
+              aiResponse
+            ]);
+            // Optionally, refetch chat history to update sidebar
+            const data = await ApiService.getChatHistory();
+            if (data.success && Array.isArray(data.data)) {
+              const backendConversations = data.data.map((chat) => ({
+                id: chat._id,
+                title: chat.type.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase()),
+                messages: [
+                  { id: chat._id + '-user', sender: 'user', content: chat.metadata?.question || chat.metadata?.fitnessGoals || '' },
+                  { id: chat._id + '-ai', sender: 'ai', content: typeof chat.content === 'string' ? chat.content : JSON.stringify(chat.content) }
+                ],
+                timestamp: chat.createdAt,
+                lastMessage: typeof chat.content === 'string' ? chat.content : JSON.stringify(chat.content)
+              }));
+              setConversations(backendConversations);
+            }
+          }
+        } else {
+          // Not authenticated: get public AI response only
+          const publicRes = await ApiService.getPublicFitnessAdvice(userMessage);
+          if (publicRes.success && publicRes.data && publicRes.data.advice) {
+            aiResponse = {
+              id: Date.now() + Math.random(),
+              sender: 'ai',
+              content: publicRes.data.advice.answer || 'Advice generated.'
+            };
+            setMessages(prev => [
+              ...prev,
+              { id: Date.now(), sender: 'user', content: userMessage },
+              aiResponse
+            ]);
           }
         }
       }

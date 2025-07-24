@@ -7,7 +7,8 @@ import {
   getNutritionRecommendations,
   saveFitnessAdvice,
   getFitnessAdvice,
-  getChatHistory
+  getChatHistory,
+  publicFitnessAdvice
 } from '../controllers/companionController.js';
 
 const router = express.Router();
@@ -41,6 +42,11 @@ router.post('/fitness-advice', protect, saveFitnessAdvice);
 // @route   GET /api/v1/ai-assistant/fitness-advice
 // @access  Private
 router.get('/fitness-advice', protect, getFitnessAdvice);
+
+// @desc    Generate AI fitness advice (public, no auth, no DB save)
+// @route   POST /api/v1/ai-assistant/public/fitness-advice
+// @access  Public
+router.post('/public/fitness-advice', publicFitnessAdvice);
 
 // @desc    Get chat history for user
 // @route   GET /api/v1/ai-assistant/chat-history
