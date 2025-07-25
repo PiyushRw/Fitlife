@@ -1,5 +1,51 @@
 import User from '../models/User.js';
 import Chat from '../models/Chat.js';
+import fetch from 'node-fetch';
+
+const GEMINI_API_KEY = 'AIzaSyAkJm9kDRHoDwlv39Eyvm4Se1IubxtZOto';
+const GEMINI_API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent';
+
+async function getGeminiAdvice(question, conversationHistory = []) {
+  let conversationContext = '';
+  if (conversationHistory.length > 0) {
+    conversationContext = '\n\nPrevious conversation:\n' +
+      conversationHistory.slice(-6).map(msg => `${msg.sender === 'user' ? 'User' : 'Assistant'}: ${msg.content}`).join('\n');
+  }
+  const prompt = `You are FitLife AI, a knowledgeable and supportive fitness companion. You specialize in:\n- Workout routines and exercise form\n- Nutrition and meal planning\n- Weight loss and muscle building strategies\n- Injury prevention and recovery\n- Motivation and accountability\n- Fitness equipment recommendations\n- Health and wellness tips\n\nGuidelines for responses:\n1. Be encouraging and supportive\n2. Provide practical, actionable advice\n3. Always emphasize safety and proper form\n4. Ask open-ended follow-up questions to better understand user needs\n5. Suggest modifications for different fitness levels\n6. Reference scientific principles when relevant\n7. Keep responses conversational but informative\n8. If asked about medical conditions, advise consulting healthcare professionals\n\nCurrent user message: "${question}"\n${conversationContext}\n\nRespond as FitLife AI in a friendly, knowledgeable manner. Keep responses concise but helpful (max 120 words unless detailed instructions are requested). End with an open-ended question to keep the conversation going.`;
+  try {
+    const response = await fetch(GEMINI_API_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-goog-api-key': GEMINI_API_KEY,
+      },
+      body: JSON.stringify({
+        contents: [
+          {
+            parts: [
+              { text: prompt }
+            ]
+          }
+        ],
+        generationConfig: {
+          temperature: 0.7,
+          topK: 40,
+          topP: 0.95,
+          maxOutputTokens: 512,
+        }
+      }),
+    });
+    if (!response.ok) {
+      throw new Error(`Gemini API request failed: ${response.status}`);
+    }
+    const data = await response.json();
+    const generatedText = data.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || null;
+    return generatedText || "I'm here to help! Could you tell me a bit more about your fitness goals?";
+  } catch (error) {
+    console.error('Error fetching Gemini advice:', error);
+    return "I'm here to help! Could you tell me a bit more about your fitness goals?";
+  }
+}
 
 // @desc    Save workout recommendation
 // @route   POST /api/v1/ai-assistant/workout-recommendation
@@ -217,14 +263,12 @@ export const getNutritionRecommendations = async (req, res, next) => {
 export const saveFitnessAdvice = async (req, res, next) => {
   try {
     const { question, context } = req.body;
-
     if (!question) {
       return res.status(400).json({
         success: false,
         error: 'Please provide a question'
       });
     }
-
     const user = await User.findById(req.user.id);
     if (!user) {
       return res.status(404).json({
@@ -232,32 +276,18 @@ export const saveFitnessAdvice = async (req, res, next) => {
         error: 'User not found'
       });
     }
-
-    // Mock advice
+    // Fetch dynamic advice from Gemini
+    const aiAnswer = await getGeminiAdvice(question);
     const advice = {
       question,
-      answer: "Based on your fitness level and goals, I recommend focusing on consistency over intensity.",
-      tips: [
-        "Stay hydrated throughout your workouts",
-        "Listen to your body and rest when needed",
-        "Focus on proper form over heavy weights",
-        "Include warm-up and cool-down in your routine"
-      ],
-      relatedTopics: [
-        "Proper form techniques",
-        "Recovery strategies",
-        "Progressive overload",
-        "Nutrition timing"
-      ]
+      answer: aiAnswer
     };
-
     const chat = await Chat.create({
       userId: req.user.id,
       type: 'fitness-advice',
       content: advice,
       metadata: { context }
     });
-
     res.status(201).json({
       success: true,
       message: 'Fitness advice saved successfully',
@@ -303,22 +333,11 @@ export const publicFitnessAdvice = async (req, res, next) => {
         error: 'Please provide a question'
       });
     }
-    // Mock advice (same as private)
+    // Fetch dynamic advice from Gemini
+    const aiAnswer = await getGeminiAdvice(question);
     const advice = {
       question,
-      answer: "Based on your fitness level and goals, I recommend focusing on consistency over intensity.",
-      tips: [
-        "Stay hydrated throughout your workouts",
-        "Listen to your body and rest when needed",
-        "Focus on proper form over heavy weights",
-        "Include warm-up and cool-down in your routine"
-      ],
-      relatedTopics: [
-        "Proper form techniques",
-        "Recovery strategies",
-        "Progressive overload",
-        "Nutrition timing"
-      ]
+      answer: aiAnswer
     };
     res.status(200).json({
       success: true,
@@ -329,6 +348,34 @@ export const publicFitnessAdvice = async (req, res, next) => {
     next(error);
   }
 };
+
+// Helper function for precise, actionable advice
+function getPreciseAdvice(question) {
+  const q = question.toLowerCase();
+  if (q.includes('lose weight')) {
+    return "To lose weight, combine regular cardio with strength training and maintain a calorie deficit. Track your meals and aim for gradual, sustainable progress.";
+  }
+  if (q.includes('build muscle') || q.includes('gain muscle')) {
+    return "To build muscle, focus on compound lifts, progressive overload, and adequate protein intake. Train each muscle group 2-3 times per week and allow for recovery.";
+  }
+  if (q.includes('nutrition') || q.includes('diet')) {
+    return "A balanced diet with lean proteins, whole grains, healthy fats, and plenty of vegetables supports most fitness goals. Stay consistent and avoid extreme restrictions.";
+  }
+  if (q.includes('motivation')) {
+    return "Set clear, realistic goals and track your progress. Celebrate small wins and find a workout routine you enjoy to stay motivated.";
+  }
+  if (q.includes('injury')) {
+    return "If you’re injured, prioritize rest and consult a healthcare professional. Focus on gentle mobility and avoid aggravating movements until fully recovered.";
+  }
+  if (q.includes('beginner')) {
+    return "Start with full-body workouts 2-3 times per week, learn proper form, and gradually increase intensity. Consistency and patience are key for beginners.";
+  }
+  if (q.includes('protein')) {
+    return "Aim for 1.2–2.0g of protein per kg of body weight daily to support muscle growth and recovery. Include protein in every meal.";
+  }
+  // Default fallback
+  return "Focus on your goal with a structured plan, track your progress, and adjust as needed. Prioritize form, recovery, and consistency for best results.";
+}
 
 // @desc    Get chat history for user
 // @route   GET /api/v1/ai-assistant/chat-history
