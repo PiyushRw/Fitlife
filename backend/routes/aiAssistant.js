@@ -8,7 +8,8 @@ import {
   saveFitnessAdvice,
   getFitnessAdvice,
   getChatHistory,
-  publicFitnessAdvice
+  publicFitnessAdvice,
+  deleteChatHistory
 } from '../controllers/companionController.js';
 
 const router = express.Router();
@@ -52,5 +53,10 @@ router.post('/public/fitness-advice', publicFitnessAdvice);
 // @route   GET /api/v1/ai-assistant/chat-history
 // @access  Private
 router.get('/chat-history', protect, getChatHistory);
+
+// @desc    Delete all chat history for user
+// @route   DELETE /api/v1/ai-assistant/chat-history
+// @access  Private
+router.delete('/chat-history', protect, deleteChatHistory);
 
 export default router;

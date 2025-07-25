@@ -392,3 +392,19 @@ export const getChatHistory = async (req, res, next) => {
     next(error);
   }
 };
+
+// @desc    Delete all chat history for user
+// @route   DELETE /api/v1/ai-assistant/chat-history
+// @access  Private
+export const deleteChatHistory = async (req, res, next) => {
+  try {
+    const result = await Chat.deleteMany({ userId: req.user.id });
+    res.status(200).json({
+      success: true,
+      message: 'Chat history deleted successfully',
+      deletedCount: result.deletedCount
+    });
+  } catch (error) {
+    next(error);
+  }
+};

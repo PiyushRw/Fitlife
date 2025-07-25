@@ -146,6 +146,13 @@ class ApiService {
       headers: { 'Content-Type': 'application/json' },
     });
   }
+
+  // Delete all chat history for the authenticated user
+  static async deleteChatHistory() {
+    return this.makeRequest('/ai-assistant/chat-history', {
+      method: 'DELETE',
+    });
+  }
 }
 
 export default ApiService;

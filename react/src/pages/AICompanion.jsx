@@ -92,7 +92,13 @@ const AICompanion = () => {
   };
 
   const clearHistory = async () => {
-    // Optionally, implement a backend endpoint to clear all chat history for the user
+    if (ApiService.isAuthenticated()) {
+      try {
+        await ApiService.deleteChatHistory();
+      } catch (error) {
+        console.error('Failed to delete chat history from backend:', error);
+      }
+    }
     setConversations([]);
     setCurrentSession(null);
     setMessages([
