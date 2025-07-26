@@ -94,10 +94,13 @@ const userSchema = new mongoose.Schema({
     type: Date,
     default: Date.now
   },
-  // Additional fields from frontend Preference page
+  // Additional fields from frontend Preference page and onboarding
+  name: { type: String, default: '' }, // Full name from onboarding
   goal: { type: String, default: '' },
   workout: { type: String, default: '' },
+  workoutType: { type: String, default: '' }, // From onboarding
   diet: { type: String, default: '' },
+  dietaryPreferences: { type: String, default: '' }, // From onboarding
   healthFocus: { type: String, default: '' },
   concerns: { type: String, default: '' },
   otherDietaryPreferences: { type: String, default: '' },
