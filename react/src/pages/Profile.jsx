@@ -243,7 +243,37 @@ const Profile = () => {
                   <div className="flex space-x-2 mt-3">
                     <button
                       className="bg-[#36CFFF] text-black px-4 py-2 rounded font-semibold hover:bg-[#24a0d4] transition"
-                      onClick={() => { setProfileData(editableProfileData); setShowEditModal(false); setIsEditing(false); }}
+                      onClick={async () => {
+                        try {
+                          const token = localStorage.getItem('fitlife_token');
+                          if (!token) {
+                            alert('You must be logged in to update profile.');
+                            return;
+                          }
+                          const response = await fetch('http://127.0.0.1:5001/api/v1/users/profile', {
+                            method: 'PUT',
+                            headers: {
+                              'Content-Type': 'application/json',
+                              'Authorization': `Bearer ${token}`
+                            },
+                            body: JSON.stringify(editableProfileData)
+                          });
+                          if (!response.ok) {
+                            const errorData = await response.json();
+                            throw new Error(errorData.error || 'Failed to update profile');
+                          }
+                          const data = await response.json();
+                          if (data && data.success && data.data && data.data.user) {
+                            setProfileData(data.data.user);
+                            setShowEditModal(false);
+                            setIsEditing(false);
+                          } else {
+                            throw new Error('Invalid response from server');
+                          }
+                        } catch (error) {
+                          alert('Error updating profile: ' + error.message);
+                        }
+                      }}
                     >
                       Save
                     </button>
