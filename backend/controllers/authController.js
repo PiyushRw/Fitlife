@@ -127,11 +127,12 @@ export const login = async (req, res, next) => {
 export const getMe = async (req, res, next) => {
   try {
     const user = await User.findById(req.user.id);
+    const publicProfile = user.getPublicProfile();
     
     res.status(200).json({
       success: true,
       data: {
-        user: user.getPublicProfile()
+        user: publicProfile
       }
     });
   } catch (error) {

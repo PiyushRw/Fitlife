@@ -190,13 +190,39 @@ const Nutrition = () => {
 
   const location = useLocation();
 
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-[#121212]">
+        <div className="w-16 h-16 border-4 border-[#62E0A1] border-t-transparent rounded-full animate-spin"></div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen p-4 text-center bg-[#121212]">
+        <div className="p-4 mb-4 text-red-500 bg-red-900/30 rounded-lg">
+          <i className="text-2xl fas fa-exclamation-triangle"></i>
+          <p className="mt-2">{error}</p>
+        </div>
+        <button 
+          onClick={() => window.location.reload()}
+          className="px-4 py-2 text-white bg-[#62E0A1] rounded-lg hover:bg-[#4acd8d] transition-colors"
+        >
+          Retry
+        </button>
+      </div>
+    );
+  }
+
   return (
     <div className="bg-[#121212] text-white font-sans">
-
-
       <div className="flex min-h-screen p-4">
         {/* Sidebar */}
-        <Sidebar profilePhoto={profileData?.photo || undefined} userName={profileData?.fullName || profileData?.firstName || "User"} />
+        <Sidebar 
+          profilePhoto={profileData?.profilePicture || profileData?.photo} 
+          userName={profileData?.fullName || profileData?.firstName || profileData?.name || "User"} 
+        />
 
         {/* Main Content */}
         <main className="flex-1 bg-[#1E1E1E] p-6 ml-4 rounded-2xl space-y-6">

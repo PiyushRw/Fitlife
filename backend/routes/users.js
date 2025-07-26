@@ -11,7 +11,7 @@ router.post('/preferences', protect, async (req, res, next) => {
   try {
     const userId = req.user.id;
     const preferences = req.body;
-    console.log('Received preferences:', preferences);
+    // Debug logging removed for cleaner output
     
     const user = await User.findById(userId);
     if (!user) {
@@ -22,6 +22,9 @@ router.post('/preferences', protect, async (req, res, next) => {
     const fieldsToUpdate = {
       // Basic info
       name: preferences.name,
+      firstName: preferences.firstName,
+      lastName: preferences.lastName,
+      profilePicture: preferences.profilePicture,
       age: preferences.age,
       weight: preferences.weight,
       height: preferences.height,
@@ -76,6 +79,7 @@ router.post('/preferences', protect, async (req, res, next) => {
     user.preferences = { ...user.preferences, ...preferences };
     
     await user.save();
+    
     console.log('User preferences saved successfully');
     
     res.status(200).json({ 
@@ -102,6 +106,16 @@ router.get('/preferences', protect, async (req, res, next) => {
         error: 'User not found'
       });
     }
+    
+    console.log('DEBUG: User object from database:', {
+      id: user._id,
+      name: user.name,
+      goal: user.goal,
+      workout: user.workout,
+      diet: user.diet,
+      age: user.age,
+      preferences: user.preferences
+    });
     
     // Return user data with all preference fields
     const preferences = {

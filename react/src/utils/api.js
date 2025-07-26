@@ -91,7 +91,9 @@ class ApiService {
   static async getPreferences() {
     try {
       const data = await this.makeRequest('/users/preferences');
-      return data.data?.preferences || data.preferences || data;
+      // Backend returns: { success: true, data: { preferences: {...} } }
+      const preferences = data.data?.preferences || data.preferences || data;
+      return preferences;
     } catch (error) {
       // If backend fails, try localStorage as fallback
       console.warn('Failed to fetch preferences from backend, trying localStorage:', error);
@@ -129,7 +131,16 @@ class ApiService {
 
   // Logout user
   static logout() {
+    // Remove token
     this.removeToken();
+    // Remove any user-related data from localStorage
+    localStorage.removeItem('fitlife_user');
+    localStorage.removeItem('fitlife_preferences');
+    localStorage.removeItem('fitlife_chat_history');
+    // Remove all sessionStorage data as well (if any)
+    sessionStorage.clear();
+    // Optionally clear all localStorage (uncomment if you want a full wipe)
+    // localStorage.clear();
   }
 
   // Fetch chat history for the logged-in user

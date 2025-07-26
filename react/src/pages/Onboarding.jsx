@@ -221,11 +221,22 @@ const Onboarding = () => {
   const finish = () => {
     if (!validateStep4()) return;
 
-    // Save data to localStorage
+    // Prepare data with correct structure for backend
     const userData = {
       ...formData,
-      ...dropdownValues
+      ...dropdownValues,
+      // Convert weight and height to objects as expected by backend
+      weight: formData.weight ? {
+        value: parseFloat(formData.weight),
+        unit: 'kg'
+      } : { unit: 'kg' },
+      height: formData.height ? {
+        value: parseFloat(formData.height),
+        unit: 'cm'
+      } : { unit: 'cm' }
     };
+    
+    // Save to localStorage
     localStorage.setItem('fitlife_user', JSON.stringify(userData));
 
     // Send preferences to backend

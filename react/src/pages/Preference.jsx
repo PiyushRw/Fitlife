@@ -4,6 +4,7 @@ import { Listbox } from '@headlessui/react';
 import { Link, useLocation } from 'react-router-dom';
 import FitLifeLogo from '../components/FitLifeLogo';
 import Sidebar from '../components/Sidebar';
+import { useAuth } from '../contexts/AuthContext';
 
 const defaultFormData = {
   name: '',
@@ -38,6 +39,7 @@ const defaultFormData = {
 };
 
 const Preference = () => {
+  const { user, refreshUser } = useAuth();
   const [profileData, setProfileData] = useState(null);
   const [loadingSidebar, setLoadingSidebar] = useState(true);
   const [errorSidebar, setErrorSidebar] = useState(null);
@@ -85,39 +87,10 @@ const Preference = () => {
       setLoading(true);
       setError(null);
       try {
-        // Fetch both user profile and preferences
-        const [user, preferences] = await Promise.all([
-          ApiService.getProfile(),
-          ApiService.getPreferences()
-        ]);
+        // Fetch user profile - it contains all the saved preferences
+        const user = await ApiService.getProfile();
         
-        console.log('Fetched user in Preference:', user);
-        console.log('Fetched preferences in Preference:', preferences);
-        
-        // Merge user data with preferences data
-        const mergedData = { ...user, ...preferences };
-        console.log('Merged data:', mergedData);
-        
-        if (mergedData) {
-          console.log('DEBUG: Raw merged object:', mergedData);
-          console.log('DEBUG: Dropdown fields:', {
-            age: mergedData.age,
-            goal: mergedData.goal,
-            workout: mergedData.workout || mergedData.workoutType,
-            diet: mergedData.diet || mergedData.dietaryPreferences,
-            healthFocus: mergedData.healthFocus,
-            activityLevel: mergedData.activityLevel,
-            experienceLevel: mergedData.experienceLevel,
-            preferredTime: mergedData.preferredTime,
-            privacySettings: mergedData.privacySettings,
-            workoutFrequency: mergedData.workoutFrequency,
-            workoutDuration: mergedData.workoutDuration,
-            equipment: mergedData.equipment,
-            fitnessLevel: mergedData.fitnessLevel,
-            sleepGoal: mergedData.sleepGoal,
-            stressLevel: mergedData.stressLevel,
-            motivation: mergedData.motivation
-          });
+        if (user) {
           // Flatten any nested objects to their primitive values for form fields
           const flatten = (obj) => {
             const flat = {};
@@ -150,9 +123,9 @@ const Preference = () => {
           };
           // Calculate age range if dateOfBirth exists
           let ageRange = '';
-          if (mergedData.dateOfBirth) {
+          if (user.dateOfBirth) {
             const today = new Date();
-            const birthDate = new Date(mergedData.dateOfBirth);
+            const birthDate = new Date(user.dateOfBirth);
             let age = today.getFullYear() - birthDate.getFullYear();
             const monthDiff = today.getMonth() - birthDate.getMonth();
             if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
@@ -168,26 +141,26 @@ const Preference = () => {
           const normalize = (val, options) => options.find(opt => (val || '').toLowerCase() === opt.toLowerCase()) || '';
           setFormData({
             ...defaultFormData,
-            ...flatten(mergedData),
-            name: mergedData.fullName || mergedData.name || (mergedData.firstName ? (mergedData.firstName + (mergedData.lastName ? ' ' + mergedData.lastName : '')) : ''),
-            age: normalize(ageRange || mergedData.age, ['Under 18', '18–30', '31–45', '46–60', '60+']),
-            goal: normalize(mergedData.goal, ['Lose weight', 'Gain muscle', 'Improve flexibility', 'Stay active', 'Build strength', 'Improve endurance', 'Maintain fitness', 'Rehabilitation']),
-            workout: normalize(mergedData.workout || mergedData.workoutType, ['Calisthenics', 'Yoga', 'Weight training', 'Mixed', 'Cardio', 'HIIT', 'Pilates', 'CrossFit', 'Swimming', 'Running']),
-            diet: normalize(mergedData.diet || mergedData.dietaryPreferences, ['None', 'Vegetarian', 'Vegan', 'Gluten-free', 'Dairy-free', 'Low-carb', 'Keto', 'Paleo', 'Mediterranean', 'Other']),
-            healthFocus: normalize(mergedData.healthFocus, ['Bone strength', 'Eye health', 'Joint mobility', 'Cholesterol/Blood pressure', 'Diabetes', 'Heart health', 'Mental health', 'Other']),
-            activityLevel: normalize(mergedData.activityLevel, ['Sedentary', 'Lightly active', 'Moderately active', 'Very active', 'Extremely active']),
-            experienceLevel: normalize(mergedData.experienceLevel, ['Beginner', 'Intermediate', 'Advanced', 'Expert']),
-            preferredTime: normalize(mergedData.preferredTime, ['Early morning', 'Morning', 'Afternoon', 'Evening', 'Late night', 'Flexible']),
-            privacySettings: normalize(mergedData.privacySettings, ['public', 'private']),
-            workoutFrequency: normalize(mergedData.workoutFrequency, ['1-2 times/week', '3-4 times/week', '5-6 times/week', 'Daily', 'Flexible']),
-            workoutDuration: normalize(mergedData.workoutDuration, ['15-30 minutes', '30-45 minutes', '45-60 minutes', '60+ minutes', 'Flexible']),
-            equipment: normalize(mergedData.equipment, ['None', 'Basic home equipment', 'Full home gym', 'Gym membership', 'Outdoor only', 'Mixed']),
-            fitnessLevel: normalize(mergedData.fitnessLevel, ['beginner', 'intermediate', 'advanced']),
-            sleepGoal: normalize(mergedData.sleepGoal, ['Less than 6 hours', '6-7 hours', '7-8 hours', '8+ hours']),
-            stressLevel: normalize(mergedData.stressLevel, ['Low', 'Moderate', 'High']),
-            motivation: normalize(mergedData.motivation, ['Health', 'Appearance', 'Performance', 'Social', 'Other']),
-            weight: (mergedData.weight && mergedData.weight.value) ? mergedData.weight.value : mergedData.weight || '',
-            height: (mergedData.height && mergedData.height.value) ? mergedData.height.value : mergedData.height || '',
+            ...flatten(user),
+            name: user.fullName || user.name || (user.firstName ? (user.firstName + (user.lastName ? ' ' + user.lastName : '')) : ''),
+            age: normalize(ageRange || user.age, ['Under 18', '18–30', '31–45', '46–60', '60+']),
+            goal: normalize(user.goal, ['Lose weight', 'Gain muscle', 'Improve flexibility', 'Stay active', 'Build strength', 'Improve endurance', 'Maintain fitness', 'Rehabilitation']),
+            workout: normalize(user.workout || user.workoutType, ['Calisthenics', 'Yoga', 'Weight training', 'Mixed', 'Cardio', 'HIIT', 'Pilates', 'CrossFit', 'Swimming', 'Running']),
+            diet: normalize(user.diet || user.dietaryPreferences, ['None', 'Vegetarian', 'Vegan', 'Gluten-free', 'Dairy-free', 'Low-carb', 'Keto', 'Paleo', 'Mediterranean', 'Other']),
+            healthFocus: normalize(user.healthFocus, ['Bone strength', 'Eye health', 'Joint mobility', 'Cholesterol/Blood pressure', 'Diabetes', 'Heart health', 'Mental health', 'Other']),
+            activityLevel: normalize(user.activityLevel, ['Sedentary', 'Lightly active', 'Moderately active', 'Very active', 'Extremely active']),
+            experienceLevel: normalize(user.experienceLevel, ['Beginner', 'Intermediate', 'Advanced', 'Expert']),
+            preferredTime: normalize(user.preferredTime, ['Early morning', 'Morning', 'Afternoon', 'Evening', 'Late night', 'Flexible']),
+            privacySettings: normalize(user.privacySettings, ['public', 'private']),
+            workoutFrequency: normalize(user.workoutFrequency, ['1-2 times/week', '3-4 times/week', '5-6 times/week', 'Daily', 'Flexible']),
+            workoutDuration: normalize(user.workoutDuration, ['15-30 minutes', '30-45 minutes', '45-60 minutes', '60+ minutes', 'Flexible']),
+            equipment: normalize(user.equipment, ['None', 'Basic home equipment', 'Full home gym', 'Gym membership', 'Outdoor only', 'Mixed']),
+            fitnessLevel: normalize(user.fitnessLevel, ['beginner', 'intermediate', 'advanced']),
+            sleepGoal: normalize(user.sleepGoal, ['Less than 6 hours', '6-7 hours', '7-8 hours', '8+ hours']),
+            stressLevel: normalize(user.stressLevel, ['Low', 'Moderate', 'High']),
+            motivation: normalize(user.motivation, ['Health', 'Appearance', 'Performance', 'Social', 'Other']),
+            weight: (user.weight && user.weight.value) ? user.weight.value : user.weight || '',
+            height: (user.height && user.height.value) ? user.height.value : user.height || '',
           });
         }
       } catch (err) {
@@ -255,9 +228,28 @@ const Preference = () => {
   const handlePhotoUpload = (e) => {
     const file = e.target.files[0];
     if (file) {
+      // Validate file type
+      if (!file.type.startsWith('image/')) {
+        alert('Please select a valid image file');
+        return;
+      }
+      
+      // Validate file size (max 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        alert('Image size should be less than 5MB');
+        return;
+      }
+      
       const reader = new FileReader();
       reader.onload = (e) => {
-        setProfilePhoto(e.target.result);
+        const base64Image = e.target.result;
+        setProfilePhoto(base64Image);
+        
+        // Update formData to include the new profile picture
+        setFormData(prev => ({
+          ...prev,
+          profilePicture: base64Image
+        }));
       };
       reader.readAsDataURL(file);
     }
@@ -268,14 +260,10 @@ const Preference = () => {
     setSaving(true);
     setError(null);
 
-    // Split name if present, else use firstName/lastName
-    let firstName = formData.firstName || '';
-    let lastName = formData.lastName || '';
-    if (!firstName && formData.name) {
-      const parts = formData.name.trim().split(' ');
-      firstName = parts[0] || '';
-      lastName = parts.slice(1).join(' ');
-    }
+    // Split name into firstName and lastName for proper database storage
+    const nameParts = (formData.name || '').trim().split(' ');
+    const firstName = nameParts[0] || '';
+    const lastName = nameParts.slice(1).join(' ') || '';
 
     // Ensure age is valid
     const validAges = ['Under 18', '18–30', '31–45', '46–60', '60+'];
@@ -284,12 +272,20 @@ const Preference = () => {
   // Build comprehensive payload with all form fields
   const payload = {
     // Basic info
-    name: formData.name || '',
+    name: formData.name || '', // Keep for backward compatibility
     firstName,
     lastName,
     age,
-    weight: formData.weight || '',
-    height: formData.height || '',
+    profilePicture: formData.profilePicture || profilePhoto, // Include updated profile photo
+    // Convert weight and height to objects as expected by backend
+    weight: formData.weight ? {
+      value: parseFloat(formData.weight),
+      unit: 'kg'
+    } : { unit: 'kg' },
+    height: formData.height ? {
+      value: parseFloat(formData.height),
+      unit: 'cm'
+    } : { unit: 'cm' },
     
     // Goals and preferences
     goal: formData.goal || '',
@@ -338,6 +334,17 @@ const Preference = () => {
     console.log('DEBUG: Submitting preferences payload to backend:', payload);
     const updated = await ApiService.savePreferences(payload);
     console.log('DEBUG: Backend response after savePreferences:', updated);
+    
+    // Refresh the global AuthContext user state so all pages reflect the changes
+    try {
+      // Small delay to ensure database is updated
+      await new Promise(resolve => setTimeout(resolve, 500));
+      await refreshUser();
+      console.log('✅ Global user state refreshed');
+    } catch (globalUpdateError) {
+      console.warn('⚠️ Failed to refresh global user state:', globalUpdateError);
+    }
+    
     alert('Preferences saved successfully!');
   } catch (err) {
     console.error('Error saving preferences:', err);
@@ -353,8 +360,8 @@ return (
     <div className="flex">
         {/* Sidebar */}
         <Sidebar
-          profilePhoto={profileData?.profilePicture || profilePhoto}
-          userName={profileData?.firstName || profileData?.fullName || formData.name || "User"}
+          profilePhoto={user?.profilePicture || profileData?.profilePicture || profilePhoto}
+          userName={user?.name || user?.fullName || user?.firstName || profileData?.name || profileData?.fullName || profileData?.firstName || formData.name || "User"}
         />
 
         {/* Main Content */}
@@ -372,7 +379,7 @@ return (
                 <div className="flex flex-col md:flex-row gap-8 w-full">
                   {/* Left: Profile Photo */}
                   <div className="flex flex-col items-center md:items-start w-full md:w-1/4 gap-4">
-                    <img src={profilePhoto} alt="Profile" className="w-28 h-28 rounded-full border-4 border-[#62E0A1] object-cover shadow-xl border border-white" />
+                    <img src={formData.profilePicture || profilePhoto} alt="Profile" className="w-28 h-28 rounded-full border-4 border-[#62E0A1] object-cover shadow-xl border border-white" />
                     <div className="text-center md:text-left w-full">
                       <input 
                         type="file" 

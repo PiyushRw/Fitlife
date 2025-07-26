@@ -28,7 +28,7 @@ const Register = () => {
     e.preventDefault();
     try {
       await register(formData);
-      navigate('/onboarding');
+      navigate('/welcome');
     } catch (err) {
       alert('Registration error: ' + err.message);
     }

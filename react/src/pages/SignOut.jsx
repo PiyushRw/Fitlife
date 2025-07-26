@@ -1,16 +1,26 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
 
 const SignOut = () => {
   const navigate = useNavigate();
+  const { logout } = useAuth();
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
 
-  const handleSignOut = () => {
-    localStorage.clear();
-    navigate('/');
+  const handleSignOut = async () => {
+    try {
+      setIsLoggingOut(true);
+      await logout();
+      // Redirect to home page after successful logout
+      window.location.href = '/';
+    } catch (error) {
+      console.error('Error during sign out:', error);
+      setIsLoggingOut(false);
+    }
   };
 
   const handleCancel = () => {
-    navigate('/profile');
+    navigate(-1); // Go back to previous page
   };
 
   return (
@@ -22,9 +32,10 @@ const SignOut = () => {
         <div className="flex justify-center gap-4">
           <button 
             onClick={handleSignOut} 
-            className="bg-[#62E0A1] text-black px-5 py-2 rounded-full font-semibold hover:scale-105 transition"
+            disabled={isLoggingOut}
+            className="bg-[#62E0A1] text-black px-5 py-2 rounded-full font-semibold hover:scale-105 transition disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            Yes, Sign Out
+            {isLoggingOut ? 'Signing Out...' : 'Yes, Sign Out'}
           </button>
           <button 
             onClick={handleCancel} 

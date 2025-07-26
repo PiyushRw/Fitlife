@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import ApiService from '../utils/api';
+import { eventBus } from '../utils/eventBus';
 
 const AuthContext = createContext();
 
@@ -94,12 +95,25 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const logout = () => {
+  const logout = async () => {
     console.log('🚪 Logging out user...');
-    ApiService.logout();
-    setUser(null);
-    setError(null);
-    console.log('✅ Logout completed');
+    try {
+      // Clear the token and local storage first
+      ApiService.logout();
+      
+      // Reset all auth state
+      setUser(null);
+      setError(null);
+      
+      console.log('✅ Logout completed, redirecting to home...');
+      
+      // Only redirect to home, don't reload here
+      // The navigation will happen through the SignOut component
+      return true;
+    } catch (error) {
+      console.error('Error during logout:', error);
+      return false;
+    }
   };
 
   const updateProfile = async (profileData) => {
@@ -120,6 +134,17 @@ export const AuthProvider = ({ children }) => {
       await ApiService.changePassword(passwordData);
     } catch (err) {
       setError(err.message);
+      throw err;
+    }
+  };
+
+  const refreshUser = async () => {
+    try {
+      const userData = await ApiService.getProfile();
+      setUser(userData);
+      return userData;
+    } catch (err) {
+      console.error('❌ Failed to refresh user data:', err);
       throw err;
     }
   };
@@ -145,6 +170,7 @@ export const AuthProvider = ({ children }) => {
     logout,
     updateProfile,
     changePassword,
+    refreshUser,
     isAuthenticated
   };
 

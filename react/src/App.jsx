@@ -63,6 +63,7 @@ function App() {
             <Route path="/nutrition" element={<Nutrition />} />
             <Route path="/workout" element={<Workout />} />
             <Route path="/preference" element={<Preference />} />
+            <Route path="/preferences" element={<Preference />} />
             {/* Redirect old HTML routes to React routes */}
             <Route path="/HomePage.html" element={<Navigate to="/" replace />} />
             <Route path="/login.html" element={<Navigate to="/login" replace />} />

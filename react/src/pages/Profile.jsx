@@ -4,8 +4,10 @@ import { Link, useLocation } from 'react-router-dom';
 import FitLifeLogo from '../components/FitLifeLogo';
 import Sidebar from '../components/Sidebar';
 import CustomDropdown from '../components/CustomDropdown';
+import { useAuth } from '../contexts/AuthContext';
 
 const Profile = () => {
+  const { user } = useAuth();
   const [activeTab, setActiveTab] = useState('overview');
   const [profileData, setProfileData] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -110,15 +112,18 @@ const Profile = () => {
   }
 
   return (
-    <div className="bg-[#121212] text-white font-sans">
+    <div className="bg-[#121212] text-white font-sans min-h-screen p-4">
+      <div className="flex flex-col md:flex-row gap-4 w-full">
+        {/* Sidebar - Full width on mobile, fixed width on desktop */}
+        <div className="md:w-48 flex-shrink-0">
+          <Sidebar 
+            profilePhoto={user?.profilePicture || profileData?.photo || undefined} 
+            userName={user?.name || user?.fullName || user?.firstName || profileData?.name || profileData?.fullName || profileData?.firstName || "User"} 
+          />
+        </div>
 
-
-      <div className="flex min-h-screen p-4 w-full">
-        {/* Sidebar */}
-        <Sidebar profilePhoto={profileData.photo || undefined} userName={profileData.fullName || profileData.firstName || "User"} />
-
-        {/* Main Dashboard */}
-        <main className="flex-1 bg-[#1E1E1E] p-6 ml-4 rounded-2xl space-y-6 w-full">
+        {/* Main Dashboard - Takes remaining space */}
+        <main className="flex-1 bg-[#1E1E1E] p-6 rounded-2xl space-y-6 w-full">
           <p className="text-xs text-gray-400">Home / Dashboard</p>
 
           {/* Welcome */}
