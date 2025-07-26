@@ -1,6 +1,7 @@
 import React, { Suspense, lazy } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import './App.css';
+import './index.css'; // Import global styles
 import Spinner from './components/Spinner';
 import Navigation from './components/Navigation';
 

@@ -85,27 +85,38 @@ const Preference = () => {
       setLoading(true);
       setError(null);
       try {
-        const user = await ApiService.getProfile();
+        // Fetch both user profile and preferences
+        const [user, preferences] = await Promise.all([
+          ApiService.getProfile(),
+          ApiService.getPreferences()
+        ]);
+        
         console.log('Fetched user in Preference:', user);
-        if (user) {
-          console.log('DEBUG: Raw user object from backend:', user);
+        console.log('Fetched preferences in Preference:', preferences);
+        
+        // Merge user data with preferences data
+        const mergedData = { ...user, ...preferences };
+        console.log('Merged data:', mergedData);
+        
+        if (mergedData) {
+          console.log('DEBUG: Raw merged object:', mergedData);
           console.log('DEBUG: Dropdown fields:', {
-            age: user.age,
-            goal: user.goal,
-            workout: user.workout,
-            diet: user.diet,
-            healthFocus: user.healthFocus,
-            activityLevel: user.activityLevel,
-            experienceLevel: user.experienceLevel,
-            preferredTime: user.preferredTime,
-            privacySettings: user.privacySettings,
-            workoutFrequency: user.workoutFrequency,
-            workoutDuration: user.workoutDuration,
-            equipment: user.equipment,
-            fitnessLevel: user.fitnessLevel,
-            sleepGoal: user.sleepGoal,
-            stressLevel: user.stressLevel,
-            motivation: user.motivation
+            age: mergedData.age,
+            goal: mergedData.goal,
+            workout: mergedData.workout || mergedData.workoutType,
+            diet: mergedData.diet || mergedData.dietaryPreferences,
+            healthFocus: mergedData.healthFocus,
+            activityLevel: mergedData.activityLevel,
+            experienceLevel: mergedData.experienceLevel,
+            preferredTime: mergedData.preferredTime,
+            privacySettings: mergedData.privacySettings,
+            workoutFrequency: mergedData.workoutFrequency,
+            workoutDuration: mergedData.workoutDuration,
+            equipment: mergedData.equipment,
+            fitnessLevel: mergedData.fitnessLevel,
+            sleepGoal: mergedData.sleepGoal,
+            stressLevel: mergedData.stressLevel,
+            motivation: mergedData.motivation
           });
           // Flatten any nested objects to their primitive values for form fields
           const flatten = (obj) => {
@@ -139,9 +150,9 @@ const Preference = () => {
           };
           // Calculate age range if dateOfBirth exists
           let ageRange = '';
-          if (user.dateOfBirth) {
+          if (mergedData.dateOfBirth) {
             const today = new Date();
-            const birthDate = new Date(user.dateOfBirth);
+            const birthDate = new Date(mergedData.dateOfBirth);
             let age = today.getFullYear() - birthDate.getFullYear();
             const monthDiff = today.getMonth() - birthDate.getMonth();
             if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
@@ -157,26 +168,26 @@ const Preference = () => {
           const normalize = (val, options) => options.find(opt => (val || '').toLowerCase() === opt.toLowerCase()) || '';
           setFormData({
             ...defaultFormData,
-            ...flatten(user),
-            name: user.fullName || (user.firstName ? (user.firstName + (user.lastName ? ' ' + user.lastName : '')) : ''),
-            age: normalize(ageRange || user.age, ['Under 18', '18–30', '31–45', '46–60', '60+']),
-            goal: normalize(user.goal, ['Lose weight', 'Gain muscle', 'Improve flexibility', 'Stay active', 'Build strength', 'Improve endurance', 'Maintain fitness', 'Rehabilitation']),
-            workout: normalize(user.workout, ['Calisthenics', 'Yoga', 'Weight training', 'Mixed', 'Cardio', 'HIIT', 'Pilates', 'CrossFit', 'Swimming', 'Running']),
-            diet: normalize(user.diet, ['None', 'Vegetarian', 'Vegan', 'Gluten-free', 'Dairy-free', 'Low-carb', 'Keto', 'Paleo', 'Mediterranean', 'Other']),
-            healthFocus: normalize(user.healthFocus, ['Bone strength', 'Eye health', 'Joint mobility', 'Cholesterol/Blood pressure', 'Diabetes', 'Heart health', 'Mental health', 'Other']),
-            activityLevel: normalize(user.activityLevel, ['Sedentary', 'Lightly active', 'Moderately active', 'Very active', 'Extremely active']),
-            experienceLevel: normalize(user.experienceLevel, ['Beginner', 'Intermediate', 'Advanced', 'Expert']),
-            preferredTime: normalize(user.preferredTime, ['Early morning', 'Morning', 'Afternoon', 'Evening', 'Late night', 'Flexible']),
-            privacySettings: normalize(user.privacySettings, ['public', 'private']),
-            workoutFrequency: normalize(user.workoutFrequency, ['1-2 times/week', '3-4 times/week', '5-6 times/week', 'Daily', 'Flexible']),
-            workoutDuration: normalize(user.workoutDuration, ['15-30 minutes', '30-45 minutes', '45-60 minutes', '60+ minutes', 'Flexible']),
-            equipment: normalize(user.equipment, ['None', 'Basic home equipment', 'Full home gym', 'Gym membership', 'Outdoor only', 'Mixed']),
-            fitnessLevel: normalize(user.fitnessLevel, ['beginner', 'intermediate', 'advanced']),
-            sleepGoal: normalize(user.sleepGoal, ['Less than 6 hours', '6-7 hours', '7-8 hours', '8+ hours']),
-            stressLevel: normalize(user.stressLevel, ['Low', 'Moderate', 'High']),
-            motivation: normalize(user.motivation, ['Health', 'Appearance', 'Performance', 'Social', 'Other']),
-            weight: (user.weight && user.weight.value) ? user.weight.value : '',
-            height: (user.height && user.height.value) ? user.height.value : '',
+            ...flatten(mergedData),
+            name: mergedData.fullName || mergedData.name || (mergedData.firstName ? (mergedData.firstName + (mergedData.lastName ? ' ' + mergedData.lastName : '')) : ''),
+            age: normalize(ageRange || mergedData.age, ['Under 18', '18–30', '31–45', '46–60', '60+']),
+            goal: normalize(mergedData.goal, ['Lose weight', 'Gain muscle', 'Improve flexibility', 'Stay active', 'Build strength', 'Improve endurance', 'Maintain fitness', 'Rehabilitation']),
+            workout: normalize(mergedData.workout || mergedData.workoutType, ['Calisthenics', 'Yoga', 'Weight training', 'Mixed', 'Cardio', 'HIIT', 'Pilates', 'CrossFit', 'Swimming', 'Running']),
+            diet: normalize(mergedData.diet || mergedData.dietaryPreferences, ['None', 'Vegetarian', 'Vegan', 'Gluten-free', 'Dairy-free', 'Low-carb', 'Keto', 'Paleo', 'Mediterranean', 'Other']),
+            healthFocus: normalize(mergedData.healthFocus, ['Bone strength', 'Eye health', 'Joint mobility', 'Cholesterol/Blood pressure', 'Diabetes', 'Heart health', 'Mental health', 'Other']),
+            activityLevel: normalize(mergedData.activityLevel, ['Sedentary', 'Lightly active', 'Moderately active', 'Very active', 'Extremely active']),
+            experienceLevel: normalize(mergedData.experienceLevel, ['Beginner', 'Intermediate', 'Advanced', 'Expert']),
+            preferredTime: normalize(mergedData.preferredTime, ['Early morning', 'Morning', 'Afternoon', 'Evening', 'Late night', 'Flexible']),
+            privacySettings: normalize(mergedData.privacySettings, ['public', 'private']),
+            workoutFrequency: normalize(mergedData.workoutFrequency, ['1-2 times/week', '3-4 times/week', '5-6 times/week', 'Daily', 'Flexible']),
+            workoutDuration: normalize(mergedData.workoutDuration, ['15-30 minutes', '30-45 minutes', '45-60 minutes', '60+ minutes', 'Flexible']),
+            equipment: normalize(mergedData.equipment, ['None', 'Basic home equipment', 'Full home gym', 'Gym membership', 'Outdoor only', 'Mixed']),
+            fitnessLevel: normalize(mergedData.fitnessLevel, ['beginner', 'intermediate', 'advanced']),
+            sleepGoal: normalize(mergedData.sleepGoal, ['Less than 6 hours', '6-7 hours', '7-8 hours', '8+ hours']),
+            stressLevel: normalize(mergedData.stressLevel, ['Low', 'Moderate', 'High']),
+            motivation: normalize(mergedData.motivation, ['Health', 'Appearance', 'Performance', 'Social', 'Other']),
+            weight: (mergedData.weight && mergedData.weight.value) ? mergedData.weight.value : mergedData.weight || '',
+            height: (mergedData.height && mergedData.height.value) ? mergedData.height.value : mergedData.height || '',
           });
         }
       } catch (err) {
@@ -270,67 +281,76 @@ const Preference = () => {
     const validAges = ['Under 18', '18–30', '31–45', '46–60', '60+'];
     const age = validAges.includes(formData.age) ? formData.age : '';
 
-    // Build payload for backend
-    const payload = {
-      firstName,
-      lastName,
-      age,
-      gender: formData.gender || '',
-      height: {
-        value: formData.height || '',
-        unit: 'cm',
-      },
-      weight: {
-        value: formData.weight || '',
-        unit: 'kg',
-      },
-      fitnessGoals: formData.fitnessGoals || [],
-      fitnessLevel: formData.fitnessLevel || 'beginner',
-      preferences: {},
-      profilePicture: formData.profilePicture || '',
-      goal: formData.goal || '',
-      workout: formData.workout || '',
-      diet: formData.diet || '',
-      healthFocus: formData.healthFocus || '',
-      concerns: formData.concerns || '',
-      otherDietaryPreferences: formData.otherDietaryPreferences || '',
-      otherHealthFocus: formData.otherHealthFocus || '',
-      activityLevel: formData.activityLevel || '',
-      experienceLevel: formData.experienceLevel || '',
-      preferredTime: formData.preferredTime || '',
-      notifications: formData.notifications,
-      privacySettings: formData.privacySettings || 'public',
-      workoutFrequency: formData.workoutFrequency || '',
-      workoutDuration: formData.workoutDuration || '',
-      equipment: formData.equipment || '',
-      medicalConditions: formData.medicalConditions || '',
-      allergies: formData.allergies || '',
-      supplements: formData.supplements || '',
-      sleepGoal: formData.sleepGoal || '',
-      stressLevel: formData.stressLevel || '',
-      motivation: formData.motivation || '',
-      socialSharing: formData.socialSharing,
-      reminders: formData.reminders,
-      progressTracking: formData.progressTracking
-    };
-
-    try {
-      console.log('DEBUG: Submitting payload to backend:', payload);
-      const updated = await ApiService.updateProfile(payload);
-      console.log('DEBUG: Backend response after updateProfile:', updated);
-      // Optionally show success feedback (toast/snackbar)
-    } catch (err) {
-      setError(err.message || 'Failed to update profile');
-    } finally {
-      setSaving(false);
-    }
+  // Build comprehensive payload with all form fields
+  const payload = {
+    // Basic info
+    name: formData.name || '',
+    firstName,
+    lastName,
+    age,
+    weight: formData.weight || '',
+    height: formData.height || '',
+    
+    // Goals and preferences
+    goal: formData.goal || '',
+    workout: formData.workout || '',
+    workoutType: formData.workoutType || formData.workout || '', // Map workout to workoutType for onboarding compatibility
+    diet: formData.diet || '',
+    dietaryPreferences: formData.dietaryPreferences || formData.diet || '', // Map diet to dietaryPreferences for onboarding compatibility
+    healthFocus: formData.healthFocus || '',
+    concerns: formData.concerns || '',
+    otherDietaryPreferences: formData.otherDietaryPreferences || '',
+    otherHealthFocus: formData.otherHealthFocus || '',
+    
+    // Activity and experience
+    activityLevel: formData.activityLevel || '',
+    experienceLevel: formData.experienceLevel || '',
+    preferredTime: formData.preferredTime || '',
+    
+    // Workout details
+    workoutFrequency: formData.workoutFrequency || '',
+    workoutDuration: formData.workoutDuration || '',
+    equipment: formData.equipment || '',
+    fitnessLevel: formData.fitnessLevel || 'beginner',
+    
+    // Health and lifestyle
+    medicalConditions: formData.medicalConditions || '',
+    allergies: formData.allergies || '',
+    supplements: formData.supplements || '',
+    sleepGoal: formData.sleepGoal || '',
+    stressLevel: formData.stressLevel || '',
+    motivation: formData.motivation || '',
+    
+    // Settings
+    notifications: formData.notifications !== undefined ? formData.notifications : true,
+    privacySettings: formData.privacySettings || 'public',
+    socialSharing: formData.socialSharing !== undefined ? formData.socialSharing : true,
+    reminders: formData.reminders !== undefined ? formData.reminders : true,
+    progressTracking: formData.progressTracking !== undefined ? formData.progressTracking : true,
+    
+    // Additional fields for profile compatibility
+    gender: formData.gender || '',
+    fitnessGoals: formData.fitnessGoals || [],
+    profilePicture: formData.profilePicture || ''
   };
 
-  return (
-    <div className="bg-[#121212] text-white font-sans">
+  try {
+    console.log('DEBUG: Submitting preferences payload to backend:', payload);
+    const updated = await ApiService.savePreferences(payload);
+    console.log('DEBUG: Backend response after savePreferences:', updated);
+    alert('Preferences saved successfully!');
+  } catch (err) {
+    console.error('Error saving preferences:', err);
+    setError(err.message || 'Failed to save preferences');
+  } finally {
+    setSaving(false);
+  }
+};
 
+return (
+  <div className="bg-[#121212] text-white font-sans">
 
-      <div className="flex">
+    <div className="flex">
         {/* Sidebar */}
         <Sidebar
           profilePhoto={profileData?.profilePicture || profilePhoto}

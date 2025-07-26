@@ -87,6 +87,28 @@ class ApiService {
     return data.data?.user || data.user || data;
   }
 
+  // Get user preferences from onboarding
+  static async getPreferences() {
+    try {
+      const data = await this.makeRequest('/users/preferences');
+      return data.data?.preferences || data.preferences || data;
+    } catch (error) {
+      // If backend fails, try localStorage as fallback
+      console.warn('Failed to fetch preferences from backend, trying localStorage:', error);
+      const localData = localStorage.getItem('fitlife_user');
+      return localData ? JSON.parse(localData) : null;
+    }
+  }
+
+  // Save user preferences
+  static async savePreferences(preferencesData) {
+    const data = await this.makeRequest('/users/preferences', {
+      method: 'POST',
+      body: JSON.stringify(preferencesData),
+    });
+    return data.data?.user || data.user || data;
+  }
+
   // Update user profile
   static async updateProfile(profileData) {
     const data = await this.makeRequest('/auth/profile', {

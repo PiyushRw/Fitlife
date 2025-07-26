@@ -155,27 +155,42 @@ export const updateProfile = async (req, res, next) => {
       fitnessLevel: req.body.fitnessLevel,
       preferences: req.body.preferences,
       profilePicture: req.body.profilePicture,
+      
+      // Basic info
+      name: req.body.name,
+      
+      // Goals and preferences
       goal: req.body.goal,
       workout: req.body.workout,
+      workoutType: req.body.workoutType,
       diet: req.body.diet,
+      dietaryPreferences: req.body.dietaryPreferences,
       healthFocus: req.body.healthFocus,
       concerns: req.body.concerns,
       otherDietaryPreferences: req.body.otherDietaryPreferences,
       otherHealthFocus: req.body.otherHealthFocus,
+      
+      // Activity and experience
       activityLevel: req.body.activityLevel,
       experienceLevel: req.body.experienceLevel,
       preferredTime: req.body.preferredTime,
-      notifications: req.body.notifications,
-      privacySettings: req.body.privacySettings,
+      
+      // Workout details
       workoutFrequency: req.body.workoutFrequency,
       workoutDuration: req.body.workoutDuration,
       equipment: req.body.equipment,
+      
+      // Health and lifestyle
       medicalConditions: req.body.medicalConditions,
       allergies: req.body.allergies,
       supplements: req.body.supplements,
       sleepGoal: req.body.sleepGoal,
       stressLevel: req.body.stressLevel,
       motivation: req.body.motivation,
+      
+      // Settings
+      notifications: req.body.notifications,
+      privacySettings: req.body.privacySettings,
       socialSharing: req.body.socialSharing,
       reminders: req.body.reminders,
       progressTracking: req.body.progressTracking

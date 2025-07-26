@@ -113,12 +113,12 @@ const Profile = () => {
     <div className="bg-[#121212] text-white font-sans">
 
 
-      <div className="flex min-h-screen p-4">
-        {/* Sidebar */} 
+      <div className="flex min-h-screen p-4 w-full">
+        {/* Sidebar */}
         <Sidebar profilePhoto={profileData.photo || undefined} userName={profileData.fullName || profileData.firstName || "User"} />
 
         {/* Main Dashboard */}
-        <main className="flex-1 bg-[#1E1E1E] p-6 ml-4 rounded-2xl space-y-6">
+        <main className="flex-1 bg-[#1E1E1E] p-6 ml-4 rounded-2xl space-y-6 w-full">
           <p className="text-xs text-gray-400">Home / Dashboard</p>
 
           {/* Welcome */}

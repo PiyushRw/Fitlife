@@ -10,18 +10,156 @@ const router = express.Router();
 router.post('/preferences', protect, async (req, res, next) => {
   try {
     const userId = req.user.id;
-    const newPreferences = req.body;
-    console.log('Received preferences:', newPreferences);
+    const preferences = req.body;
+    console.log('Received preferences:', preferences);
+    
     const user = await User.findById(userId);
     if (!user) {
       return res.status(404).json({ success: false, error: 'User not found' });
     }
-    console.log('User preferences before:', user.preferences);
-    user.preferences = { ...user.preferences, ...newPreferences };
+    
+    // Map all fields from preferences to individual user fields
+    const fieldsToUpdate = {
+      // Basic info
+      name: preferences.name,
+      age: preferences.age,
+      weight: preferences.weight,
+      height: preferences.height,
+      
+      // Goals and preferences
+      goal: preferences.goal,
+      workout: preferences.workout,
+      workoutType: preferences.workoutType,
+      diet: preferences.diet,
+      dietaryPreferences: preferences.dietaryPreferences,
+      healthFocus: preferences.healthFocus,
+      concerns: preferences.concerns,
+      otherDietaryPreferences: preferences.otherDietaryPreferences,
+      otherHealthFocus: preferences.otherHealthFocus,
+      
+      // Activity and experience
+      activityLevel: preferences.activityLevel,
+      experienceLevel: preferences.experienceLevel,
+      preferredTime: preferences.preferredTime,
+      
+      // Workout details
+      workoutFrequency: preferences.workoutFrequency,
+      workoutDuration: preferences.workoutDuration,
+      equipment: preferences.equipment,
+      fitnessLevel: preferences.fitnessLevel,
+      
+      // Health and lifestyle
+      medicalConditions: preferences.medicalConditions,
+      allergies: preferences.allergies,
+      supplements: preferences.supplements,
+      sleepGoal: preferences.sleepGoal,
+      stressLevel: preferences.stressLevel,
+      motivation: preferences.motivation,
+      
+      // Settings
+      notifications: preferences.notifications,
+      privacySettings: preferences.privacySettings,
+      socialSharing: preferences.socialSharing,
+      reminders: preferences.reminders,
+      progressTracking: preferences.progressTracking
+    };
+    
+    // Remove undefined fields
+    Object.keys(fieldsToUpdate).forEach(key => 
+      fieldsToUpdate[key] === undefined && delete fieldsToUpdate[key]
+    );
+    
+    // Update user with new preferences
+    Object.assign(user, fieldsToUpdate);
+    
+    // Also save to preferences object for backward compatibility
+    user.preferences = { ...user.preferences, ...preferences };
+    
     await user.save();
-    console.log('User preferences after:', user.preferences);
-    res.status(200).json({ success: true, data: { user: user.getPublicProfile() } });
+    console.log('User preferences saved successfully');
+    
+    res.status(200).json({ 
+      success: true, 
+      message: 'Preferences saved successfully',
+      data: { user: user.getPublicProfile() } 
+    });
   } catch (error) {
+    console.error('Error saving preferences:', error);
+    next(error);
+  }
+});
+
+// @desc    Get user preferences
+// @route   GET /api/v1/users/preferences
+// @access  Private
+router.get('/preferences', protect, async (req, res, next) => {
+  try {
+    const user = await User.findById(req.user.id);
+    
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        error: 'User not found'
+      });
+    }
+    
+    // Return user data with all preference fields
+    const preferences = {
+      // Basic info
+      name: user.name,
+      age: user.age,
+      weight: user.weight,
+      height: user.height,
+      
+      // Goals and preferences
+      goal: user.goal,
+      workout: user.workout,
+      workoutType: user.workoutType,
+      diet: user.diet,
+      dietaryPreferences: user.dietaryPreferences,
+      healthFocus: user.healthFocus,
+      concerns: user.concerns,
+      otherDietaryPreferences: user.otherDietaryPreferences,
+      otherHealthFocus: user.otherHealthFocus,
+      
+      // Activity and experience
+      activityLevel: user.activityLevel,
+      experienceLevel: user.experienceLevel,
+      preferredTime: user.preferredTime,
+      
+      // Workout details
+      workoutFrequency: user.workoutFrequency,
+      workoutDuration: user.workoutDuration,
+      equipment: user.equipment,
+      fitnessLevel: user.fitnessLevel,
+      
+      // Health and lifestyle
+      medicalConditions: user.medicalConditions,
+      allergies: user.allergies,
+      supplements: user.supplements,
+      sleepGoal: user.sleepGoal,
+      stressLevel: user.stressLevel,
+      motivation: user.motivation,
+      
+      // Settings
+      notifications: user.notifications,
+      privacySettings: user.privacySettings,
+      socialSharing: user.socialSharing,
+      reminders: user.reminders,
+      progressTracking: user.progressTracking,
+      
+      // Also include the raw preferences object for backward compatibility
+      preferences: user.preferences
+    };
+    
+    res.status(200).json({
+      success: true,
+      data: {
+        preferences
+      }
+    });
+  } catch (error) {
+    console.error('Error fetching preferences:', error);
     next(error);
   }
 });

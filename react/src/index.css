@@ -1,3 +1,7 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 /* Custom styles for the FitLife app */
 html, body {
   margin: 0;
@@ -22,7 +26,7 @@ input:focus, select:focus, textarea:focus {
   color: white !important;
 }
 
-/* Prevent white backgrounds on autofill */
+/* Prevent white backgrounds on autofill - FORCE DARK BACKGROUND */
 input:-webkit-autofill,
 input:-webkit-autofill:hover,
 input:-webkit-autofill:focus,
@@ -35,10 +39,11 @@ textarea:-webkit-autofill,
 textarea:-webkit-autofill:hover,
 textarea:-webkit-autofill:focus,
 textarea:-webkit-autofill:active {
-  -webkit-box-shadow: 0 0 0 30px transparent inset !important;
-  background-color: transparent !important;
+  -webkit-box-shadow: 0 0 0 30px #1E1E1E inset !important;
+  background-color: #1E1E1E !important;
   color: white !important;
   -webkit-text-fill-color: white !important;
+  border-color: #4b5563 !important;
 }
 
 /* Additional autofill prevention */
@@ -46,11 +51,31 @@ input:-webkit-autofill,
 input:-webkit-autofill:hover,
 input:-webkit-autofill:focus,
 input:-webkit-autofill:active {
-  transition: background-color 5000s ease-in-out 0s;
+  transition: background-color 5000s ease-in-out 0s !important;
   -webkit-text-fill-color: white !important;
+  background-color: #1E1E1E !important;
 }
 
+/* Force all inputs to have dark background */
+input[type="email"],
+input[type="password"],
+input[type="text"],
+input[type="number"],
+textarea {
+  background-color: #1E1E1E !important;
+  color: white !important;
+  border-color: #4b5563 !important;
+}
 
+input[type="email"]:focus,
+input[type="password"]:focus,
+input[type="text"]:focus,
+input[type="number"]:focus,
+textarea:focus {
+  background-color: #1E1E1E !important;
+  color: white !important;
+  border-color: #62E0A1 !important;
+}
 
 /* Remove spinner arrows from number inputs */
 input[type="number"]::-webkit-outer-spin-button,
@@ -77,158 +102,104 @@ input[type="password"]::placeholder {
   opacity: 0.7 !important;
 }
 
-
-
 /* Override any Tailwind classes */
 .bg-transparent {
   background-color: transparent !important;
 }
 
-/* Custom scrollbar styles */
+/* Specific styling for FitLife inputs */
+.fitlife-input {
+  background-color: #1E1E1E !important;
+  color: white !important;
+  border-color: #4b5563 !important;
+}
+
+.fitlife-input:focus {
+  background-color: #1E1E1E !important;
+  color: white !important;
+  border-color: #62E0A1 !important;
+  outline: none !important;
+}
+
+.fitlife-input:-webkit-autofill,
+.fitlife-input:-webkit-autofill:hover,
+.fitlife-input:-webkit-autofill:focus,
+.fitlife-input:-webkit-autofill:active {
+  -webkit-box-shadow: 0 0 0 30px #1E1E1E inset !important;
+  background-color: #1E1E1E !important;
+  color: white !important;
+  -webkit-text-fill-color: white !important;
+  border-color: #4b5563 !important;
+}
+
+/* Dark and sleek scrollbar styling for achievements and milestones */
+/* Custom scrollbar for webkit browsers */
 ::-webkit-scrollbar {
-  width: 8px;
+  width: 6px;
+  height: 6px;
 }
 
 ::-webkit-scrollbar-track {
   background: #1a1a1a;
+  border-radius: 10px;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #333;
-  border-radius: 4px;
+  background: linear-gradient(135deg, #4b5563, #374151);
+  border-radius: 10px;
+  border: 1px solid #1a1a1a;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #555;
+  background: linear-gradient(135deg, #6b7280, #4b5563);
 }
 
-/* Animation classes */
-@keyframes fade-in-down {
-  from {
-    opacity: 0;
-    transform: translateY(-20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+::-webkit-scrollbar-thumb:active {
+  background: linear-gradient(135deg, #62E0A1, #36CFFF);
 }
 
-.animate-fade-in-down {
-  animation: fade-in-down 1s ease-out;
+/* Firefox scrollbar styling */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #4b5563 #1a1a1a;
 }
 
-@keyframes bounce-slow {
-  0%, 100% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-6px);
-  }
+/* Specific styling for scrollable sections */
+.scrollbar-thin {
+  scrollbar-width: thin;
+  scrollbar-color: #4b5563 #1a1a1a;
 }
 
-.animate-bounce-slow {
-  animation: bounce-slow 2s infinite;
+.scrollbar-thin::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
 }
 
-@keyframes softSlideFade {
-  from {
-    opacity: 0;
-    transform: translateY(10px) scale(0.98);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
+.scrollbar-thin::-webkit-scrollbar-track {
+  background: #1a1a1a;
+  border-radius: 10px;
 }
 
-.animate-soft-open {
-  animation: softSlideFade 0.3s ease-out forwards;
+.scrollbar-thin::-webkit-scrollbar-thumb {
+  background: linear-gradient(135deg, #4b5563, #374151);
+  border-radius: 10px;
+  border: 1px solid #1a1a1a;
 }
 
-/* Typing animation */
-@keyframes blink {
-  0%, 80%, 100% { opacity: 0.2; }
-  40% { opacity: 1; }
+.scrollbar-thin::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(135deg, #6b7280, #4b5563);
 }
 
-.typing-dots span {
-  animation: blink 1.4s infinite both;
-  opacity: 0.5;
-  font-size: 1.2em;
-  margin-right: 1px;
+.scrollbar-thin::-webkit-scrollbar-thumb:active {
+  background: linear-gradient(135deg, #62E0A1, #36CFFF);
 }
 
-.typing-dots span:nth-child(2) { animation-delay: 0.2s; }
-.typing-dots span:nth-child(3) { animation-delay: 0.4s; }
-
-/* Glow effect */
-.glow-icon {
-  filter: drop-shadow(0 0 6px #62E0A1);
+/* Hide scrollbar for elements with scrollbar-hide class */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }
 
-/* Ensure consistent dropdown styling */
-.dropdown-button {
-  background-color: #1E1E1E !important;
-  color: white !important;
-  border-color: #4b5563 !important;
-}
-
-.dropdown-button:hover {
-  background-color: #2a2a2a !important;
-}
-
-.dropdown-button:focus {
-  background-color: #2a2a2a !important;
-  border-color: #62E0A1 !important;
-}
-
-/* Force consistent styling for all dropdown buttons */
-button.dropdown-button {
-  background-color: #1E1E1E !important;
-  color: white !important;
-  border-color: #4b5563 !important;
-}
-
-button.dropdown-button:hover {
-  background-color: #2a2a2a !important;
-}
-
-button.dropdown-button:focus {
-  background-color: #2a2a2a !important;
-  border-color: #62E0A1 !important;
-}
-
-/* Override any potential autofill styling on dropdowns */
-.dropdown-button:-webkit-autofill,
-.dropdown-button:-webkit-autofill:hover,
-.dropdown-button:-webkit-autofill:focus,
-.dropdown-button:-webkit-autofill:active {
-  background-color: #1E1E1E !important;
-  color: white !important;
-  border-color: #4b5563 !important;
-}
-
-/* Force all dropdown buttons to have identical styling */
-.dropdown-container button,
-.dropdown-container .dropdown-button,
-button[class*="dropdown"] {
-  background-color: #1E1E1E !important;
-  color: white !important;
-  border-color: #4b5563 !important;
-  border-width: 1px !important;
-  border-style: solid !important;
-}
-
-.dropdown-container button:hover,
-.dropdown-container .dropdown-button:hover,
-button[class*="dropdown"]:hover {
-  background-color: #2a2a2a !important;
-}
-
-.dropdown-container button:focus,
-.dropdown-container .dropdown-button:focus,
-button[class*="dropdown"]:focus {
-  background-color: #2a2a2a !important;
-  border-color: #62E0A1 !important;
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
 }
