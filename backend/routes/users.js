@@ -77,4 +77,30 @@ router.get('/stats', protect, async (req, res, next) => {
   }
 });
 
-export default router; 
+// @desc    Update user profile
+// @route   PUT /api/v1/users/profile
+// @access  Private
+router.put('/profile', protect, async (req, res, next) => {
+  try {
+    const userId = req.user.id;
+    const updateData = req.body;
+
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ success: false, error: 'User not found' });
+    }
+
+    // Update user fields with provided data
+    Object.keys(updateData).forEach(key => {
+      user[key] = updateData[key];
+    });
+
+    await user.save();
+
+    res.status(200).json({ success: true, data: { user: user.getPublicProfile() } });
+  } catch (error) {
+    next(error);
+  }
+});
+
+export default router;
