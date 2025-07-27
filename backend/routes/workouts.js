@@ -10,7 +10,8 @@ import {
   rateWorkout,
   getExercises,
   getExercise,
-  createExercise
+  createExercise,
+  generateAIWorkout
 } from '../controllers/workoutController.js';
 
 const router = express.Router();
@@ -23,6 +24,7 @@ router.get('/:id', optionalAuth, getWorkout);
 
 // Protected routes
 router.post('/', protect, createWorkout);
+router.post('/ai-generate', protect, generateAIWorkout);
 router.put('/:id', protect, updateWorkout);
 router.delete('/:id', protect, deleteWorkout);
 router.get('/my/workouts', protect, getMyWorkouts);

@@ -42,6 +42,8 @@ const Nutrition = () => {
     };
     fetchUserData();
   }, []);
+
+
   const [selectedTags, setSelectedTags] = useState({
     goal: [],
     condition: [],
@@ -54,13 +56,15 @@ const Nutrition = () => {
   const [dietPlan, setDietPlan] = useState(null);
   const [isGenerating, setIsGenerating] = useState(false);
   const [foodAnalysis, setFoodAnalysis] = useState({
-    protein: '18 g',
-    calories: '320 kcal',
-    sugar: '5 g',
-    carbs: '42 g'
+    protein: 'N/A',
+    calories: 'N/A',
+    sugar: 'N/A',
+    carbs: 'N/A'
   });
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [uploadedImage, setUploadedImage] = useState(null);
+  const [analysisError, setAnalysisError] = useState(null);
+
 
   const goalOptions = [
     'Weight Loss', 'Muscle Gain', 'Maintain Energy', 'Improve Sleep', 'Balanced Diet'
@@ -121,20 +125,131 @@ const Nutrition = () => {
   const generateNutritionPlan = async () => {
     setIsGenerating(true);
     try {
-      const preferences = {
-        goal: selectedTags.goal,
-        condition: selectedTags.condition,
-        lifestyle: selectedTags.lifestyle,
-        customNotes: customInput
+      const token = localStorage.getItem('fitlife_token');
+      if (!token) {
+        return;
+      }
+
+      // Map frontend values to backend enum values
+      const goalMapping = {
+        'Weight Loss': 'weight-loss',
+        'Muscle Gain': 'muscle-gain',
+        'Maintain Energy': 'maintenance',
+        'Improve Sleep': 'health',
+        'Balanced Diet': 'health'
       };
+
+      const restrictionMapping = {
+        'Vegetarian': 'vegetarian',
+        'Vegan': 'vegan',
+        'High Protein': 'vegetarian', // Map to vegetarian since high-protein isn't in enum
+        'Gluten-Free': 'gluten-free',
+        'Intermittent Fasting': 'vegetarian' // Map to vegetarian since intermittent-fasting isn't in enum
+      };
+
+      // Prepare the data for AI nutrition plan generation
+      const planData = {
+        goal: goalMapping[selectedTags.goal[0]] || 'maintenance', // Map to valid enum value
+        dietaryRestrictions: selectedTags.lifestyle.map(restriction => 
+          restrictionMapping[restriction] || 'vegetarian'
+        ).filter(Boolean), // Filter out any undefined values
+        targetCalories: 2000, // Default calories, can be made dynamic
+        mealCount: 5 // breakfast, lunch, dinner, 2 snacks
+      };
+
+      // Use the backend API that automatically saves to database
+      const response = await fetch('http://127.0.0.1:5001/api/v1/ai-assistant/nutrition-recommendation', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(planData)
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to generate nutrition plan');
+      }
+
+      const result = await response.json();
       
-      const plan = await generateDietPlan(preferences, selectedDays);
-      setDietPlan(plan);
-      setCurrentDay(1); // Reset to day 1 when showing new plan
-      setShowResultsModal(true);
+      if (result.success) {
+        // Create a plan object for display (similar to the old format)
+        const plan = {
+          summary: {
+            totalDays: selectedDays,
+            dailyCalories: result.data.recommendation.targetCalories,
+            macroBreakdown: result.data.recommendation.macroSplit
+          },
+          mealPlan: {
+            day1: {
+              breakfast: result.data.recommendation.meals[0] || {
+                name: 'Breakfast',
+                calories: result.data.recommendation.targetCalories * 0.25,
+                protein: '25g',
+                carbs: '30g',
+                fats: '15g',
+                ingredients: ['Oatmeal', 'Banana', 'Almonds'],
+                instructions: 'Prepare oatmeal with fruits and nuts'
+              },
+              lunch: result.data.recommendation.meals[1] || {
+                name: 'Lunch',
+                calories: result.data.recommendation.targetCalories * 0.35,
+                protein: '35g',
+                carbs: '40g',
+                fats: '20g',
+                ingredients: ['Chicken', 'Rice', 'Vegetables'],
+                instructions: 'Grill chicken and serve with rice and vegetables'
+              },
+              dinner: result.data.recommendation.meals[2] || {
+                name: 'Dinner',
+                calories: result.data.recommendation.targetCalories * 0.30,
+                protein: '30g',
+                carbs: '25g',
+                fats: '25g',
+                ingredients: ['Salmon', 'Quinoa', 'Broccoli'],
+                instructions: 'Bake salmon and serve with quinoa and broccoli'
+              },
+              snack1: {
+                name: 'Morning Snack',
+                calories: result.data.recommendation.targetCalories * 0.05,
+                protein: '5g',
+                carbs: '10g',
+                fats: '5g',
+                ingredients: ['Apple', 'Nuts'],
+                instructions: 'Have an apple with a handful of nuts'
+              },
+              snack2: {
+                name: 'Evening Snack',
+                calories: result.data.recommendation.targetCalories * 0.05,
+                protein: '5g',
+                carbs: '10g',
+                fats: '5g',
+                ingredients: ['Greek Yogurt', 'Berries'],
+                instructions: 'Greek yogurt with fresh berries'
+              }
+            }
+          },
+          shoppingList: {
+            proteins: ['Chicken breast', 'Salmon', 'Greek yogurt'],
+            vegetables: ['Broccoli', 'Spinach', 'Carrots'],
+            fruits: ['Banana', 'Apple', 'Berries'],
+            grains: ['Oatmeal', 'Brown rice', 'Quinoa'],
+            dairy: ['Greek yogurt', 'Milk'],
+            pantry: ['Almonds', 'Olive oil', 'Honey']
+          }
+        };
+
+        setDietPlan(plan);
+        setCurrentDay(1); // Reset to day 1 when showing new plan
+        setShowResultsModal(true);
+
+
+      } else {
+        throw new Error(result.error || 'Plan generation failed');
+      }
     } catch (error) {
       console.error('Error generating nutrition plan:', error);
-      alert('Failed to generate nutrition plan. Please try again.');
     } finally {
       setIsGenerating(false);
     }
@@ -153,6 +268,15 @@ const Nutrition = () => {
       const reader = new FileReader();
       reader.onload = (e) => {
         setUploadedImage(e.target.result);
+        setAnalysisError(null); // Clear any previous errors
+        
+        // Reset food analysis to N/A when new image is uploaded
+        setFoodAnalysis({
+          protein: 'N/A',
+          calories: 'N/A',
+          sugar: 'N/A',
+          carbs: 'N/A'
+        });
       };
       reader.readAsDataURL(file);
     }
@@ -160,23 +284,67 @@ const Nutrition = () => {
 
   const analyzeFood = async () => {
     if (!uploadedImage) {
-      alert('Please upload an image first');
       return;
     }
 
     setIsAnalyzing(true);
     try {
+      const token = localStorage.getItem('fitlife_token');
+      if (!token) {
+        return;
+      }
+
       const base64Data = uploadedImage.split(',')[1]; // Remove data:image/jpeg;base64, prefix
-      const analysis = await analyzeFoodImage(base64Data);
-      setFoodAnalysis({
-        protein: analysis.protein || '18 g',
-        calories: `${analysis.calories || 320} kcal`,
-        sugar: analysis.sugar || '5 g',
-        carbs: analysis.carbs || '42 g'
+      
+      // Use the new backend API that automatically saves to database
+      const response = await fetch('http://127.0.0.1:5001/api/v1/nutrition/analyze-food', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          imageBase64: base64Data
+        })
       });
+
+      const result = await response.json();
+      
+      if (response.ok && result.success) {
+        // Update the food analysis display with the analyzed data
+        const analysis = result.data.analysis;
+        setFoodAnalysis({
+          protein: `${analysis.protein || 18} g`,
+          calories: `${analysis.calories || 320} kcal`,
+          sugar: `${analysis.sugar || 5} g`,
+          carbs: `${analysis.carbohydrates || 42} g`
+        });
+        setAnalysisError(null); // Clear any previous errors
+      } else {
+        // Handle error response (including non-food image error)
+        const errorMessage = result.error || 'Failed to analyze food';
+        console.error('Food analysis error:', errorMessage);
+        setAnalysisError(errorMessage);
+        
+        // Set N/A values when there's an error or non-food image
+        setFoodAnalysis({
+          protein: 'N/A',
+          calories: 'N/A',
+          sugar: 'N/A',
+          carbs: 'N/A'
+        });
+      }
     } catch (error) {
       console.error('Error analyzing food:', error);
-      alert('Failed to analyze food. Please try again.');
+      setAnalysisError('Failed to analyze food. Please try again.');
+      
+      // Set N/A values when there's an error
+      setFoodAnalysis({
+        protein: 'N/A',
+        calories: 'N/A',
+        sugar: 'N/A',
+        carbs: 'N/A'
+      });
     } finally {
       setIsAnalyzing(false);
     }
@@ -196,7 +364,10 @@ const Nutrition = () => {
 
       <div className="flex min-h-screen p-4">
         {/* Sidebar */}
-        <Sidebar profilePhoto={profileData?.photo || undefined} userName={profileData?.fullName || profileData?.firstName || "User"} />
+        <Sidebar 
+          userName={profileData?.fullName || profileData?.firstName || 'User'}
+          profilePhoto={null} // This will trigger the AI avatar fallback
+        />
 
         {/* Main Content */}
         <main className="flex-1 bg-[#1E1E1E] p-6 ml-4 rounded-2xl space-y-6">
@@ -333,9 +504,21 @@ const Nutrition = () => {
                     </div>
                   </div>
                 </div>
+                
+                {/* Error Message Display */}
+                {analysisError && (
+                  <div className="mt-4 p-4 bg-red-900/20 border border-red-500/30 rounded-lg">
+                    <div className="flex items-center">
+                      <i className="fas fa-exclamation-triangle text-red-400 mr-3"></i>
+                      <p className="text-red-300 text-sm">{analysisError}</p>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           </section>
+
+
 
           {/* Generate Plan Section */}
           <section className="w-full mb-8">

@@ -2,13 +2,38 @@ import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 
 // Accepts optional props for profile image, user name, and active tab highlight
-const Sidebar = ({ profilePhoto = "https://storage.googleapis.com/a1aa/image/d2cfe623-1544-4224-2da4-46a005423708.jpg", userName = "User" }) => {
+const Sidebar = ({ profilePhoto = null, userName = "User" }) => {
   const location = useLocation();
+  
+  // Generate AI avatar with first letter of user name and last name if available
+  const getAvatarLetter = () => {
+    if (!userName || userName === 'User') return 'U';
+    
+    const nameParts = userName.trim().split(' ');
+    if (nameParts.length >= 2) {
+      // If user has first and last name, show first letter of each
+      const firstName = nameParts[0];
+      const lastName = nameParts[nameParts.length - 1];
+      return `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase();
+    } else {
+      // If only one name, show first letter
+      return userName.charAt(0).toUpperCase();
+    }
+  };
+  
   return (
     <aside className="flex flex-col bg-[#1E1E1E] w-20 md:w-48 p-4 rounded-2xl">
       <div className="flex items-center space-x-3 bg-[#121212] p-2 rounded-lg">
         <div className="relative">
-          <img src={profilePhoto} alt="Profile" className="rounded-md w-10 h-10" />
+          <Link to="/preference" title="Change Photo" className="block">
+            {profilePhoto ? (
+              <img src={profilePhoto} alt="Profile" className="rounded-full w-10 h-10 cursor-pointer hover:opacity-80 transition-opacity" />
+            ) : (
+              <div className="bg-gradient-to-br from-[#36CFFF] to-[#62E0A1] text-white rounded-full w-10 h-10 flex items-center justify-center font-bold text-sm shadow-md cursor-pointer hover:opacity-80 transition-opacity">
+                {getAvatarLetter()}
+              </div>
+            )}
+          </Link>
           <Link to="/preference" title="Preferences" className="absolute bottom-0 right-0 bg-[#62E0A1] text-black rounded-full w-5 h-5 flex items-center justify-center text-xs border border-white hover:bg-[#36CFFF] transition">
             <i className="fas fa-edit"></i>
           </Link>

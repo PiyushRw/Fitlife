@@ -353,8 +353,8 @@ return (
     <div className="flex">
         {/* Sidebar */}
         <Sidebar
-          profilePhoto={profileData?.profilePicture || profilePhoto}
           userName={profileData?.firstName || profileData?.fullName || formData.name || "User"}
+          profilePhoto={null} // This will trigger the AI avatar fallback
         />
 
         {/* Main Content */}
@@ -372,7 +372,25 @@ return (
                 <div className="flex flex-col md:flex-row gap-8 w-full">
                   {/* Left: Profile Photo */}
                   <div className="flex flex-col items-center md:items-start w-full md:w-1/4 gap-4">
-                    <img src={profilePhoto} alt="Profile" className="w-28 h-28 rounded-full border-4 border-[#62E0A1] object-cover shadow-xl border border-white" />
+                    <div className="w-28 h-28 rounded-full border-4 border-[#62E0A1] shadow-xl border border-white bg-gradient-to-br from-[#36CFFF] to-[#62E0A1] flex items-center justify-center">
+                      <span className="text-white font-bold text-3xl">
+                        {(() => {
+                          const userName = profileData?.firstName || profileData?.fullName || formData.name || 'U';
+                          if (!userName || userName === 'U') return 'U';
+                          
+                          const nameParts = userName.trim().split(' ');
+                          if (nameParts.length >= 2) {
+                            // If user has first and last name, show first letter of each
+                            const firstName = nameParts[0];
+                            const lastName = nameParts[nameParts.length - 1];
+                            return `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase();
+                          } else {
+                            // If only one name, show first letter
+                            return userName.charAt(0).toUpperCase();
+                          }
+                        })()}
+                      </span>
+                    </div>
                     <div className="text-center md:text-left w-full">
                       <input 
                         type="file" 

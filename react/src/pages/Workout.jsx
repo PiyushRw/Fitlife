@@ -5,6 +5,8 @@ import { Link, useLocation } from 'react-router-dom';
 import FitLifeLogo from '../components/FitLifeLogo';
 import { generateWorkoutPlan, getExerciseRecommendations } from '../utils/geminiApi';
 import CustomDropdown from '../components/CustomDropdown';
+import ApiService from '../utils/api';
+import Sidebar from '../components/Sidebar';
 
 
 const Workout = () => {
@@ -136,25 +138,71 @@ const Workout = () => {
     setWorkoutList(prev => prev.filter(exercise => exercise.id !== id));
   };
 
-  const addExercise = (e) => {
+  const addExercise = async (e) => {
     e.preventDefault();
     if (modalExercise === 'Select Exercise' || !modalSets || !modalReps) {
       alert('Please fill in all fields');
       return;
     }
     
-    const newExercise = {
-      id: Date.now(),
-      name: modalExercise,
-      sets: parseInt(modalSets),
-      reps: parseInt(modalReps)
-    };
-    
-    setWorkoutList(prev => [...prev, newExercise]);
-    setModalExercise('Select Exercise');
-    setModalSets('');
-    setModalReps('');
-    setShowAddModal(false);
+    try {
+      // Create exercise data for database
+      const exerciseData = {
+        name: modalExercise,
+        description: `${modalExercise} exercise with ${modalSets} sets and ${modalReps} reps`,
+        category: 'strength',
+        muscleGroups: ['full-body'], // Default to full-body, can be enhanced later
+        equipment: ['bodyweight'], // Default to bodyweight, can be enhanced later
+        difficulty: 'beginner',
+        instructions: [
+          `Perform ${modalExercise}`,
+          `Complete ${modalSets} sets`,
+          `Do ${modalReps} repetitions per set`,
+          'Focus on proper form and controlled movements'
+        ],
+        estimatedDuration: 5
+      };
+
+      // Save exercise to database
+      const response = await ApiService.createExercise(exerciseData);
+      
+      if (response.success) {
+        console.log('✅ Exercise saved to database:', response.data);
+        
+        // Add to local workout list
+        const newExercise = {
+          id: Date.now(),
+          name: modalExercise,
+          sets: parseInt(modalSets),
+          reps: parseInt(modalReps),
+          exerciseId: response.data._id // Store the database ID
+        };
+        
+        setWorkoutList(prev => [...prev, newExercise]);
+        setModalExercise('Select Exercise');
+        setModalSets('');
+        setModalReps('');
+        setShowAddModal(false);
+        
+        // Exercise saved successfully (no alert - silent backend operation)
+      }
+    } catch (error) {
+      console.error('❌ Error saving exercise to database:', error);
+      
+      // Still add to local list even if database save fails (silent operation)
+      const newExercise = {
+        id: Date.now(),
+        name: modalExercise,
+        sets: parseInt(modalSets),
+        reps: parseInt(modalReps)
+      };
+      
+      setWorkoutList(prev => [...prev, newExercise]);
+      setModalExercise('Select Exercise');
+      setModalSets('');
+      setModalReps('');
+      setShowAddModal(false);
+    }
   };
 
   const getCurrentSubgroupOptions = () => {
@@ -288,6 +336,33 @@ const Workout = () => {
       const workoutPlan = await generateWorkoutPlan(userPreferences);
       if (workoutPlan.workoutPlan && workoutPlan.workoutPlan.exercises) {
         setAiRecommendations(workoutPlan.workoutPlan.exercises);
+        
+        // Transform the data to match backend expectations
+        const transformedExercises = workoutPlan.workoutPlan.exercises.map(exercise => ({
+          name: exercise.name,
+          description: exercise.instructions || `${exercise.name} exercise`,
+          muscleGroups: exercise.targetMuscles || ['full-body'],
+          equipment: ['bodyweight'], // Default equipment
+          difficulty: userPreferences.experience || 'intermediate',
+          sets: exercise.sets || 3,
+          reps: parseInt(exercise.reps) || 10, // Convert string to number
+          rest: parseInt(exercise.restTime) || 60, // Convert string to number
+          instructions: exercise.instructions ? [exercise.instructions] : [`Perform ${exercise.name}`],
+          estimatedDuration: 5, // Default duration
+          notes: exercise.tips || ''
+        }));
+        
+        // Save AI workout to database
+        try {
+          const response = await ApiService.generateAIWorkout(userPreferences, { exercises: transformedExercises });
+          if (response.success) {
+            console.log('✅ AI workout saved to database:', response.data.workout._id);
+            console.log(`✅ ${response.data.exercisesCount} exercises saved`);
+          }
+        } catch (dbError) {
+          console.error('❌ Error saving AI workout to database:', dbError);
+          // Continue with local state even if database save fails
+        }
       }
     } catch (error) {
       console.error('Error generating workout plan:', error);
@@ -321,43 +396,10 @@ const Workout = () => {
 
       <div className="flex min-h-screen p-4">
         {/* Sidebar */}
-        <aside className="flex flex-col bg-[#1E1E1E] w-20 md:w-48 p-4 rounded-2xl">
-          <div className="flex items-center space-x-3 bg-[#121212] p-2 rounded-lg">
-            <div className="relative">
-              <img src="https://storage.googleapis.com/a1aa/image/d2cfe623-1544-4224-2da4-46a005423708.jpg" alt="Profile" className="w-10 h-10 rounded-md" />
-              <Link to="/preference" title="Preferences" className="absolute bottom-0 right-0 bg-[#62E0A1] text-black rounded-full w-5 h-5 flex items-center justify-center text-xs border border-white hover:bg-[#36CFFF] transition">
-                <i className="fas fa-edit"></i>
-              </Link>
-            </div>
-            <div className="hidden text-xs text-gray-300 md:block">
-              <p className="font-normal">{userName}</p>
-            </div>
-          </div>
-          <nav className="flex flex-col mt-6 space-y-2 text-sm">
-            <Link to="/profile" className={`flex items-center space-x-2 px-3 py-2 rounded-full ${location.pathname === '/profile' ? 'bg-[#62E0A1] text-black' : 'hover:bg-[#121212]'}`}>
-              <i className="fas fa-calendar-alt"></i>
-              <span className="hidden md:inline">Schedule</span>
-            </Link>
-            <button className={`flex items-center space-x-2 px-3 py-2 rounded-full ${location.pathname === '/workout' ? 'bg-[#62E0A1] text-black' : 'hover:bg-[#121212]'}`}>
-              <i className="fas fa-dumbbell"></i>
-              <span className="hidden md:inline">Workouts</span>
-            </button>
-            <Link to="/nutrition" className={`flex items-center space-x-2 px-3 py-2 rounded-full ${location.pathname === '/nutrition' ? 'bg-[#62E0A1] text-black' : 'hover:bg-[#121212]'}`}>
-              <i className="fas fa-utensils"></i>
-              <span className="hidden md:inline">Nutrition</span>
-            </Link>
-          </nav>
-          <div className="pt-8 mt-auto space-y-2">
-            <Link to="/preference" className="flex items-center space-x-2 hover:bg-[#121212] px-3 py-2 rounded-full">
-              <i className="fas fa-cog"></i>
-              <span className="hidden md:inline">Preferences</span>
-            </Link>
-            <Link to="/signout" className="flex items-center space-x-2 hover:bg-[#121212] px-3 py-2 rounded-full">
-              <i className="fas fa-sign-out-alt"></i>
-              <span className="hidden md:inline">Sign out</span>
-            </Link>
-          </div>
-        </aside>
+        <Sidebar 
+          userName={userName}
+          profilePhoto={null} // This will trigger the AI avatar fallback
+        />
 
         {/* Main Dashboard */}
         <main className="flex-1 bg-[#1E1E1E] p-6 ml-4 rounded-2xl space-y-6">

@@ -1,5 +1,6 @@
 import User from '../models/User.js';
 import Chat from '../models/Chat.js';
+import { NutritionPlan, Meal, FoodItem } from '../models/Nutrition.js';
 import fetch from 'node-fetch';
 
 const GEMINI_API_KEY = 'AIzaSyAkJm9kDRHoDwlv39Eyvm4Se1IubxtZOto';
@@ -163,6 +164,21 @@ export const saveNutritionRecommendation = async (req, res, next) => {
       });
     }
 
+    // Validate goal against enum values
+    const validGoals = ['weight-loss', 'weight-gain', 'maintenance', 'muscle-gain', 'performance', 'health'];
+    if (!validGoals.includes(goal)) {
+      return res.status(400).json({
+        success: false,
+        error: `Invalid goal. Must be one of: ${validGoals.join(', ')}`
+      });
+    }
+
+    // Validate dietary restrictions against enum values
+    const validRestrictions = ['vegetarian', 'vegan', 'gluten-free', 'dairy-free', 'nut-free', 'low-sodium', 'low-carb', 'keto', 'paleo'];
+    const validatedRestrictions = dietaryRestrictions ? dietaryRestrictions.filter(restriction => 
+      validRestrictions.includes(restriction)
+    ) : [];
+
     const user = await User.findById(req.user.id);
     if (!user) {
       return res.status(404).json({
@@ -171,7 +187,7 @@ export const saveNutritionRecommendation = async (req, res, next) => {
       });
     }
 
-    // Mock recommendation
+    // Mock recommendation (simplified)
     const recommendation = {
       goal: goal || 'maintenance',
       targetCalories: targetCalories || 2000,
@@ -212,11 +228,117 @@ export const saveNutritionRecommendation = async (req, res, next) => {
       notes: 'This meal plan provides a balanced mix of protein, carbohydrates, and healthy fats.'
     };
 
+    // Save to Chat for conversation history
     const chat = await Chat.create({
       userId: req.user.id,
       type: 'nutrition-recommendation',
       content: recommendation,
       metadata: { goal, dietaryRestrictions, targetCalories, mealCount }
+    });
+
+    // AUTOMATIC: Create and save individual meals to meals collection
+    const createdMeals = [];
+    console.log('🍽️ Starting meal creation process...');
+    
+    for (const mealData of recommendation.meals) {
+      try {
+        console.log(`Creating meal: ${mealData.type}`);
+        
+        // Create or find food items for this meal
+        const mealFoods = [];
+        for (const foodData of mealData.foods) {
+          console.log(`Processing food: ${foodData.name}`);
+          
+          // Try to find existing food item or create a new one
+          let foodItem = await FoodItem.findOne({ 
+            name: { $regex: new RegExp(foodData.name, 'i') },
+            createdBy: req.user.id
+          });
+
+          if (!foodItem) {
+            console.log(`Creating new food item: ${foodData.name}`);
+            // Create a new food item if it doesn't exist
+            foodItem = await FoodItem.create({
+              name: foodData.name,
+              description: `Food item from AI nutrition plan`,
+              category: 'protein', // Default category
+              nutrients: {
+                calories: foodData.calories || 0,
+                protein: 0,
+                carbohydrates: 0,
+                fats: 0,
+                fiber: 0,
+                sugar: 0,
+                sodium: 0
+              },
+              servingSize: {
+                amount: foodData.quantity || 100,
+                unit: foodData.unit || 'g'
+              },
+              isCustom: true,
+              createdBy: req.user.id
+            });
+            console.log(`Food item created: ${foodItem._id}`);
+          } else {
+            console.log(`Found existing food item: ${foodItem._id}`);
+          }
+
+          mealFoods.push({
+            food: foodItem._id,
+            quantity: foodData.quantity || 100,
+            unit: foodData.unit || 'g'
+          });
+        }
+
+        // Calculate total nutrients for the meal
+        const totalNutrients = {
+          calories: mealData.totalCalories || mealData.foods.reduce((sum, food) => sum + (food.calories || 0), 0),
+          protein: 0, // Will be calculated from food items
+          carbohydrates: 0, // Will be calculated from food items
+          fats: 0 // Will be calculated from food items
+        };
+
+        console.log(`Creating meal with ${mealFoods.length} foods`);
+        
+        // Create the meal
+        const meal = await Meal.create({
+          name: `${mealData.type.charAt(0).toUpperCase() + mealData.type.slice(1)} - ${goal}`,
+          type: mealData.type,
+          foods: mealFoods,
+          totalNutrients: totalNutrients,
+          notes: `AI-generated ${mealData.type} for ${goal} goal`,
+          preparationTime: 15, // Default preparation time
+          cookingTime: 20, // Default cooking time
+          difficulty: 'easy',
+          tags: [goal, mealData.type, 'ai-generated']
+        });
+
+        console.log(`Meal created successfully: ${meal._id}`);
+        createdMeals.push(meal);
+      } catch (mealError) {
+        console.error(`❌ Error creating meal ${mealData.type}:`, mealError);
+        console.error('Error details:', mealError.message);
+        // Continue with other meals even if one fails
+      }
+    }
+    
+    console.log(`✅ Meal creation process completed. Created ${createdMeals.length} meals.`);
+
+    // AUTOMATIC: Save AI-generated nutrition plan to database with meal references
+    const nutritionPlan = await NutritionPlan.create({
+      title: `AI Nutrition Plan - ${goal}`,
+      description: `AI-generated nutrition plan for ${goal} goal with ${targetCalories} calories. Meals: ${recommendation.meals.map(m => m.type).join(', ')}`,
+      goal: goal,
+      targetCalories: targetCalories,
+      macroSplit: recommendation.macroSplit,
+      meals: [{
+        day: 1,
+        meals: createdMeals.map(meal => meal._id)
+      }],
+      restrictions: validatedRestrictions, // Use validated restrictions
+      createdBy: req.user.id,
+      isPublic: false,
+      isTemplate: false
     });
 
     res.status(201).json({
@@ -229,7 +351,15 @@ export const saveNutritionRecommendation = async (req, res, next) => {
           height: user.height,
           fitnessGoals: user.fitnessGoals
         },
-        chatId: chat._id
+        chatId: chat._id,
+        nutritionPlanId: nutritionPlan._id,
+        createdMeals: createdMeals.map(meal => ({
+          id: meal._id,
+          name: meal.name,
+          type: meal.type,
+          totalCalories: meal.totalNutrients.calories
+        })),
+        mealsCount: createdMeals.length
       }
     });
   } catch (error) {
