@@ -1,5 +1,5 @@
-import React, { useState, useCallback } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import React, { useState } from 'react';
+import { Link, useLocation } from 'react-router-dom';
 import FitLifeLogo from '../components/FitLifeLogo';
 import Sidebar from '../components/Sidebar';
 import { generateDietPlan, analyzeFoodImage } from '../utils/geminiApi';
@@ -8,41 +8,40 @@ const Nutrition = () => {
   const [profileData, setProfileData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const navigate = useNavigate();
-
-  const fetchUserData = useCallback(async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const token = localStorage.getItem('fitlife_token');
-      if (!token) {
-        navigate('/login', { replace: true });
-        return;
-      }
-      const response = await fetch('http://127.0.0.1:5001/api/v1/auth/me', {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-      if (!response.ok) {
-        throw new Error('Failed to fetch user data');
-      }
-      const data = await response.json();
-      if (data && data.success && data.data && data.data.user) {
-        setProfileData(data.data.user);
-      } else {
-        throw new Error('Invalid user data received');
-      }
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
-    }
-  }, [navigate]);
+  const navigate = useLocation();
 
   React.useEffect(() => {
+    const fetchUserData = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const token = localStorage.getItem('fitlife_token');
+        if (!token) {
+          window.location.href = '/login';
+          return;
+        }
+        const response = await fetch('http://127.0.0.1:5001/api/v1/auth/me', {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+        if (!response.ok) {
+          throw new Error('Failed to fetch user data');
+        }
+        const data = await response.json();
+        if (data && data.success && data.data && data.data.user) {
+          setProfileData(data.data.user);
+        } else {
+          throw new Error('Invalid user data received');
+        }
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
     fetchUserData();
-  }, [fetchUserData]);
+  }, []);
   const [selectedTags, setSelectedTags] = useState({
     goal: [],
     condition: [],
@@ -189,7 +188,7 @@ const Nutrition = () => {
     ...selectedTags.lifestyle
   ];
 
-  // Navigation state handled by useNavigate hook above
+  const location = useLocation();
 
   if (loading) {
     return (
@@ -207,7 +206,7 @@ const Nutrition = () => {
           <p className="mt-2">{error}</p>
         </div>
         <button 
-          onClick={() => fetchUserData()}
+          onClick={() => window.location.reload()}
           className="px-4 py-2 text-white bg-[#62E0A1] rounded-lg hover:bg-[#4acd8d] transition-colors"
         >
           Retry

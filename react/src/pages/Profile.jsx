@@ -1,5 +1,6 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import FitLifeLogo from '../components/FitLifeLogo';
 import Sidebar from '../components/Sidebar';
 import CustomDropdown from '../components/CustomDropdown';
@@ -7,9 +8,8 @@ import { useAuth } from '../contexts/AuthContext';
 
 const Profile = () => {
   const { user } = useAuth();
-  const navigate = useNavigate();
-
-  // Core states for authentication and data loading
+  const [activeTab, setActiveTab] = useState('overview');
+  const [profileData, setProfileData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const navigate = useNavigate();
@@ -31,37 +31,12 @@ const Profile = () => {
   const [showEditModal, setShowEditModal] = useState(false);
 
   useEffect(() => {
-    if (profileData) {
-      setEditableProfileData(profileData);
-    }
+    setEditableProfileData(profileData);
   }, [profileData]);
 
-  // Loading state UI
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen bg-[#121212]">
-        <div className="w-16 h-16 border-4 border-[#62E0A1] border-t-transparent rounded-full animate-spin"></div>
-      </div>
-    );
-  }
-
-  // Error state UI
-  if (error) {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-screen p-4 text-center bg-[#121212]">
-        <div className="p-4 mb-4 text-red-500 bg-red-900/30 rounded-lg">
-          <i className="text-2xl fas fa-exclamation-triangle"></i>
-          <p className="mt-2">{error}</p>
-        </div>
-        <button 
-          onClick={() => window.location.reload()}
-          className="px-4 py-2 text-white bg-[#62E0A1] rounded-lg hover:bg-[#4acd8d] transition-colors"
-        >
-          Retry
-        </button>
-      </div>
-    );
-  }
+  const [mood, setMood] = useState('happy');
+  const [workoutStreak] = useState(7);
+  const [healthScore, setHealthScore] = useState(78);
 
   const updateMoodInsight = () => {
     const moodInsights = {
@@ -91,6 +66,21 @@ const Profile = () => {
   };
 
   const weekDays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+  const [assigned, setAssigned] = useState({
+    Mon: ['Chest'],
+    Tue: ['Back'],
+    Wed: ['Legs'],
+    Thu: ['Arms'],
+    Fri: ['Shoulders'],
+    Sat: ['Core'],
+    Sun: ['Cardio'],
+  });
+  const [draggedPart, setDraggedPart] = useState(null);
+  const location = useLocation();
+
+  if (loading) {
+    return <div className="text-white p-4">Loading profile...</div>;
+  }
 
   if (error) {
     return <div className="text-red-500 p-4">Error: {error}</div>;
