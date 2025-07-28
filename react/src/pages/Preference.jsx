@@ -347,17 +347,13 @@ const Preference = () => {
 };
 
 return (
-  <div className="bg-[#121212] text-white font-sans">
-
-    <div className="flex">
-        {/* Sidebar */}
-        <Sidebar
-          profilePhoto={user?.profilePicture || profileData?.profilePicture || profilePhoto}
-          userName={user?.name || user?.fullName || user?.firstName || profileData?.name || profileData?.fullName || profileData?.firstName || formData.name || "User"}
-        />
+  <div className="min-h-screen bg-[#111827] text-white font-sans">
+    <div className="min-h-screen flex">
+      {/* Content wrapper */}
+      <div className="flex-1 bg-[#111827] min-h-screen overflow-y-auto">
 
         {/* Main Content */}
-        <main className="flex-1 bg-[#1E1E1E] p-8 ml-6 overflow-y-auto">
+        <main className="flex-1 bg-[#111827] p-8 ml-6 overflow-y-auto">
           <div className="w-full">
             <form onSubmit={handleSubmit}>
               {/* Header */}
@@ -1018,6 +1014,7 @@ return (
         </main>
       </div>
     </div>
+  </div>
   );
 };
 

@@ -28,7 +28,7 @@ class ErrorBoundary extends React.Component {
           </div>
           <nav className="flex items-center space-x-8 text-[17px] font-semibold">
             <NavLink to="/" className="text-white hover:text-[#62E0A1]">Home</NavLink>
-            <NavLink to="/login" className="ml-4 bg-gradient-to-r from-[#62E0A1] to-[#F2B33D] text-black px-5 py-2 rounded-full font-semibold">
+            <NavLink to="/register" className="ml-4 bg-gradient-to-r from-[#62E0A1] to-[#F2B33D] text-black px-5 py-2 rounded-full font-semibold">
               Get Started
             </NavLink>
           </nav>
@@ -79,15 +79,12 @@ const Navigation = () => {
     setDisplayName(name);
   }, [user, isAuthenticated, loading]);
 
-  // Toggle dropdown on click for mobile
-  const toggleDropdown = (e) => {
-    if (window.innerWidth <= 768) { // Only toggle on mobile
-      e.preventDefault();
-      if (isAuthenticated) {
-        setIsDropdownOpen(!isDropdownOpen);
-      } else {
-        navigate('/login');
-      }
+  const handleNavigation = (e) => {
+    e.preventDefault();
+    if (!isAuthenticated) {
+      navigate('/register');
+    } else if (window.innerWidth <= 768) {
+      setIsDropdownOpen(!isDropdownOpen);
     }
   };
 
@@ -126,7 +123,7 @@ const Navigation = () => {
                 }}
               >
                 <button
-                  onClick={toggleDropdown}
+                  onClick={handleNavigation}
                   className="ml-4 bg-gradient-to-r from-[#62E0A1] to-[#F2B33D] text-black px-5 py-2 rounded-full font-semibold shadow-none text-[15px] hover:scale-105 transition-all border border-[#232323] flex items-center"
                   style={{height:'38px', minWidth: '120px', textAlign: 'center', justifyContent: 'center' }}
                 >
