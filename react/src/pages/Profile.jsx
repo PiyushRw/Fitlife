@@ -144,7 +144,7 @@ const Profile = () => {
               </div>
               <div className="text-sm">
                 <p className="font-bold">Welcome, {profileData.fullName || profileData.firstName}!</p>
-                <p className="text-xs">Today is Monday, January 12. You have 3 workouts scheduled, your next meal prep is in 2 hours, and you need to drink 1 liter more water today. Keep pushing!</p>
+                <p className="text-xs">Today is a brilliant day to wokout. Keep pushing!</p>
               </div>
             </div>
           </section>
