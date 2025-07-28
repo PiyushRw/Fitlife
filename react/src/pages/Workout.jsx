@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { Link, useLocation } from 'react-router-dom';
 import FitLifeLogo from '../components/FitLifeLogo';
 import { generateWorkoutPlan, getExerciseRecommendations } from '../utils/geminiApi';
 import CustomDropdown from '../components/CustomDropdown';
@@ -33,8 +33,9 @@ const Workout = () => {
   const [showPreferencesModal, setShowPreferencesModal] = useState(false);
   const [aiRecommendations, setAiRecommendations] = useState([]);
   const [isLoadingRecommendations, setIsLoadingRecommendations] = useState(false);
+  const [exerciseDetails, setExerciseDetails] = useState(null);
   const [currentVideoUrl, setCurrentVideoUrl] = useState('https://www.youtube.com/embed/vcBig73ojpE');
-  const [exerciseVideoUrls, setExerciseVideoUrls] = useState({});
+  const [exerciseSearchTerm, setExerciseSearchTerm] = useState('');
   const [userPreferences, setUserPreferences] = useState({
     goals: [],
     experience: 'Beginner',
@@ -99,9 +100,8 @@ const Workout = () => {
       setSelectedExercise('Select Exercise');
     } else if (type === 'exercise') {
       setSelectedExercise(value);
-      const videoUrl = generateVideoUrl(value);
-      console.log('Setting video URL for exercise:', value, videoUrl); // Debug log
-      setCurrentVideoUrl(videoUrl);
+      setCurrentVideoUrl(generateVideoUrl(value));
+      setExerciseDetails(null); // Clear AI details when manually selecting
     } else if (type === 'modalExercise') {
       setModalExercise(value);
     }
@@ -147,110 +147,87 @@ const Workout = () => {
 
   // AI Workout Helper Functions
   const generateVideoUrl = (exerciseName = selectedExercise) => {
-    // First, try to get AI-recommended video URL
-    if (exerciseVideoUrls[exerciseName]) {
-      console.log('Using AI-recommended video for:', exerciseName);
-      return exerciseVideoUrls[exerciseName];
-    }
-
-    // Fallback to pre-defined videos if AI recommendation is not available
-    console.log('Using fallback video for:', exerciseName);
-    
-    // Videos optimized for different experience levels
-    const levelSpecificVideos = {
-      Beginner: {
-        // Detailed form-focused videos for beginners
-        'Bench Press': 'https://www.youtube.com/embed/vthMCtgVtFw', // Basic bench press form
-        'Push-Ups': 'https://www.youtube.com/embed/IODxDxX7oi4',
-        'Squats': 'https://www.youtube.com/embed/YaXPRqUwItQ',
-        'Deadlift': 'https://www.youtube.com/embed/ytGaGIn3SjE',
-        'Pull-Ups': 'https://www.youtube.com/embed/3YvfRx31xDE',
-        'Plank': 'https://www.youtube.com/embed/pSHjTRCQxIw'
-      },
-      Intermediate: {
-        // Standard technique videos
-        'Bench Press': 'https://www.youtube.com/embed/4Y2ZdHCOXok', // Proper bench press technique
-        'Push-Ups': 'https://www.youtube.com/embed/wxhNoKZlfY8',
-        'Squats': 'https://www.youtube.com/embed/ultWZbUMPL8',
-        'Deadlift': 'https://www.youtube.com/embed/jEy_czb3RKA',
-        'Pull-Ups': 'https://www.youtube.com/embed/eGo4IYlbE5g',
-        'Plank': 'https://www.youtube.com/embed/ASdvN_XEl_c'
-      },
-      Advanced: {
-        // Advanced variation and form videos
-        'Bench Press': 'https://www.youtube.com/embed/esQi683XR44', // Advanced bench press tips
-        'Push-Ups': 'https://www.youtube.com/embed/AhdtowFDKT0',
-        'Squats': 'https://www.youtube.com/embed/kj8wDJ7US00',
-        'Deadlift': 'https://www.youtube.com/embed/r4MzxtBKyNE',
-        'Pull-Ups': 'https://www.youtube.com/embed/5WHdim80e7o',
-        'Plank': 'https://www.youtube.com/embed/D7KaRcUPQTs'
-      }
-    };
-
-    // Default videos for other exercises
-    const defaultVideos = {
+    // Exercise-specific YouTube video URLs for demonstrations
+    const exerciseVideos = {
       // Chest Exercises
+      'Bench Press': 'https://www.youtube.com/embed/rT7DgCr-3pg',
       'Incline Dumbbell Press': 'https://www.youtube.com/embed/8iPEnn-ltC8',
-      'Incline Barbell Press': 'https://www.youtube.com/embed/jRUC6IVlZvw',
-      'Incline Push Ups': 'https://www.youtube.com/embed/3YvfRx31xDE',
+      'Incline Barbell Press': 'https://www.youtube.com/embed/IP4oeKh5j20',
+      'Incline Push Ups': 'https://www.youtube.com/embed/cfTFJFwGWU4',
       'Decline Bench Press': 'https://www.youtube.com/embed/LfyQBUKR8SE',
       'Decline Push Ups': 'https://www.youtube.com/embed/SKPab2YC8BE',
-      'Close-Grip Push Ups': 'https://www.youtube.com/embed/U8electYZ5Ow',
-      'Pec Deck': 'https://www.youtube.com/embed/Qe8p1qpqWzE',
-      'Wide Grip Bench Press': 'https://www.youtube.com/embed/6HXIuqQ7SW4',
-      'Cable Fly': 'https://www.youtube.com/embed/WEM9FCIPlxQ',
+      'Close-Grip Push Ups': 'https://www.youtube.com/embed/cfZmpElGrZw',
+      'Pec Deck': 'https://www.youtube.com/embed/Z57CtFmRMxQ',
+      'Wide Grip Bench Press': 'https://www.youtube.com/embed/rxD321l2svE',
+      'Cable Fly': 'https://www.youtube.com/embed/QENKPHhQVi4',
       
       // Back Exercises
       'Face Pull': 'https://www.youtube.com/embed/rep-qVOkqgk',
-      'Reverse Fly': 'https://www.youtube.com/embed/6yMdhi2DVao',
-      'Seated Row': 'https://www.youtube.com/embed/sP_4vybjVJs',
-      'Lat Pulldown': 'https://www.youtube.com/embed/u3gQT2aMVaI',
+      'Reverse Fly': 'https://www.youtube.com/embed/JoCRRZ3zRtI',
+      'Seated Row': 'https://www.youtube.com/embed/xQNrFHEMhI4',
+      'Back Extension': 'https://www.youtube.com/embed/qtdyyRVCZ2E',
+      'Superman': 'https://www.youtube.com/embed/cc6UVRS7PW4',
+      'Good Morning': 'https://www.youtube.com/embed/YuWLAKuBx6E',
+      'Lat Pulldown': 'https://www.youtube.com/embed/CAwf7n6Luuc',
       'Pull Ups': 'https://www.youtube.com/embed/eGo4IYlbE5g',
+      'Straight-Arm Pulldown': 'https://www.youtube.com/embed/kiuVA0gs3EI',
+      'Barbell Shrug': 'https://www.youtube.com/embed/g6qbq4Lf1FI',
+      'Dumbbell Shrug': 'https://www.youtube.com/embed/g6qbq4Lf1FI',
+      'Upright Row': 'https://www.youtube.com/embed/zD_bEhFUHWA',
       
-      // Arm Exercises
-      'Tricep Dips': 'https://www.youtube.com/embed/0326dy_-CzM',
-      'Bicep Curl': 'https://www.youtube.com/embed/ykJmrZ5v0Oo',
-      'Hammer Curl': 'https://www.youtube.com/embed/zC3nLlEvin4',
-      'Concentration Curl': 'https://www.youtube.com/embed/Jvj2wV0vOYU',
-      'Tricep Pushdown': 'https://www.youtube.com/embed/vB5OHsJ3EME',
-      'Overhead Tricep Extension': 'https://www.youtube.com/embed/YbX7Wd8jQ-Q',
-      
-      // Leg Exercises
+      // Legs Exercises
+      'Barbell Squat': 'https://www.youtube.com/embed/ultWZbUMPL8',
       'Leg Press': 'https://www.youtube.com/embed/IZxyjW7MPJQ',
       'Lunges': 'https://www.youtube.com/embed/QOVaHwm-Q6U',
-      'Romanian Deadlift': 'https://www.youtube.com/embed/hCDzSR6bW10',
+      'Leg Curl': 'https://www.youtube.com/embed/1Tq3QdYUuHs',
+      'Romanian Deadlift': 'https://www.youtube.com/embed/jEy_czb3RKA',
+      'Glute Ham Raise': 'https://www.youtube.com/embed/tz8HbTRqa0Y',
+      'Standing Calf Raise': 'https://www.youtube.com/embed/gwLzBJYoWlI',
+      'Seated Calf Raise': 'https://www.youtube.com/embed/JbyjNymZOt0',
+      'Donkey Calf Raise': 'https://www.youtube.com/embed/2KEDXrAHzJY',
+      'Hip Thrust': 'https://www.youtube.com/embed/SEdqd1n0cvg',
       'Glute Bridge': 'https://www.youtube.com/embed/OUgsJ8-Vi0E',
-      'Calf Raise': 'https://www.youtube.com/embed/gwLzBJYoWlI',
+      'Cable Kickback': 'https://www.youtube.com/embed/umKR5-cQEpc',
       
-      // Shoulder Exercises
-      'Lateral Raise': 'https://www.youtube.com/embed/3VcKaXpzqRo',
-      'Front Raise': 'https://www.youtube.com/embed/sxQiBAY4BME',
+      // Arms Exercises
+      'Bicep Curl': 'https://www.youtube.com/embed/ykJmrZ5v0Oo',
+      'Hammer Curl': 'https://www.youtube.com/embed/zC3nLlEvin4',
+      'Concentration Curl': 'https://www.youtube.com/embed/ebk4rJ5t5eE',
+      'Tricep Dips': 'https://www.youtube.com/embed/0326dy_-CzM',
+      'Tricep Pushdown': 'https://www.youtube.com/embed/2-LAMcpzODU',
+      'Overhead Tricep Extension': 'https://www.youtube.com/embed/YbX7Wd8jQ-Q',
+      'Wrist Curl': 'https://www.youtube.com/embed/0lC1DGhG9zY',
+      'Reverse Curl': 'https://www.youtube.com/embed/nRgxYX2Ve9w',
+      "Farmer's Walk": 'https://www.youtube.com/embed/p3QD2GhCJcw',
+      
+      // Shoulders Exercises
+      'Front Raise': 'https://www.youtube.com/embed/cxY9s0UBnhE',
       'Overhead Press': 'https://www.youtube.com/embed/2yjwXTZQDDI',
       'Arnold Press': 'https://www.youtube.com/embed/6Z15_WdXmVw',
+      'Lateral Raise': 'https://www.youtube.com/embed/3VcKaXpzqRo',
+      'Cable Lateral Raise': 'https://www.youtube.com/embed/VgV7dCjxJAc',
+      'Rear Delt Row': 'https://www.youtube.com/embed/MiRAi2KOfRQ',
       
       // Core Exercises
-      'Plank': 'https://www.youtube.com/embed/pSHjTRCQxIw',
-      'Russian Twist': 'https://www.youtube.com/embed/wkD8rjkodUI',
-      'Leg Raise': 'https://www.youtube.com/embed/Wp4BlxcFTkE',
-      'Bicycle Crunch': 'https://www.youtube.com/embed/1we3bh9uhqY'
+      'Crunches': 'https://www.youtube.com/embed/Xyd_fa5zoEU',
+      'Plank': 'https://www.youtube.com/embed/ASdvN_XEl_c',
+      'Leg Raise': 'https://www.youtube.com/embed/JB2oyawG9KI',
+      'Bicycle Crunch': 'https://www.youtube.com/embed/9FGilxCbdz8',
+      'Side Plank': 'https://www.youtube.com/embed/K2VljzCC16g',
+      'Russian Twist': 'https://www.youtube.com/embed/DJQGX2J4IVw',
+      'Woodchopper': 'https://www.youtube.com/embed/pAplQXk3dkU',
+      'Reverse Crunch': 'https://www.youtube.com/embed/Wp4BlxcFTkE',
+      'Hanging Leg Raise': 'https://www.youtube.com/embed/hdng3Nm1x_E',
+      'Mountain Climbers': 'https://www.youtube.com/embed/nmwgirgXLYM',
+      
+      // Full Body Exercises
+      'Burpees': 'https://www.youtube.com/embed/auBLPXO8Fww',
+      'Jumping Jacks': 'https://www.youtube.com/embed/dmYwZH_BNd0',
+      'Bear Crawl': 'https://www.youtube.com/embed/wKl4IxVMvQ8'
     };
-
-    // Get user's experience level
-    const userLevel = userPreferences.experience;
     
-    console.log('Generating video URL for:', exerciseName);
-    console.log('User level:', userLevel);
-    
-    // Try to get level-specific video first
-    if (levelSpecificVideos[userLevel] && levelSpecificVideos[userLevel][exerciseName]) {
-      console.log('Found level-specific video:', levelSpecificVideos[userLevel][exerciseName]);
-      return levelSpecificVideos[userLevel][exerciseName];
-    }
-    
-    // Fall back to default video if no level-specific content exists
-    const defaultVideo = defaultVideos[exerciseName] || 'https://www.youtube.com/embed/vcBig73ojpE';
-    console.log('Using default video:', defaultVideo);
-    return defaultVideo;
+    // Return specific video for the exercise, or default if not found
+    return exerciseVideos[exerciseName] || 'https://www.youtube.com/embed/vcBig73ojpE';
   };
 
   const getAIRecommendations = async () => {
@@ -266,26 +243,19 @@ const Workout = () => {
         userPreferences.equipment,
         userPreferences.experience.toLowerCase()
       );
-      
-      const exercises = recommendations.exercises || [];
-      setAiRecommendations(exercises);
-
-      // Store video URLs for each exercise
-      const videoUrls = {};
-      exercises.forEach(exercise => {
-        // Convert search keywords to a YouTube embed URL
-        if (exercise.videoSearchKeywords) {
-          const searchQuery = encodeURIComponent(exercise.videoSearchKeywords);
-          videoUrls[exercise.name] = `https://www.youtube.com/embed?listType=search&list=${searchQuery}`;
-        }
-      });
-      setExerciseVideoUrls(videoUrls);
+      setAiRecommendations(recommendations.exercises || []);
     } catch (error) {
       console.error('Error getting AI recommendations:', error);
       alert('Failed to get AI recommendations. Please try again.');
     } finally {
       setIsLoadingRecommendations(false);
     }
+  };
+
+  const selectAIExercise = (exercise) => {
+    setSelectedExercise(exercise.name);
+    setExerciseDetails(exercise);
+    setCurrentVideoUrl(generateVideoUrl(exercise.name));
   };
 
   const generateWorkoutFromPreferences = async () => {
@@ -318,6 +288,8 @@ const Workout = () => {
         : [...prev[key], value]
     }));
   };
+
+  const location = useLocation();
 
   return (
     <div className="min-h-screen bg-[#121212] text-white font-sans p-4">
@@ -417,16 +389,8 @@ const Workout = () => {
           {/* Video Demonstration Area */}
           <section className="bg-[#121212] p-4 rounded-xl">
             <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center">
-                <span className="text-2xl mr-2 text-[#36CFFF]">🎥</span>
-                <p className="text-sm font-semibold">
-                  {selectedExercise !== 'Select Exercise' ? selectedExercise : 'Exercise Video Demonstration'}
-                </p>
-              </div>
-              <div className="flex gap-2 items-center">
-                <span className="text-xs text-[#62E0A1]">
-                  Level: {userPreferences.experience}
-                </span>
+              <p className="text-sm font-semibold">Exercise Video Demonstration</p>
+              <div className="flex gap-2">
                 <button 
                   onClick={() => setShowPreferencesModal(true)}
                   className="bg-[#F2B33D] text-black px-3 py-1 rounded-full text-xs font-semibold hover:scale-105 transition"
@@ -488,107 +452,127 @@ const Workout = () => {
               </div>
             </div>
             
-            {/* Video Section with Level-Based Content */}
-            <div className="bg-[#1a2332] rounded-xl p-4">
-              <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center">
-                  <span className="text-2xl mr-2 text-[#36CFFF]">🎥</span>
-                  <span className="font-extrabold text-lg text-[#36CFFF] tracking-wide">
-                    {selectedExercise !== 'Select Exercise' ? selectedExercise : 'Select an Exercise'}
-                  </span>
-                </div>
-                <div className="text-sm text-[#62E0A1]">
-                  Level: {userPreferences.experience}
-                </div>
-              </div>
+            {/* Video iframe */}
+            <div className="aspect-w-16 aspect-h-9">
+              <iframe 
+                className="w-full h-96 rounded-xl" 
+                src={currentVideoUrl}
+                title={`${selectedExercise} Demo Video`}
+                frameBorder="0" 
+                allowFullScreen
+              ></iframe>
+            </div>
 
-              <div className="aspect-w-16 aspect-h-9 mb-4">
-                <iframe 
-                  className="w-full h-96 rounded-xl" 
-                  src={currentVideoUrl}
-                  title={`${selectedExercise} Demo Video`}
-                  frameBorder="0" 
-                  allowFullScreen
-                ></iframe>
+            {/* Quick Exercise Access */}
+            <div className="mt-4 p-3 bg-[#1A1A1A] rounded-xl">
+              <p className="text-sm font-semibold mb-3 text-[#62E0A1]">Quick Access - Popular Exercises</p>
+              <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-2">
+                {[
+                  'Push-Ups', 'Bench Press', 'Barbell Squat', 'Pull Ups', 
+                  'Plank', 'Bicep Curl', 'Lunges', 'Tricep Dips'
+                ].map((exercise) => (
+                  <button
+                    key={exercise}
+                    onClick={() => {
+                      setSelectedExercise(exercise);
+                      setCurrentVideoUrl(generateVideoUrl(exercise));
+                      setExerciseDetails(null);
+                    }}
+                    className="text-xs p-2 bg-[#2A2A2A] hover:bg-[#36CFFF] hover:text-black rounded-lg transition font-medium"
+                  >
+                    {exercise}
+                  </button>
+                ))}
               </div>
+            </div>
 
-              {selectedExercise !== 'Select Exercise' && (
-                <div className="text-sm text-gray-400 mt-2">
-                  <p>Video optimized for {userPreferences.experience.toLowerCase()} level</p>
-                  {userPreferences.goals.length > 0 && (
-                    <div className="mt-2">
-                      <p>Training Focus:</p>
-                      <div className="flex flex-wrap gap-2 mt-1">
-                        {userPreferences.goals.map((goal, index) => (
-                          <span key={index} className="text-xs bg-[#2A2A2A] text-[#62E0A1] px-2 py-1 rounded-full">
-                            {goal}
-                          </span>
-                        ))}
-                      </div>
+            {/* Exercise Details and Mistakes Section */}
+            <div className="mt-6 space-y-4">
+              {exerciseDetails && (
+                <div className="p-4 rounded-xl bg-[#1a2332] border-l-4 border-[#36CFFF]">
+                  <div className="flex items-center mb-2">
+                    <span className="text-2xl mr-2 text-[#36CFFF]">🤖</span>
+                    <span className="font-extrabold text-lg text-[#36CFFF] tracking-wide">AI Exercise Insights</span>
+                  </div>
+                  <div className="grid grid-cols-1 gap-4 text-sm md:grid-cols-2">
+                    <div>
+                      <p className="font-semibold text-[#36CFFF] mb-1">Difficulty Level:</p>
+                      <p className="text-gray-300">{exerciseDetails.difficulty}/5</p>
                     </div>
-                  )}
+                    <div>
+                      <p className="font-semibold text-[#36CFFF] mb-1">Recommended Sets x Reps:</p>
+                      <p className="text-gray-300">{exerciseDetails.setsRepsRecommendation}</p>
+                    </div>
+                    <div className="md:col-span-2">
+                      <p className="font-semibold text-[#36CFFF] mb-1">Primary Muscles:</p>
+                      <p className="text-gray-300">{exerciseDetails.primaryMuscles?.join(', ')}</p>
+                    </div>
+                    <div className="md:col-span-2">
+                      <p className="font-semibold text-[#36CFFF] mb-1">Form Instructions:</p>
+                      <p className="text-gray-300">{exerciseDetails.instructions}</p>
+                    </div>
+                  </div>
                 </div>
               )}
-            </div>
 
-            {/* AI Recommendations Quick Access */}
-            <div className="mt-4 p-3 bg-[#1A1A1A] rounded-xl">
-              <div className="flex items-center justify-between mb-3">
-                <div className="flex items-center">
-                  <span className="text-xl mr-2">🤖</span>
-                  <p className="text-sm font-semibold text-[#62E0A1]">AI Recommended Exercises</p>
+              <div className="p-4 rounded-xl bg-[#23272e] shadow-inner border-l-4 border-[#F2B33D]">
+                <div className="flex items-center mb-2">
+                  <span className="text-2xl mr-2 text-[#F2B33D]">⚠</span>
+                  <span className="font-extrabold text-lg text-[#F2B33D] tracking-wide">Common Mistakes</span>
                 </div>
-                {isLoadingRecommendations ? (
-                  <div className="text-xs text-[#36CFFF]">
-                    <i className="fas fa-spinner fa-spin mr-1"></i> Loading...
-                  </div>
-                ) : (
-                  <button
-                    onClick={getAIRecommendations}
-                    disabled={selectedMuscleGroup === 'Select Muscle Group'}
-                    className="text-xs bg-[#36CFFF] text-black px-3 py-1 rounded-full font-semibold hover:scale-105 transition disabled:opacity-50"
-                  >
-                    <i className="fas fa-sync-alt mr-1"></i> Refresh
-                  </button>
-                )}
-              </div>
-              <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-2">
-                {aiRecommendations.length > 0 ? (
-                  aiRecommendations.map((exercise, index) => (
-                    <button
-                      key={index}
-                      onClick={() => {
-                        setSelectedExercise(exercise.name);
-                        setCurrentVideoUrl(generateVideoUrl(exercise.name));
-                      }}
-                      className="text-xs p-2 bg-[#2A2A2A] hover:bg-[#36CFFF] hover:text-black rounded-lg transition font-medium flex flex-col items-center"
-                    >
-                      <span>{exercise.name}</span>
-                      <span className="text-[10px] text-[#62E0A1] mt-1">Level {exercise.difficulty || '1'}</span>
-                    </button>
-                  ))
-                ) : (
-                  // Default exercises when no AI recommendations
-                  ['Push-Ups', 'Bench Press', 'Barbell Squat', 'Pull Ups', 
-                   'Plank', 'Bicep Curl', 'Lunges', 'Tricep Dips'
-                  ].map((exercise) => (
-                    <button
-                      key={exercise}
-                      onClick={() => {
-                        setSelectedExercise(exercise);
-                        setCurrentVideoUrl(generateVideoUrl(exercise));
-                      }}
-                      className="text-xs p-2 bg-[#2A2A2A] hover:bg-[#36CFFF] hover:text-black rounded-lg transition font-medium"
-                    >
-                      {exercise}
-                    </button>
-                  ))
-                )}
+                <ul className="list-disc list-inside space-y-2 text-sm text-[#ffe6b3] font-semibold">
+                  {exerciseDetails && exerciseDetails.commonMistakes ? (
+                    exerciseDetails.commonMistakes.map((mistake, index) => (
+                      <li key={index} className="bg-[#3a2f1a] rounded px-3 py-1">{mistake}</li>
+                    ))
+                  ) : (
+                    <>
+                      <li className="bg-[#3a2f1a] rounded px-3 py-1">Using too much weight and sacrificing form</li>
+                      <li className="bg-[#3a2f1a] rounded px-3 py-1">Not maintaining a full range of motion</li>
+                      <li className="bg-[#3a2f1a] rounded px-3 py-1">Arching the back excessively</li>
+                      <li className="bg-[#3a2f1a] rounded px-3 py-1">Improper breathing technique</li>
+                    </>
+                  )}
+                </ul>
               </div>
             </div>
-
-
           </section>
+
+          {/* AI Recommendations Section */}
+          {aiRecommendations.length > 0 && (
+            <section className="bg-[#121212] p-4 rounded-xl">
+              <div className="flex items-center mb-4">
+                <span className="mr-2 text-2xl">🤖</span>
+                <p className="text-lg font-semibold">AI Exercise Recommendations</p>
+              </div>
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+                {aiRecommendations.map((exercise, index) => (
+                  <div 
+                    key={index}
+                    className="bg-[#1E1E1E] p-4 rounded-xl border border-gray-700 hover:border-[#36CFFF] transition cursor-pointer"
+                    onClick={() => selectAIExercise(exercise)}
+                  >
+                    <div className="flex items-start justify-between mb-2">
+                      <h3 className="text-sm font-semibold text-white">{exercise.name}</h3>
+                      <span className="text-xs bg-[#36CFFF] text-black px-2 py-1 rounded-full">
+                        Level {exercise.difficulty || 'N/A'}
+                      </span>
+                    </div>
+                    <div className="space-y-1 text-xs text-gray-400">
+                      <p><span className="text-[#62E0A1]">Target:</span> {exercise.targetMuscles?.join(', ') || exercise.primaryMuscles?.join(', ') || 'Multiple muscles'}</p>
+                      <p><span className="text-[#F2B33D]">Sets/Reps:</span> {exercise.setsRepsRecommendation || `${exercise.sets} x ${exercise.reps}` || '3 x 8-12'}</p>
+                      {exercise.equipment && (
+                        <p><span className="text-[#36CFFF]">Equipment:</span> {exercise.equipment.join(', ')}</p>
+                      )}
+                    </div>
+                    <button className="mt-3 w-full bg-[#36CFFF] text-black text-xs py-2 rounded-lg font-semibold hover:scale-105 transition">
+                      Select Exercise
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </section>
+          )}
 
           {/* Popular Workout Videos Section */}
           <section className="bg-[#121212] p-4 rounded-xl">
@@ -653,6 +637,7 @@ const Workout = () => {
                   onClick={() => {
                     setSelectedExercise(video.exercise);
                     setCurrentVideoUrl(`https://www.youtube.com/embed/${video.videoId}`);
+                    setExerciseDetails(null);
                   }}
                 >
                   <div className="relative">
