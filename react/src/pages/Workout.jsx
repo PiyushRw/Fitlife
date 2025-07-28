@@ -308,17 +308,8 @@ const Workout = () => {
                 <i className="fas fa-dumbbell"></i>
               </div>
               <div className="text-sm">
-                {user ? (
-                  <>
-                    <p className="font-bold">Let's Train Hard, {user.name || user.fullName || user.firstName}!</p>
-                    <p className="text-xs">Your chest and triceps workout is scheduled today. Don't forget to log your reps and sets!</p>
-                  </>
-                ) : (
-                  <>
-                    <p className="font-bold">Welcome, User!</p>
-                    <p className="text-xs">Please register or login to see your workout information.</p>
-                  </>
-                )}
+                <p className="font-bold">Let's Train Hard, {user?.name || user?.fullName || user?.firstName || "User"}!</p>
+                <p className="text-xs">Your chest and triceps workout is scheduled today. Don't forget to log your reps and sets!</p>
               </div>
             </div>
           </section>
@@ -330,28 +321,28 @@ const Workout = () => {
                 <i className="fas fa-calendar-check"></i>
               </div>
               <p className="text-sm">Streak</p>
-              <p className="text-lg font-bold">{user ? '5 Days' : ''}</p>
+              <p className="text-lg font-bold">5 Days</p>
             </div>
             <div className="bg-[#121212] rounded-xl p-4 text-center">
               <div className="bg-[#36CFFF] text-black rounded-full w-8 h-8 flex items-center justify-center mx-auto">
                 <i className="fas fa-stopwatch"></i>
               </div>
               <p className="text-sm">Workout Duration</p>
-              <p className="text-lg font-bold">{user ? '1 hr 15 min' : ''}</p>
+              <p className="text-lg font-bold">1 hr 15 min</p>
             </div>
             <div className="bg-[#121212] rounded-xl p-4 text-center">
               <div className="bg-[#F2B33D] text-black rounded-full w-8 h-8 flex items-center justify-center mx-auto">
                 <i className="fas fa-fire"></i>
               </div>
               <p className="text-sm">Calories Burned</p>
-              <p className="text-lg font-bold">{user ? '320 kcal' : ''}</p>
+              <p className="text-lg font-bold">320 kcal</p>
             </div>
           </section>
 
           {/* Progress Bar */}
           <section className="bg-[#121212] p-4 rounded-xl">
             <p className="mb-2 text-sm font-semibold">Workout Completion</p>
-            <p className="mb-1 text-xs">{user ? 'Completed: 8 / 10 sets' : ''}</p>
+            <p className="mb-1 text-xs">Completed: 8 / 10 sets</p>
             <div className="h-2 bg-gray-700 rounded-full">
               <div className="h-2 bg-[#62E0A1] rounded-full w-[80%]"></div>
             </div>
