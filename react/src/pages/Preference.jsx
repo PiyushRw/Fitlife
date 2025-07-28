@@ -1,9 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import ApiService from '../utils/api';
 import { Listbox } from '@headlessui/react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import FitLifeLogo from '../components/FitLifeLogo';
-import Sidebar from '../components/Sidebar';
 import { useAuth } from '../contexts/AuthContext';
 
 const defaultFormData = {
@@ -41,14 +40,9 @@ const defaultFormData = {
 const Preference = () => {
   const { user, refreshUser } = useAuth();
   const [profileData, setProfileData] = useState(null);
-  const [loadingSidebar, setLoadingSidebar] = useState(true);
-  const [errorSidebar, setErrorSidebar] = useState(null);
-  const navigate = useLocation();
 
   React.useEffect(() => {
     const fetchUserData = async () => {
-      setLoadingSidebar(true);
-      setErrorSidebar(null);
       try {
         const token = localStorage.getItem('fitlife_token');
         if (!token) {
@@ -70,9 +64,7 @@ const Preference = () => {
           throw new Error('Invalid user data received');
         }
       } catch (err) {
-        setErrorSidebar(err.message);
-      } finally {
-        setLoadingSidebar(false);
+        console.error('Error fetching user data:', err.message);
       }
     };
     fetchUserData();
@@ -194,7 +186,7 @@ const Preference = () => {
 
   const [profilePhoto, setProfilePhoto] = useState(profileData?.profilePicture || 'https://storage.googleapis.com/a1aa/image/d2cfe623-1544-4224-2da4-46a005423708.jpg');
 
-  const location = useLocation();
+
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -379,7 +371,7 @@ return (
                 <div className="flex flex-col md:flex-row gap-8 w-full">
                   {/* Left: Profile Photo */}
                   <div className="flex flex-col items-center md:items-start w-full md:w-1/4 gap-4">
-                    <img src={formData.profilePicture || profilePhoto} alt="Profile" className="w-28 h-28 rounded-full border-4 border-[#62E0A1] object-cover shadow-xl border border-white" />
+                    <img src={formData.profilePicture || profilePhoto} alt="Profile" className="w-28 h-28 rounded-full border-4 border-[#62E0A1] object-cover shadow-xl" />
                     <div className="text-center md:text-left w-full">
                       <input 
                         type="file" 
@@ -682,7 +674,7 @@ return (
                           value={formData.otherDietaryPreferences}
                           onChange={handleInputChange}
                           placeholder="Please specify..." 
-                          className="w-full bg-[#1A1A1A] rounded-lg p-4 text-white border border-white focus:outline-none focus:ring-2 focus:ring-[#62E0A1] focus:ring-2 focus:ring-[#62E0A1]/20 text-sm p-3 transition-all mt-3"
+                          className="w-full bg-[#1A1A1A] rounded-lg p-4 text-white border border-white focus:outline-none focus:ring-2 focus:ring-[#62E0A1]/20 text-sm transition-all mt-3"
                         />
                       )}
                     </div>
@@ -720,7 +712,7 @@ return (
                           value={formData.otherHealthFocus}
                           onChange={handleInputChange}
                           placeholder="Please specify..." 
-                          className="w-full bg-[#1A1A1A] rounded-lg p-4 text-white border border-white focus:outline-none focus:ring-2 focus:ring-[#62E0A1] focus:ring-2 focus:ring-[#62E0A1]/20 text-sm p-3 transition-all mt-2"
+                          className="w-full bg-[#1A1A1A] rounded-lg p-4 text-white border border-white focus:outline-none focus:ring-2 focus:ring-[#62E0A1]/20 text-sm transition-all mt-2"
                         />
                       )}
                     </div>
