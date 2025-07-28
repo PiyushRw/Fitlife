@@ -15,16 +15,37 @@ const Profile = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (user) {
-      setProfileData(user);
-      setLoading(false);
+    const fetchUserData = async () => {
+      setLoading(true);
       setError(null);
-    } else {
-      setProfileData(null);
-      setLoading(false);
-      setError(null);
-    }
-  }, [user]);
+      try {
+        const token = localStorage.getItem('fitlife_token');
+        if (!token) {
+          navigate('/login');
+          return;
+        }
+        const response = await fetch('http://127.0.0.1:5001/api/v1/auth/me', {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+        if (!response.ok) {
+          throw new Error('Failed to fetch user data');
+        }
+        const data = await response.json();
+        if (data && data.success && data.data && data.data.user) {
+          setProfileData(data.data.user);
+        } else {
+          throw new Error('Invalid user data received');
+        }
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchUserData();
+  }, [navigate]);
 
   const [isEditing, setIsEditing] = useState(false);
   const [editableProfileData, setEditableProfileData] = useState(profileData);
@@ -86,31 +107,8 @@ const Profile = () => {
     return <div className="text-red-500 p-4">Error: {error}</div>;
   }
 
-  // Show blank user info area if no profileData (user not signed in)
   if (!profileData) {
-    return (
-      <div className="bg-[#121212] text-white font-sans min-h-screen p-4">
-        <div className="flex flex-col md:flex-row gap-4 w-full">
-          <div className="md:w-48 flex-shrink-0">
-            <Sidebar />
-          </div>
-          <main className="flex-1 bg-[#1E1E1E] p-6 rounded-2xl space-y-6 w-full">
-            <p className="text-xs text-gray-400">Home / Dashboard</p>
-            <section className="bg-[#62E0A1] text-black p-6 rounded-xl relative">
-              <div className="flex items-center space-x-4">
-                <div className="bg-[#121212] text-[#62E0A1] rounded-full w-10 h-10 flex items-center justify-center">
-                  <i className="fas fa-smile"></i>
-                </div>
-                <div className="text-sm">
-                  <p className="font-bold">Welcome, User!</p>
-                  <p className="text-xs">Please register or login to see your profile information.</p>
-                </div>
-              </div>
-            </section>
-          </main>
-        </div>
-      </div>
-    );
+    return <div className="text-white p-4">No profile data available.</div>;
   }
 
   return (
