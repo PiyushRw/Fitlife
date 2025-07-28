@@ -1,6 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Link, useLocation } from 'react-router-dom';
+import React, { useState, useEffect, useCallback } from 'react';
+import { useNavigate, Link } from 'react-router-dom';
 import FitLifeLogo from '../components/FitLifeLogo';
 import Sidebar from '../components/Sidebar';
 import CustomDropdown from '../components/CustomDropdown';
@@ -8,35 +7,105 @@ import { useAuth } from '../contexts/AuthContext';
 
 const Profile = () => {
   const { user } = useAuth();
-  const [activeTab, setActiveTab] = useState('overview');
-  const [profileData, setProfileData] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
   const navigate = useNavigate();
 
-  useEffect(() => {
-    if (user) {
-      setProfileData(user);
-      setLoading(false);
-      setError(null);
-    } else {
-      setProfileData(null);
-      setLoading(false);
-      setError(null);
-    }
-  }, [user]);
+  // Core states for authentication and data loading
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [profileData, setProfileData] = useState(null);
+  const [editableProfileData, setEditableProfileData] = useState(null);
 
+  // UI interaction states
+  const [activeTab, setActiveTab] = useState('overview');
   const [isEditing, setIsEditing] = useState(false);
-  const [editableProfileData, setEditableProfileData] = useState(profileData);
   const [showEditModal, setShowEditModal] = useState(false);
 
+  // Profile metrics states
+  const [healthScore, setHealthScore] = useState(78);
+  const [workoutStreak] = useState(7);
+  const [mood] = useState('happy');
+
+  // Workout planner states
+  const [draggedPart, setDraggedPart] = useState(null);
+  const [assigned, setAssigned] = useState({
+    Mon: ['Chest'],
+    Tue: ['Back'],
+    Wed: ['Legs'],
+    Thu: ['Arms'],
+    Fri: ['Shoulders'],
+    Sat: ['Core'],
+    Sun: ['Cardio']
+  });
+
+  // Fetch user data function
+  const fetchUserData = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const token = localStorage.getItem('fitlife_token');
+      if (!token) {
+        navigate('/login', { replace: true });
+        return;
+      }
+      const response = await fetch('http://127.0.0.1:5001/api/v1/auth/me', {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      if (!response.ok) {
+        throw new Error('Failed to fetch user data');
+      }
+      const data = await response.json();
+      if (data && data.success && data.data && data.data.user) {
+        setProfileData(data.data.user);
+      } else {
+        throw new Error('Invalid user data received');
+      }
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  }, [navigate]);
+
+  // Fetch user data on component mount
   useEffect(() => {
-    setEditableProfileData(profileData);
+    fetchUserData();
+  }, [fetchUserData]);
+
+  // Update editable profile data when profile data changes
+  useEffect(() => {
+    if (profileData) {
+      setEditableProfileData(profileData);
+    }
   }, [profileData]);
 
-  const [mood, setMood] = useState('happy');
-  const [workoutStreak] = useState(7);
-  const [healthScore, setHealthScore] = useState(78);
+  // Loading state UI
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-[#121212]">
+        <div className="w-16 h-16 border-4 border-[#62E0A1] border-t-transparent rounded-full animate-spin"></div>
+      </div>
+    );
+  }
+
+  // Error state UI
+  if (error) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen p-4 text-center bg-[#121212]">
+        <div className="p-4 mb-4 text-red-500 bg-red-900/30 rounded-lg">
+          <i className="text-2xl fas fa-exclamation-triangle"></i>
+          <p className="mt-2">{error}</p>
+        </div>
+        <button 
+          onClick={() => window.location.reload()}
+          className="px-4 py-2 text-white bg-[#62E0A1] rounded-lg hover:bg-[#4acd8d] transition-colors"
+        >
+          Retry
+        </button>
+      </div>
+    );
+  }
 
   const updateMoodInsight = () => {
     const moodInsights = {
@@ -66,49 +135,41 @@ const Profile = () => {
   };
 
   const weekDays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-  const [assigned, setAssigned] = useState({
-    Mon: ['Chest'],
-    Tue: ['Back'],
-    Wed: ['Legs'],
-    Thu: ['Arms'],
-    Fri: ['Shoulders'],
-    Sat: ['Core'],
-    Sun: ['Cardio'],
-  });
-  const [draggedPart, setDraggedPart] = useState(null);
-  const location = useLocation();
-
-  if (loading) {
-    return <div className="text-white p-4">Loading profile...</div>;
-  }
 
   if (error) {
-    return <div className="text-red-500 p-4">Error: {error}</div>;
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen p-4 text-center bg-[#121212]">
+        <div className="p-4 mb-4 text-red-500 bg-red-900/30 rounded-lg">
+          <i className="text-2xl fas fa-exclamation-triangle"></i>
+          <p className="mt-2">{error}</p>
+        </div>
+        <button 
+          onClick={() => {
+            setLoading(true);
+            setError(null);
+            fetchUserData();
+          }}
+          className="px-4 py-2 text-white bg-[#62E0A1] rounded-lg hover:bg-[#4acd8d] transition-colors"
+        >
+          Retry
+        </button>
+      </div>
+    );
   }
 
-  // Show blank user info area if no profileData (user not signed in)
   if (!profileData) {
     return (
-      <div className="bg-[#121212] text-white font-sans min-h-screen p-4">
-        <div className="flex flex-col md:flex-row gap-4 w-full">
-          <div className="md:w-48 flex-shrink-0">
-            <Sidebar />
-          </div>
-          <main className="flex-1 bg-[#1E1E1E] p-6 rounded-2xl space-y-6 w-full">
-            <p className="text-xs text-gray-400">Home / Dashboard</p>
-            <section className="bg-[#62E0A1] text-black p-6 rounded-xl relative">
-              <div className="flex items-center space-x-4">
-                <div className="bg-[#121212] text-[#62E0A1] rounded-full w-10 h-10 flex items-center justify-center">
-                  <i className="fas fa-smile"></i>
-                </div>
-                <div className="text-sm">
-                  <p className="font-bold">Welcome, User!</p>
-                  <p className="text-xs">Please register or login to see your profile information.</p>
-                </div>
-              </div>
-            </section>
-          </main>
+      <div className="flex flex-col items-center justify-center min-h-screen p-4 text-center bg-[#121212]">
+        <div className="p-4 mb-4 text-gray-400 bg-gray-800/30 rounded-lg">
+          <i className="text-2xl fas fa-user-slash"></i>
+          <p className="mt-2">No profile data available.</p>
         </div>
+        <button 
+          onClick={() => navigate('/onboarding')}
+          className="px-4 py-2 text-white bg-[#62E0A1] rounded-lg hover:bg-[#4acd8d] transition-colors"
+        >
+          Complete Profile Setup
+        </button>
       </div>
     );
   }
