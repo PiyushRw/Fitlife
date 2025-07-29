@@ -121,8 +121,15 @@ const userSchema = new mongoose.Schema({
   motivation: { type: String, default: '' },
   socialSharing: { type: Boolean, default: true },
   reminders: { type: Boolean, default: true },
-  progressTracking: { type: Boolean, default: true }
+  progressTracking: { type: Boolean, default: true },
 
+  caloriesBurnt: { type: Number, default: 0 },
+  rest: { type: Number, default: 0 },
+  heartRate: { type: Number, default: 0 },
+  maxBench: { type: Number, default: 0 },
+  maxSquat: { type: Number, default: 0 },
+  fiveKTime: { type: String, default: '' },
+  mood: { type: String, enum: ['😄 Happy', '😐 Neutral', '😞 Sad'], default: '😄 Happy' }
 }, {
   timestamps: true,
   toJSON: { virtuals: true },
