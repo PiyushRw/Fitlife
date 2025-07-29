@@ -399,16 +399,18 @@ const Workout = () => {
   const location = useLocation();
 
   return (
-    <div className="min-h-screen bg-[#121212] text-white font-sans p-4">
-      <div className="flex flex-col md:flex-row gap-4 h-full">
-        {/* Sidebar */}
-        <Sidebar 
-          userName={user?.name || user?.fullName || user?.firstName || "User"}
-          profilePhoto={user?.profilePicture || null} // This will trigger the AI avatar fallback if no photo
-        />
+    <div className="bg-[#121212] text-white font-sans min-h-screen p-4">
+      <div className="flex flex-col md:flex-row gap-4 w-full">
+        {/* Sidebar - Full width on mobile, fixed width on desktop */}
+        <div className="md:w-48 flex-shrink-0">
+          <Sidebar 
+            userName={user?.name || user?.fullName || user?.firstName || "User"}
+            profilePhoto={user?.profilePicture || null} // This will trigger the AI avatar fallback if no photo
+          />
+        </div>
 
         {/* Main Content */}
-        <main className="flex-1 bg-[#1E1E1E] p-6 rounded-2xl space-y-6 overflow-y-auto">
+        <main className="flex-1 bg-[#1E1E1E] p-6 rounded-2xl space-y-6 overflow-y-auto w-full">
           <p className="text-xs text-gray-400">Home / Workout Tracker</p>
 
           {/* Welcome */}

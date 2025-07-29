@@ -5,6 +5,7 @@ import { Link, useLocation } from 'react-router-dom';
 import FitLifeLogo from '../components/FitLifeLogo';
 import Sidebar from '../components/Sidebar';
 import { useAuth } from '../contexts/AuthContext';
+import { getAvatarInitials } from '../utils/avatarUtils';
 
 const defaultFormData = {
   name: '',
@@ -81,6 +82,7 @@ const Preference = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [saving, setSaving] = useState(false);
+  const [currentUserName, setCurrentUserName] = useState('');
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -139,10 +141,11 @@ const Preference = () => {
           }
           // Normalization helpers for dropdowns
           const normalize = (val, options) => options.find(opt => (val || '').toLowerCase() === opt.toLowerCase()) || '';
+                    const userName = user.fullName || user.name || (user.firstName ? (user.firstName + (user.lastName ? ' ' + user.lastName : '')) : '');
           setFormData({
             ...defaultFormData,
             ...flatten(user),
-            name: user.fullName || user.name || (user.firstName ? (user.firstName + (user.lastName ? ' ' + user.lastName : '')) : ''),
+            name: userName,
             age: normalize(ageRange || user.age, ['Under 18', '18–30', '31–45', '46–60', '60+']),
             goal: normalize(user.goal, ['Lose weight', 'Gain muscle', 'Improve flexibility', 'Stay active', 'Build strength', 'Improve endurance', 'Maintain fitness', 'Rehabilitation']),
             workout: normalize(user.workout || user.workoutType, ['Calisthenics', 'Yoga', 'Weight training', 'Mixed', 'Cardio', 'HIIT', 'Pilates', 'CrossFit', 'Swimming', 'Running']),
@@ -162,6 +165,7 @@ const Preference = () => {
             weight: (user.weight && user.weight.value) ? user.weight.value : user.weight || '',
             height: (user.height && user.height.value) ? user.height.value : user.height || '',
           });
+          setCurrentUserName(userName);
         }
       } catch (err) {
         setError(err.message || 'Failed to fetch user data');
@@ -192,7 +196,7 @@ const Preference = () => {
     motivation: false
   });
 
-  const [profilePhoto, setProfilePhoto] = useState(profileData?.profilePicture || 'https://storage.googleapis.com/a1aa/image/d2cfe623-1544-4224-2da4-46a005423708.jpg');
+  const [profilePhoto, setProfilePhoto] = useState(profileData?.profilePicture || null);
 
   const location = useLocation();
 
@@ -202,6 +206,11 @@ const Preference = () => {
       ...prev,
       [name]: value
     }));
+    
+    // Update currentUserName when name field changes for real-time AI avatar updates
+    if (name === 'name') {
+      setCurrentUserName(value);
+    }
   };
 
   const handleDropdownToggle = (dropdownName) => {
@@ -326,8 +335,7 @@ const Preference = () => {
     
     // Additional fields for profile compatibility
     gender: formData.gender || '',
-    fitnessGoals: formData.fitnessGoals || [],
-    profilePicture: formData.profilePicture || ''
+    fitnessGoals: formData.fitnessGoals || []
   };
 
   try {
@@ -360,8 +368,8 @@ return (
     <div className="flex">
         {/* Sidebar */}
         <Sidebar
-          userName={profileData?.firstName || profileData?.fullName || formData.name || "User"}
-          profilePhoto={profileData?.profilePicture || formData.profilePicture || null} // This will trigger the AI avatar fallback if no photo
+          userName={currentUserName || profileData?.firstName || profileData?.fullName || formData.name || "User"}
+          profilePhoto={(formData.profilePicture || profilePhoto) || null} // This will trigger the AI avatar fallback if no photo
         />
 
         {/* Main Content */}
@@ -378,31 +386,17 @@ return (
               <div className="bg-[#121212] p-8 rounded-2xl mb-10 shadow-lg border border-gray-800 ml-0">
                 <div className="flex flex-col md:flex-row gap-8 w-full">
                   {/* Left: Profile Photo */}
-                  <div className="flex flex-col items-center md:items-start w-full md:w-1/4 gap-4">
+                  <div className="flex flex-col items-center w-full md:w-1/4 gap-4">
                     {(formData.profilePicture || profilePhoto) ? (
                       <img src={formData.profilePicture || profilePhoto} alt="Profile" className="w-28 h-28 rounded-full border-4 border-[#62E0A1] object-cover shadow-xl border border-white" />
                     ) : (
                       <div className="w-28 h-28 rounded-full border-4 border-[#62E0A1] shadow-xl border border-white bg-gradient-to-br from-[#36CFFF] to-[#62E0A1] flex items-center justify-center">
                         <span className="text-white font-bold text-3xl">
-                          {(() => {
-                            const userName = profileData?.firstName || profileData?.fullName || formData.name || 'U';
-                            if (!userName || userName === 'U') return 'U';
-                            
-                            const nameParts = userName.trim().split(' ');
-                            if (nameParts.length >= 2) {
-                              // If user has first and last name, show first letter of each
-                              const firstName = nameParts[0];
-                              const lastName = nameParts[nameParts.length - 1];
-                              return `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase();
-                            } else {
-                              // If only one name, show first letter
-                              return userName.charAt(0).toUpperCase();
-                            }
-                          })()}
+                          {getAvatarInitials(currentUserName || profileData?.firstName || profileData?.fullName || formData.name || 'U')}
                         </span>
                       </div>
                     )}
-                    <div className="text-center md:text-left w-full">
+                    <div className="text-center w-full">
                       <input 
                         type="file" 
                         accept="image/*" 

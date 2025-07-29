@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link, NavLink, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { getAvatarInitials } from '../utils/avatarUtils';
 
 // Accepts optional props for profile image, user name, and active tab highlight
 const Sidebar = ({ profilePhoto = null, userName = "User" }) => {
@@ -8,26 +9,15 @@ const Sidebar = ({ profilePhoto = null, userName = "User" }) => {
   const { user } = useAuth();
   
   // Use props if provided, otherwise use user data
-  const finalProfilePhoto = profilePhoto || user?.profilePicture || "https://storage.googleapis.com/a1aa/image/d2cfe623-1544-4224-2da4-46a005423708.jpg";
+  const finalProfilePhoto = profilePhoto || user?.profilePicture || null;
   const finalUserName = userName !== "User" ? userName : (user?.firstName || user?.fullName || user?.name || "User");
   
   // Generate AI avatar with first letter of user name and last name if available
   const getAvatarLetter = () => {
-    if (!finalUserName || finalUserName === 'User') return 'U';
-    
-    const nameParts = finalUserName.trim().split(' ');
-    if (nameParts.length >= 2) {
-      // If user has first and last name, show first letter of each
-      const firstName = nameParts[0];
-      const lastName = nameParts[nameParts.length - 1];
-      return `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase();
-    } else {
-      // If only one name, show first letter
-      return finalUserName.charAt(0).toUpperCase();
-    }
+    return getAvatarInitials(finalUserName);
   };
   return (
-    <aside className="flex flex-col bg-[#1E1E1E] w-20 md:w-48 p-3 rounded-2xl h-[30vh] overflow-y-auto">
+    <aside className="flex flex-col bg-[#1E1E1E] w-20 md:w-48 p-3 rounded-2xl h-[30vh]">
       <div className="flex items-center space-x-3 bg-[#121212] p-2 rounded-lg">
         <div className="relative">
           <Link to="/preference" title="Change Photo" className="block">

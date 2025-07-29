@@ -6,6 +6,7 @@ import Sidebar from '../components/Sidebar';
 import CustomDropdown from '../components/CustomDropdown';
 import Spinner from '../components/Spinner';
 import { useAuth } from '../contexts/AuthContext';
+import { getAvatarInitials } from '../utils/avatarUtils';
 
 const Profile = () => {
   const { user } = useAuth();
@@ -240,21 +241,7 @@ const Profile = () => {
             <div className="flex items-center space-x-4">
               <Link to="/preference" title="Change Photo" className="block">
                 <div className="bg-gradient-to-br from-[#36CFFF] to-[#62E0A1] text-white rounded-full w-12 h-12 flex items-center justify-center font-bold text-lg shadow-lg cursor-pointer hover:opacity-80 transition-opacity">
-                  {(() => {
-                    const userName = profileData.fullName || profileData.firstName || 'U';
-                    if (!userName || userName === 'U') return 'U';
-                    
-                    const nameParts = userName.trim().split(' ');
-                    if (nameParts.length >= 2) {
-                      // If user has first and last name, show first letter of each
-                      const firstName = nameParts[0];
-                      const lastName = nameParts[nameParts.length - 1];
-                      return `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase();
-                    } else {
-                      // If only one name, show first letter
-                      return userName.charAt(0).toUpperCase();
-                    }
-                  })()}
+                  {getAvatarInitials(profileData.fullName || profileData.firstName || 'U')}
                 </div>
               </Link>
               <div className="text-sm">
