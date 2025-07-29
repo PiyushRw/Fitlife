@@ -2,7 +2,10 @@ import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import FitLifeLogo from '../components/FitLifeLogo';
 import Sidebar from '../components/Sidebar';
+import NutritionCarousel from '../components/NutritionCarousel';
+import Spinner from '../components/Spinner';
 import { generateDietPlan, analyzeFoodImage } from '../utils/geminiApi';
+import '../components/NutritionCarousel.css';
 
 const Nutrition = () => {
   const [profileData, setProfileData] = useState(null);
@@ -61,6 +64,57 @@ const Nutrition = () => {
   });
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [uploadedImage, setUploadedImage] = useState(null);
+
+  const carouselItems = [
+    {
+      title: "Salmon",
+      subtitle: "Rich in Omega-3",
+      image: "https://images.unsplash.com/photo-1467003909585-2f8a72700288?w=300&h=200&fit=crop",
+      nutrients: ["Omega-3 Fatty Acids", "Vitamin D", "Vitamin B12", "Protein"],
+      benefits: "Supports heart health, brain function, and reduces inflammation. Essential for strong bones and muscle growth.",
+      description: "A powerhouse of nutrition that helps maintain heart health and cognitive function."
+    },
+    {
+      title: "Spinach",
+      subtitle: "Leafy Green Superfood",
+      image: "https://images.unsplash.com/photo-1576045057995-568f588f82fb?w=300&h=200&fit=crop",
+      nutrients: ["Iron", "Vitamin K", "Vitamin C", "Folate"],
+      benefits: "Enhances bone health, improves eye health, and supports immune system.",
+      description: "Packed with iron and vitamins for optimal blood health and immune function."
+    },
+    {
+      title: "Greek Yogurt",
+      subtitle: "Protein-Rich Probiotic",
+      image: "https://images.unsplash.com/photo-1488477181946-6428a0291777?w=300&h=200&fit=crop",
+      nutrients: ["Protein", "Calcium", "Probiotics", "Vitamin B12"],
+      benefits: "Supports gut health, bone strength, and muscle recovery.",
+      description: "Perfect for digestive health and muscle maintenance with beneficial probiotics."
+    },
+    {
+      title: "Sweet Potatoes",
+      subtitle: "Complex Carbohydrate",
+      image: "https://images.unsplash.com/photo-1585939268339-0335c069b4c6?w=300&h=200&fit=crop",
+      nutrients: ["Beta Carotene", "Vitamin C", "Potassium", "Fiber"],
+      benefits: "Promotes eye health, supports immune system, and aids digestion.",
+      description: "Natural source of energy with powerful antioxidant properties."
+    },
+    {
+      title: "Blueberries",
+      subtitle: "Antioxidant Powerhouse",
+      image: "https://images.unsplash.com/photo-1498557850523-fd3d118b962e?w=300&h=200&fit=crop",
+      nutrients: ["Antioxidants", "Vitamin K", "Vitamin C", "Fiber"],
+      benefits: "Improves memory, fights aging, and supports brain health.",
+      description: "Small but mighty berries that boost brain function and heart health."
+    },
+    {
+      title: "Quinoa",
+      subtitle: "Complete Protein Grain",
+      image: "https://images.unsplash.com/photo-1586201375761-83865001e31c?w=300&h=200&fit=crop",
+      nutrients: ["Complete Protein", "Iron", "Fiber", "Magnesium"],
+      benefits: "Supports muscle growth, provides sustained energy, and aids digestion.",
+      description: "Ancient grain that provides all essential amino acids and sustained energy."
+    }
+  ];
 
   const goalOptions = [
     'Weight Loss', 'Muscle Gain', 'Maintain Energy', 'Improve Sleep', 'Balanced Diet'
@@ -192,8 +246,8 @@ const Nutrition = () => {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-[#121212]">
-        <div className="w-16 h-16 border-4 border-[#62E0A1] border-t-transparent rounded-full animate-spin"></div>
+      <div className="bg-[#121212] min-h-screen flex items-center justify-center">
+        <Spinner />
       </div>
     );
   }
@@ -270,42 +324,13 @@ const Nutrition = () => {
             </div>
           </section>
 
-          {/* Marquee Food Card Slider */}
-          <section className="w-full max-w-5xl mx-auto mb-10">
-            <div className="overflow-hidden rounded-xl">
-              <div className="flex gap-6 py-4 animate-marquee">
-                {/* Food cards will be injected here */}
-                <div className="min-w-[360px] max-w-[360px] min-h-[340px] bg-[#121212] rounded-2xl shadow-lg border border-gray-700 flex flex-col items-center justify-center p-6 gap-4">
-                  <img src="https://images.unsplash.com/photo-1490645935967-10de6ba17061?w=135&h=135&fit=crop&crop=center" alt="Weight Loss" className="w-[135px] h-[135px] object-cover rounded-2xl border-3 border-[#62E0A1] bg-[#222] shadow-lg" />
-                  <h3 className="font-bold text-lg text-[#62E0A1] text-center">Weight Loss Plan</h3>
-                  <ul className="space-y-1 text-sm text-gray-300">
-                    <li><span className="font-bold text-[#62E0A1]">Calories:</span> 1,500/day</li>
-                    <li><span className="font-bold text-[#62E0A1]">Protein:</span> 120g/day</li>
-                    <li><span className="font-bold text-[#62E0A1]">Carbs:</span> 150g/day</li>
-                    <li><span className="font-bold text-[#62E0A1]">Fat:</span> 50g/day</li>
-                  </ul>
-                </div>
-                <div className="min-w-[360px] max-w-[360px] min-h-[340px] bg-[#121212] rounded-2xl shadow-lg border border-gray-700 flex flex-col items-center justify-center p-6 gap-4">
-                  <img src="https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=135&h=135&fit=crop&crop=center" alt="Muscle Gain" className="w-[135px] h-[135px] object-cover rounded-2xl border-3 border-[#62E0A1] bg-[#222] shadow-lg" />
-                  <h3 className="font-bold text-lg text-[#62E0A1] text-center">Muscle Gain Plan</h3>
-                  <ul className="space-y-1 text-sm text-gray-300">
-                    <li><span className="font-bold text-[#62E0A1]">Calories:</span> 2,200/day</li>
-                    <li><span className="font-bold text-[#62E0A1]">Protein:</span> 180g/day</li>
-                    <li><span className="font-bold text-[#62E0A1]">Carbs:</span> 250g/day</li>
-                    <li><span className="font-bold text-[#62E0A1]">Fat:</span> 70g/day</li>
-                  </ul>
-                </div>
-                <div className="min-w-[360px] max-w-[360px] min-h-[340px] bg-[#121212] rounded-2xl shadow-lg border border-gray-700 flex flex-col items-center justify-center p-6 gap-4">
-                  <img src="https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=135&h=135&fit=crop&crop=center" alt="Maintenance" className="w-[135px] h-[135px] object-cover rounded-2xl border-3 border-[#62E0A1] bg-[#222] shadow-lg" />
-                  <h3 className="font-bold text-lg text-[#62E0A1] text-center">Maintenance Plan</h3>
-                  <ul className="space-y-1 text-sm text-gray-300">
-                    <li><span className="font-bold text-[#62E0A1]">Calories:</span> 1,800/day</li>
-                    <li><span className="font-bold text-[#62E0A1]">Protein:</span> 140g/day</li>
-                    <li><span className="font-bold text-[#62E0A1]">Carbs:</span> 200g/day</li>
-                    <li><span className="font-bold text-[#62E0A1]">Fat:</span> 60g/day</li>
-                  </ul>
-                </div>
-              </div>
+          {/* 3D Carousel Section */}
+          <section className="w-full max-w-6xl mx-auto mb-6 px-4">
+            <div className="bg-[#121212] rounded-xl p-4">
+              <h2 className="text-xl font-bold text-[#62E0A1] text-center mb-4">
+                Your Nutrition Journey
+              </h2>
+              <NutritionCarousel items={carouselItems} />
             </div>
           </section>
 
@@ -332,9 +357,18 @@ const Nutrition = () => {
                   <button 
                     onClick={analyzeFood}
                     disabled={isAnalyzing || !uploadedImage}
-                    className="bg-[#62E0A1] text-black px-6 py-3 rounded-full font-semibold hover:scale-105 transition shadow-lg hover:shadow-xl w-full disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="bg-[#62E0A1] text-black px-6 py-3 rounded-full font-semibold hover:scale-105 transition shadow-lg hover:shadow-xl w-full disabled:opacity-50 disabled:cursor-not-allowed relative"
                   >
-                    {isAnalyzing ? 'Analyzing...' : 'Analyze Food'}
+                    {isAnalyzing ? (
+                      <div className="flex items-center justify-center gap-2">
+                        <div className="w-5 h-5">
+                          <div className="w-full h-full border-2 border-black border-t-transparent rounded-full animate-spin"></div>
+                        </div>
+                        <span>Analyzing...</span>
+                      </div>
+                    ) : (
+                      'Analyze Food'
+                    )}
                   </button>
                 </div>
                 {/* Nutrition Facts */}
@@ -499,8 +533,19 @@ const Nutrition = () => {
                       className="bg-gradient-to-r from-[#62E0A1] to-[#F2B33D] text-white px-6 py-2 rounded-full font-semibold flex items-center justify-center gap-2 shadow-lg border-2 border-[#F2B33D] hover:scale-105 focus:ring-2 focus:ring-[#F2B33D] focus:ring-opacity-50 transition-all w-full disabled:opacity-50 disabled:cursor-not-allowed" 
                       title="Send"
                     >
-                      <i className={`fas ${isGenerating ? 'fa-spinner fa-spin' : 'fa-paper-plane'} text-lg`}></i>
-                      <span className="hidden md:inline">{isGenerating ? 'Generating...' : 'Send'}</span>
+                      {isGenerating ? (
+                        <div className="flex items-center justify-center gap-2">
+                          <div className="w-5 h-5">
+                            <div className="w-full h-full border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                          </div>
+                          <span className="hidden md:inline">Generating...</span>
+                        </div>
+                      ) : (
+                        <>
+                          <i className="fas fa-paper-plane text-lg"></i>
+                          <span className="hidden md:inline">Send</span>
+                        </>
+                      )}
                     </button>
                   </div>
                 </div>

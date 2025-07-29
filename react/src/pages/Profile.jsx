@@ -4,6 +4,7 @@ import { Link, useLocation } from 'react-router-dom';
 import FitLifeLogo from '../components/FitLifeLogo';
 import Sidebar from '../components/Sidebar';
 import CustomDropdown from '../components/CustomDropdown';
+import Spinner from '../components/Spinner';
 import { useAuth } from '../contexts/AuthContext';
 
 const Profile = () => {
@@ -100,15 +101,27 @@ const Profile = () => {
   const location = useLocation();
 
   if (loading) {
-    return <div className="text-white p-4">Loading profile...</div>;
+    return (
+      <div className="bg-[#121212] min-h-screen flex items-center justify-center">
+        <Spinner />
+      </div>
+    );
   }
 
   if (error) {
-    return <div className="text-red-500 p-4">Error: {error}</div>;
+    return (
+      <div className="bg-[#121212] min-h-screen flex items-center justify-center">
+        <div className="text-red-500 p-4 bg-[#1E1E1E] rounded-xl">Error: {error}</div>
+      </div>
+    );
   }
 
   if (!profileData) {
-    return <div className="text-white p-4">No profile data available.</div>;
+    return (
+      <div className="bg-[#121212] min-h-screen flex items-center justify-center">
+        <div className="text-white p-4 bg-[#1E1E1E] rounded-xl">No profile data available.</div>
+      </div>
+    );
   }
 
   return (

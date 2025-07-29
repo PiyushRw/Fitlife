@@ -108,8 +108,38 @@ const Workout = () => {
     toggleDropdown(type);
   };
 
+  const [doneFormOpenFor, setDoneFormOpenFor] = useState(null);
+  const [doneFormData, setDoneFormData] = useState({ weight: '', satisfied: false });
+
   const removeExercise = (id) => {
     setWorkoutList(prev => prev.filter(exercise => exercise.id !== id));
+  };
+
+  const toggleDoneForm = (id) => {
+    if (doneFormOpenFor === id) {
+      setDoneFormOpenFor(null);
+      setDoneFormData({ weight: '', satisfied: false });
+    } else {
+      setDoneFormOpenFor(id);
+      setDoneFormData({ weight: '', satisfied: false });
+    }
+  };
+
+  const handleDoneFormChange = (e) => {
+    const { name, value, type, checked } = e.target;
+    setDoneFormData(prev => ({
+      ...prev,
+      [name]: type === 'checkbox' ? checked : value
+    }));
+  };
+
+  const handleDoneFormSubmit = (e, exerciseId) => {
+    e.preventDefault();
+    // For now, just log the data
+    console.log(`Exercise ID: ${exerciseId}, Weight: ${doneFormData.weight}, Satisfied: ${doneFormData.satisfied}`);
+    alert(`Submitted for exercise ID ${exerciseId}:\nWeight: ${doneFormData.weight}\nSatisfied: ${doneFormData.satisfied}`);
+    setDoneFormOpenFor(null);
+    setDoneFormData({ weight: '', satisfied: false });
   };
 
   const addExercise = (e) => {
@@ -230,6 +260,30 @@ const Workout = () => {
     return exerciseVideos[exerciseName] || 'https://www.youtube.com/embed/vcBig73ojpE';
   };
 
+  // Helper to get representative exercise for subgroup or muscle group
+  const getRepresentativeExercise = () => {
+    if (selectedExercise !== 'Select Exercise') {
+      return selectedExercise;
+    }
+    if (selectedSubgroup !== 'Select Subgroup') {
+      const exercises = exerciseOptions[selectedSubgroup];
+      if (exercises && exercises.length > 0) {
+        return exercises[0];
+      }
+    }
+    if (selectedMuscleGroup !== 'Select Muscle Group') {
+      const subgroups = subgroupOptions[selectedMuscleGroup];
+      if (subgroups && subgroups.length > 0) {
+        const firstSubgroup = subgroups[0];
+        const exercises = exerciseOptions[firstSubgroup];
+        if (exercises && exercises.length > 0) {
+          return exercises[0];
+        }
+      }
+    }
+    return null;
+  };
+
   const getAIRecommendations = async () => {
     if (selectedMuscleGroup === 'Select Muscle Group') {
       alert('Please select a muscle group first');
@@ -244,6 +298,12 @@ const Workout = () => {
         userPreferences.experience.toLowerCase()
       );
       setAiRecommendations(recommendations.exercises || []);
+
+      // Update video based on selected muscle group/subgroup/exercise
+      const exerciseForVideo = getRepresentativeExercise();
+      if (exerciseForVideo) {
+        setCurrentVideoUrl(generateVideoUrl(exerciseForVideo));
+      }
     } catch (error) {
       console.error('Error getting AI recommendations:', error);
       alert('Failed to get AI recommendations. Please try again.');
@@ -361,17 +421,65 @@ const Workout = () => {
             </div>
             <ul className="mt-4 space-y-3 text-sm">
               {workoutList.map((exercise) => (
-                <li key={exercise.id} className="flex items-center justify-between pb-2 border-b border-gray-700">
-                  <div className="flex flex-col md:flex-row md:items-center md:gap-4">
-                    <span>{exercise.name}</span>
-                    <span>{exercise.sets} x {exercise.reps}</span>
+                <li key={exercise.id} className="pb-2 border-b border-gray-700">
+                  <div className="flex flex-col md:flex-row md:items-center md:gap-4 justify-between">
+                    <div className="flex flex-col md:flex-row md:items-center md:gap-4">
+                      <span>{exercise.name}</span>
+                      <span>{exercise.sets} x {exercise.reps}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <button 
+                        onClick={() => removeExercise(exercise.id)}
+                        className="text-xs text-red-500 hover:text-red-700"
+                      >
+                        <i className="fas fa-trash"></i>
+                      </button>
+                      <button
+                        onClick={() => toggleDoneForm(exercise.id)}
+                        className="text-xs bg-[#62E0A1] text-black px-3 py-1 rounded-full hover:bg-[#4bbd8a] transition"
+                      >
+                        Done
+                      </button>
+                    </div>
                   </div>
-                  <button 
-                    onClick={() => removeExercise(exercise.id)}
-                    className="ml-4 text-xs text-red-500 hover:text-red-700"
-                  >
-                    <i className="fas fa-trash"></i>
-                  </button>
+                  {doneFormOpenFor === exercise.id && (
+                    <form 
+                      onSubmit={(e) => handleDoneFormSubmit(e, exercise.id)} 
+                      className="mt-2 p-4 bg-[#23272e] rounded-xl space-y-3"
+                    >
+                      <div>
+                        <label className="block text-sm mb-1" htmlFor={`weight-${exercise.id}`}>Today's Weight Lifted</label>
+                        <input
+                          id={`weight-${exercise.id}`}
+                          name="weight"
+                          type="number"
+                          value={doneFormData.weight}
+                          onChange={handleDoneFormChange}
+                          className="w-full p-2 rounded bg-[#1E1E1E] border border-gray-600 text-white"
+                          min="0"
+                          step="any"
+                          required
+                        />
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <input
+                          id={`satisfied-${exercise.id}`}
+                          name="satisfied"
+                          type="checkbox"
+                          checked={doneFormData.satisfied}
+                          onChange={handleDoneFormChange}
+                          className="w-4 h-4"
+                        />
+                        <label htmlFor={`satisfied-${exercise.id}`} className="text-sm select-none">Satisfied with progress</label>
+                      </div>
+                      <button
+                        type="submit"
+                        className="bg-[#62E0A1] text-black px-4 py-2 rounded-full font-semibold hover:bg-[#4bbd8a] transition"
+                      >
+                        Submit
+                      </button>
+                    </form>
+                  )}
                 </li>
               ))}
             </ul>

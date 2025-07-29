@@ -2,6 +2,11 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Import Swiper styles */
+@import 'swiper/css';
+@import 'swiper/css/effect-coverflow';
+@import 'swiper/css/pagination';
+
 /* Custom styles for the FitLife app */
 html, body {
   margin: 0;
