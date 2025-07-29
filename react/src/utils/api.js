@@ -186,6 +186,30 @@ class ApiService {
       method: 'DELETE',
     });
   }
+
+  // Create a new exercise
+  static async createExercise(exerciseData) {
+    return this.makeRequest('/workouts/exercises', {
+      method: 'POST',
+      body: JSON.stringify(exerciseData),
+    });
+  }
+
+  // Create a new workout
+  static async createWorkout(workoutData) {
+    return this.makeRequest('/workouts', {
+      method: 'POST',
+      body: JSON.stringify(workoutData),
+    });
+  }
+
+  // Generate AI workout and save to database
+  static async generateAIWorkout(userPreferences, aiWorkoutData) {
+    return this.makeRequest('/workouts/ai-generate', {
+      method: 'POST',
+      body: JSON.stringify({ userPreferences, aiWorkoutData }),
+    });
+  }
 }
 
 export default ApiService;

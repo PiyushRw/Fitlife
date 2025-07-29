@@ -1,6 +1,7 @@
 import express from 'express';
 import { protect, optionalAuth } from '../middleware/auth.js';
 import { FoodItem, Meal, NutritionPlan } from '../models/Nutrition.js';
+import { saveAINutritionPlan, analyzeFoodAndSave, getMyFoodItems } from '../controllers/NutritionController.js';
 
 const router = express.Router();
 
@@ -97,6 +98,11 @@ router.post('/plans', protect, async (req, res, next) => {
   }
 });
 
+// @desc    Save AI-generated nutrition plan
+// @route   POST /api/v1/nutrition/save-ai-plan
+// @access  Private
+router.post('/save-ai-plan', protect, saveAINutritionPlan);
+
 // @desc    Get all food items
 // @route   GET /api/v1/nutrition/foods
 // @access  Public
@@ -171,6 +177,79 @@ router.get('/my-plans', protect, async (req, res, next) => {
       success: true,
       count: plans.length,
       data: plans
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
+// @desc    Get user's AI-generated nutrition plans
+// @route   GET /api/v1/nutrition/ai-plans
+// @access  Private
+router.get('/ai-plans', protect, async (req, res, next) => {
+  try {
+    const plans = await NutritionPlan.find({ 
+      createdBy: req.user.id,
+      title: { $regex: /^AI/, $options: 'i' }
+    }).sort({ createdAt: -1 });
+
+    res.status(200).json({
+      success: true,
+      count: plans.length,
+      data: plans
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
+// @desc    Analyze food image and save to database
+// @route   POST /api/v1/nutrition/analyze-food
+// @access  Private
+router.post('/analyze-food', protect, analyzeFoodAndSave);
+
+// @desc    Get user's custom food items
+// @route   GET /api/v1/nutrition/my-foods
+// @access  Private
+router.get('/my-foods', protect, getMyFoodItems);
+
+// @desc    Get user's meals
+// @route   GET /api/v1/nutrition/my-meals
+// @access  Private
+router.get('/my-meals', protect, async (req, res, next) => {
+  try {
+    const { page = 1, limit = 20, type, search } = req.query;
+    
+    const query = {};
+    
+    if (type) query.type = type;
+    if (search) {
+      query.$or = [
+        { name: { $regex: search, $options: 'i' } },
+        { notes: { $regex: search, $options: 'i' } }
+      ];
+    }
+
+    const skip = (parseInt(page) - 1) * parseInt(limit);
+    
+    const meals = await Meal.find(query)
+      .populate('foods.food', 'name category nutrients')
+      .sort({ createdAt: -1 })
+      .limit(parseInt(limit))
+      .skip(skip);
+
+    const total = await Meal.countDocuments(query);
+
+    res.status(200).json({
+      success: true,
+      count: meals.length,
+      pagination: {
+        page: parseInt(page),
+        limit: parseInt(limit),
+        total,
+        pages: Math.ceil(total / parseInt(limit))
+      },
+      data: meals
     });
   } catch (error) {
     next(error);

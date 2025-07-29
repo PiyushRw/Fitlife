@@ -4,6 +4,7 @@ import FitLifeLogo from '../components/FitLifeLogo';
 import { generateWorkoutPlan, getExerciseRecommendations } from '../utils/geminiApi';
 import CustomDropdown from '../components/CustomDropdown';
 import { useAuth } from '../contexts/AuthContext';
+import ApiService from '../utils/api';
 import Sidebar from '../components/Sidebar';
 
 
@@ -114,52 +115,71 @@ const Workout = () => {
     setWorkoutList(prev => prev.filter(exercise => exercise.id !== id));
   };
 
-  const toggleDoneForm = (id) => {
-    if (doneFormOpenFor === id) {
-      setDoneFormOpenFor(null);
-      setDoneFormData({ weight: '', satisfied: false });
-    } else {
-      setDoneFormOpenFor(id);
-      setDoneFormData({ weight: '', satisfied: false });
-    }
-  };
-
-  const handleDoneFormChange = (e) => {
-    const { name, value, type, checked } = e.target;
-    setDoneFormData(prev => ({
-      ...prev,
-      [name]: type === 'checkbox' ? checked : value
-    }));
-  };
-
-  const handleDoneFormSubmit = (e, exerciseId) => {
-    e.preventDefault();
-    // For now, just log the data
-    console.log(`Exercise ID: ${exerciseId}, Weight: ${doneFormData.weight}, Satisfied: ${doneFormData.satisfied}`);
-    alert(`Submitted for exercise ID ${exerciseId}:\nWeight: ${doneFormData.weight}\nSatisfied: ${doneFormData.satisfied}`);
-    setDoneFormOpenFor(null);
-    setDoneFormData({ weight: '', satisfied: false });
-  };
-
-  const addExercise = (e) => {
+  const addExercise = async (e) => {
     e.preventDefault();
     if (modalExercise === 'Select Exercise' || !modalSets || !modalReps) {
       alert('Please fill in all fields');
       return;
     }
     
-    const newExercise = {
-      id: Date.now(),
-      name: modalExercise,
-      sets: parseInt(modalSets),
-      reps: parseInt(modalReps)
-    };
-    
-    setWorkoutList(prev => [...prev, newExercise]);
-    setModalExercise('Select Exercise');
-    setModalSets('');
-    setModalReps('');
-    setShowAddModal(false);
+    try {
+      // Create exercise data for database
+      const exerciseData = {
+        name: modalExercise,
+        description: `${modalExercise} exercise with ${modalSets} sets and ${modalReps} reps`,
+        category: 'strength',
+        muscleGroups: ['full-body'], // Default to full-body, can be enhanced later
+        equipment: ['bodyweight'], // Default to bodyweight, can be enhanced later
+        difficulty: 'beginner',
+        instructions: [
+          `Perform ${modalExercise}`,
+          `Complete ${modalSets} sets`,
+          `Do ${modalReps} repetitions per set`,
+          'Focus on proper form and controlled movements'
+        ],
+        estimatedDuration: 5
+      };
+
+      // Save exercise to database
+      const response = await ApiService.createExercise(exerciseData);
+      
+      if (response.success) {
+        console.log('✅ Exercise saved to database:', response.data);
+        
+        // Add to local workout list
+        const newExercise = {
+          id: Date.now(),
+          name: modalExercise,
+          sets: parseInt(modalSets),
+          reps: parseInt(modalReps),
+          exerciseId: response.data._id // Store the database ID
+        };
+        
+        setWorkoutList(prev => [...prev, newExercise]);
+        setModalExercise('Select Exercise');
+        setModalSets('');
+        setModalReps('');
+        setShowAddModal(false);
+        
+        // Exercise saved successfully (no alert - silent backend operation)
+      }
+    } catch (error) {
+      console.error('❌ Error saving exercise to database:', error);
+      
+      // Still add to local list even if database save fails (silent operation)
+      const newExercise = {
+        id: Date.now(),
+        name: modalExercise,
+        sets: parseInt(modalSets),
+        reps: parseInt(modalReps)
+      };
+      
+      setWorkoutList(prev => [...prev, newExercise]);
+      setModalExercise('Select Exercise');
+      setModalSets('');
+      setModalReps('');
+      setShowAddModal(false);
+    }
   };
 
   const getCurrentSubgroupOptions = () => {
@@ -324,6 +344,33 @@ const Workout = () => {
       const workoutPlan = await generateWorkoutPlan(userPreferences);
       if (workoutPlan.workoutPlan && workoutPlan.workoutPlan.exercises) {
         setAiRecommendations(workoutPlan.workoutPlan.exercises);
+        
+        // Transform the data to match backend expectations
+        const transformedExercises = workoutPlan.workoutPlan.exercises.map(exercise => ({
+          name: exercise.name,
+          description: exercise.instructions || `${exercise.name} exercise`,
+          muscleGroups: exercise.targetMuscles || ['full-body'],
+          equipment: ['bodyweight'], // Default equipment
+          difficulty: userPreferences.experience || 'intermediate',
+          sets: exercise.sets || 3,
+          reps: parseInt(exercise.reps) || 10, // Convert string to number
+          rest: parseInt(exercise.restTime) || 60, // Convert string to number
+          instructions: exercise.instructions ? [exercise.instructions] : [`Perform ${exercise.name}`],
+          estimatedDuration: 5, // Default duration
+          notes: exercise.tips || ''
+        }));
+        
+        // Save AI workout to database
+        try {
+          const response = await ApiService.generateAIWorkout(userPreferences, { exercises: transformedExercises });
+          if (response.success) {
+            console.log('✅ AI workout saved to database:', response.data.workout._id);
+            console.log(`✅ ${response.data.exercisesCount} exercises saved`);
+          }
+        } catch (dbError) {
+          console.error('❌ Error saving AI workout to database:', dbError);
+          // Continue with local state even if database save fails
+        }
       }
     } catch (error) {
       console.error('Error generating workout plan:', error);
@@ -353,7 +400,10 @@ const Workout = () => {
     <div className="min-h-screen bg-[#121212] text-white font-sans p-4">
       <div className="flex flex-col md:flex-row gap-4 h-full">
         {/* Sidebar */}
-        <Sidebar />
+        <Sidebar 
+          userName={user?.name || user?.fullName || user?.firstName || "User"}
+          profilePhoto={user?.profilePicture || null} // This will trigger the AI avatar fallback if no photo
+        />
 
         {/* Main Content */}
         <main className="flex-1 bg-[#1E1E1E] p-6 rounded-2xl space-y-6 overflow-y-auto">
