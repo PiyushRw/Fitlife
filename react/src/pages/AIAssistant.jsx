@@ -13,60 +13,9 @@ const AIAssistant = () => {
   const [inputMessage, setInputMessage] = useState('');
   const [selectedFiles, setSelectedFiles] = useState([]);
   const [isTyping, setIsTyping] = useState(false);
-  const [conversations, setConversations] = useState([]);
-  const [currentSession, setCurrentSession] = useState(null);
   const [isClosing, setIsClosing] = useState(false);
   const chatAreaRef = useRef(null);
   const fileInputRef = useRef(null);
-
-  // Load conversations from localStorage on mount and fetch from backend
-  useEffect(() => {
-    const fetchChatHistory = async () => {
-      try {
-        const token = localStorage.getItem('token');
-        if (!token) {
-          console.warn('No auth token found, skipping fetch chat history');
-          return;
-        }
-        const res = await fetch('/api/v1/ai-assistant/chat-history', {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${token}`
-          }
-        });
-        const data = await res.json();
-        if (data.success) {
-          // Map backend chat history to conversation format
-          const backendConversations = data.data.map((chat) => ({
-            id: chat._id,
-            title: chat.question.substring(0, 30) + (chat.question.length > 30 ? '...' : ''),
-            messages: [
-              { id: chat._id + '-q', type: 'user', content: chat.question },
-              { id: chat._id + '-r', type: 'ai', content: chat.response }
-            ],
-            timestamp: chat.createdAt,
-            lastMessage: chat.response
-          }));
-          setConversations(backendConversations);
-          if (backendConversations.length > 0) {
-            setCurrentSession(backendConversations[0].id);
-            setMessages(backendConversations[0].messages);
-          }
-        } else {
-          console.error('Failed to fetch chat history:', data.error);
-        }
-      } catch (error) {
-        console.error('Error fetching chat history:', error);
-      }
-    };
-
-    fetchChatHistory();
-
-    // Also load localStorage conversations as fallback
-    const savedConversations = JSON.parse(localStorage.getItem('fitlife_chat_history') || '[]');
-    setConversations(savedConversations);
-  }, []);
 
   // Scroll to bottom of chat area when messages update
   useEffect(() => {
@@ -97,102 +46,10 @@ const AIAssistant = () => {
     setIsOpen(!isOpen);
   };
 
-  // Format timestamp for conversations
-  const getTimeAgo = (date) => {
-    const now = new Date();
-    const diffInMinutes = Math.floor((now - new Date(date)) / (1000 * 60));
-    if (diffInMinutes < 1) return 'Just now';
-    if (diffInMinutes < 60) return `${diffInMinutes} min ago`;
-    if (diffInMinutes < 1440) return `${Math.floor(diffInMinutes / 60)} hours ago`;
-    return `${Math.floor(diffInMinutes / 1440)} days ago`;
-  };
-
-  // Save conversation to localStorage
-  const saveConversation = (title, messages) => {
-    const conversation = {
-      id: Date.now().toString(),
-      title: title,
-      messages: messages,
-      timestamp: new Date().toISOString(),
-      lastMessage: messages[messages.length - 1]?.content || ''
-    };
-    const updatedConversations = [conversation, ...conversations.slice(0, 49)]; // Limit to 50 conversations
-    setConversations(updatedConversations);
-    localStorage.setItem('fitlife_chat_history', JSON.stringify(updatedConversations));
-  };
-
-  // Load a conversation from history
-  const loadConversation = (conversationId) => {
-    const conversation = conversations.find((c) => c.id === conversationId);
-    if (!conversation) return;
-    setCurrentSession(conversationId);
-    setMessages(conversation.messages);
-  };
-
-  // Delete a conversation
-  const deleteConversation = (conversationId) => {
-    const updatedConversations = conversations.filter((c) => c.id !== conversationId);
-    setConversations(updatedConversations);
-    localStorage.setItem('fitlife_chat_history', JSON.stringify(updatedConversations));
-    if (currentSession === conversationId) {
-      setCurrentSession(null);
-      setMessages([
-        {
-          id: 1,
-          type: 'ai',
-          content:
-            "Hi there! I'm your FitLife AI Companion! 💪 How can I help you with your fitness goals today? You can ask about workouts, nutrition, or upload a workout photo for form analysis."
-        }
-      ]);
-    }
-  };
-
-  // Clear all conversation history
-  const clearHistory = () => {
-    if (window.confirm('Are you sure you want to clear all chat history?')) {
-      setConversations([]);
-      localStorage.removeItem('fitlife_chat_history');
-      setCurrentSession(null);
-      setMessages([
-        {
-          id: 1,
-          type: 'ai',
-          content:
-            "Hi there! I'm your FitLife AI Companion! 💪 How can I help you with your fitness goals today? You can ask about workouts, nutrition, or upload a workout photo for form analysis."
-        }
-      ]);
-    }
-  };
-
   // Handle file input change
   const handleFileChange = (e) => {
     const files = Array.from(e.target.files);
     setSelectedFiles(files);
-  };
-
-  // Save chat message to backend
-  const saveChatToBackend = async (question, response) => {
-    try {
-      const token = localStorage.getItem('token'); // Assuming token is stored in localStorage
-      if (!token) {
-        console.warn('No auth token found, skipping chat save');
-        return;
-      }
-      const res = await fetch('/api/v1/ai-assistant/save-chat', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`
-        },
-        body: JSON.stringify({ question, response })
-      });
-      const data = await res.json();
-      if (!data.success) {
-        console.error('Failed to save chat:', data.error);
-      }
-    } catch (error) {
-      console.error('Error saving chat to backend:', error);
-    }
   };
 
   // Handle form submission
@@ -203,10 +60,6 @@ const AIAssistant = () => {
     if (!inputMessage.trim() && selectedFiles.length === 0) {
       console.log('No input or files, exiting');
       return;
-    }
-
-    if (!currentSession) {
-      setCurrentSession(Date.now().toString());
     }
 
     const newMessages = [...messages];
@@ -257,7 +110,7 @@ const AIAssistant = () => {
               const errorMessage = {
                 id: Date.now() + Math.random(),
                 type: 'ai',
-                content: "I couldn’t analyze the image. Please try again or describe your workout!"
+                content: "I couldn't analyze the image. Please try again or describe your workout!"
               };
               setMessages((prev) => [...prev, errorMessage]);
             }
@@ -291,12 +144,6 @@ const AIAssistant = () => {
           content: chatResponse.response
         };
         setMessages((prev) => [...prev, aiResponse]);
-        const allMessages = [...newMessages, aiResponse];
-        const title = userMessage.substring(0, 30) + (userMessage.length > 30 ? '...' : '');
-        saveConversation(title, allMessages);
-
-        // Save chat to backend
-        await saveChatToBackend(userMessage, chatResponse.response);
       } catch (error) {
         console.error('Chat response error:', error);
         const errorResponse = {
@@ -309,10 +156,6 @@ const AIAssistant = () => {
       setIsTyping(false);
     }
   };
-
-  // Calculate storage usage
-  const totalSize = conversations.reduce((sum, conv) => sum + JSON.stringify(conv).length, 0);
-  const storageUsed = (totalSize / 1024 / 1024).toFixed(1) + ' MB';
 
   // Handle close with animation
   const handleClose = () => {
@@ -365,55 +208,11 @@ const AIAssistant = () => {
           </button>
         </div>
 
-        {/* Conversation History Sidebar */}
-        <div className="mb-4">
-          <div className="flex items-center justify-between">
-            <h4 className="text-sm font-semibold text-white">Chat History</h4>
-            <button
-              onClick={clearHistory}
-              className="text-[#F2B33D] hover:text-yellow-400 text-xs transition"
-            >
-              <i className="fas fa-trash"></i> Clear
-            </button>
-          </div>
-          <div className="max-h-24 overflow-y-auto mt-2">
-            {conversations.map((conv) => (
-              <div
-                key={conv.id}
-                className="bg-[#121212] p-2 rounded-lg cursor-pointer hover:bg-gray-700 transition group mt-1"
-                onClick={() => loadConversation(conv.id)}
-              >
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <span className="text-lg">💬</span>
-                    <div>
-                      <p className="text-xs font-medium text-white">{conv.title}</p>
-                      <p className="text-xs text-gray-400">{getTimeAgo(conv.timestamp)}</p>
-                    </div>
-                  </div>
-                  <button
-                    className="text-red-500 hover:text-red-400 text-xs opacity-0 group-hover:opacity-100 transition"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      deleteConversation(conv.id);
-                    }}
-                  >
-                    <i className="fas fa-times"></i>
-                  </button>
-                </div>
-              </div>
-            ))}
-          </div>
-          <div className="mt-2 text-xs text-gray-400">
-            Total conversations: {conversations.length} | {storageUsed}
-          </div>
-        </div>
-
         {/* Chat Area */}
         <div
           ref={chatAreaRef}
           className="flex-1 overflow-y-auto my-2 px-1"
-          style={{ maxHeight: '270px' }}
+          style={{ maxHeight: '350px' }}
         >
           {messages.map((message) => (
             <div
