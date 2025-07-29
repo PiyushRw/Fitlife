@@ -471,7 +471,7 @@ const Nutrition = () => {
               <div className="bg-gradient-to-r from-[#62E0A1] to-[#36CFFF] text-black rounded-full w-6 h-6 flex items-center justify-center mr-2">
                 <i className="fas fa-chart-line text-xs"></i>
               </div>
-              <h2 className="text-lg font-bold text-[#62E0A1]">Your's Intake</h2>
+              <h2 className="text-lg font-bold text-[#62E0A1]">Your Intakes</h2>
             </div>
             
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
