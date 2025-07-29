@@ -228,14 +228,6 @@ export const saveNutritionRecommendation = async (req, res, next) => {
       notes: 'This meal plan provides a balanced mix of protein, carbohydrates, and healthy fats.'
     };
 
-    // Save to Chat for conversation history
-    const chat = await Chat.create({
-      userId: req.user.id,
-      type: 'nutrition-recommendation',
-      content: recommendation,
-      metadata: { goal, dietaryRestrictions, targetCalories, mealCount }
-    });
-
     // AUTOMATIC: Create and save individual meals to meals collection
     const createdMeals = [];
     console.log('🍽️ Starting meal creation process...');
@@ -351,7 +343,6 @@ export const saveNutritionRecommendation = async (req, res, next) => {
           height: user.height,
           fitnessGoals: user.fitnessGoals
         },
-        chatId: chat._id,
         nutritionPlanId: nutritionPlan._id,
         createdMeals: createdMeals.map(meal => ({
           id: meal._id,
