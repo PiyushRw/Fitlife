@@ -463,32 +463,63 @@ const Nutrition = () => {
             </div>
           </section>
 
-          {/* Calorie Intake Section */}
-          <section className="bg-[#121212] p-4 rounded-xl mt-8">
-            <p className="mb-2 text-sm font-semibold">Calorie Intake</p>
-            <div className="grid grid-cols-4 mb-2 text-xs">
-              <div></div>
-              <div className="font-semibold text-center">Total</div>
-              <div className="font-semibold text-center">Goal</div>
-              <div className="font-semibold text-center">Left</div>
+          {/* Your's Intake Section */}
+          <section className="bg-[#121212] p-6 rounded-xl mt-8 border border-gray-800 shadow-lg">
+            <div className="flex items-center mb-4">
+              <div className="bg-gradient-to-r from-[#62E0A1] to-[#36CFFF] text-black rounded-full w-8 h-8 flex items-center justify-center mr-3">
+                <i className="fas fa-chart-line text-sm"></i>
+              </div>
+              <h3 className="text-lg font-bold text-[#62E0A1]">Your's Intake</h3>
             </div>
-            <div className="flex justify-between mb-1 text-xs">
-              <span>Calories</span><span>2200</span><span>2000</span><span>-200</span>
-            </div>
-            <div className="h-1 bg-gray-700 rounded-full">
-              <div className="h-1 bg-[#62E0A1] rounded-full w-[90%]"></div>
-            </div>
-            <div className="flex justify-between mt-2 mb-1 text-xs">
-              <span>Proteins</span><span>150</span><span>200</span><span>70</span>
-            </div>
-            <div className="h-1 bg-gray-700 rounded-full">
-              <div className="h-1 bg-[#36CFFF] rounded-full w-[75%]"></div>
-            </div>
-            <div className="flex justify-between mt-2 mb-1 text-xs">
-              <span>Carbohydrates</span><span>250</span><span>300</span><span>15</span>
-            </div>
-            <div className="h-1 bg-gray-700 rounded-full">
-              <div className="h-1 bg-[#F2B33D] rounded-full w-[83%]"></div>
+            
+            <div className="space-y-4">
+              {/* Calories */}
+              <div className="bg-[#1A1A1A] p-4 rounded-lg border border-gray-700">
+                <div className="flex justify-between items-center mb-2">
+                  <span className="text-sm font-semibold text-gray-300">Calories</span>
+                  <div className="flex space-x-4 text-xs">
+                    <span className="text-[#62E0A1] font-medium">2200</span>
+                    <span className="text-gray-400">/</span>
+                    <span className="text-gray-300">2000</span>
+                    <span className="text-red-400">-200</span>
+                  </div>
+                </div>
+                <div className="h-2 bg-gray-700 rounded-full overflow-hidden">
+                  <div className="h-2 bg-gradient-to-r from-[#62E0A1] to-[#36CFFF] rounded-full w-[90%] transition-all duration-300"></div>
+                </div>
+              </div>
+
+              {/* Proteins */}
+              <div className="bg-[#1A1A1A] p-4 rounded-lg border border-gray-700">
+                <div className="flex justify-between items-center mb-2">
+                  <span className="text-sm font-semibold text-gray-300">Proteins</span>
+                  <div className="flex space-x-4 text-xs">
+                    <span className="text-[#36CFFF] font-medium">150g</span>
+                    <span className="text-gray-400">/</span>
+                    <span className="text-gray-300">200g</span>
+                    <span className="text-blue-400">+50g</span>
+                  </div>
+                </div>
+                <div className="h-2 bg-gray-700 rounded-full overflow-hidden">
+                  <div className="h-2 bg-gradient-to-r from-[#36CFFF] to-[#62E0A1] rounded-full w-[75%] transition-all duration-300"></div>
+                </div>
+              </div>
+
+              {/* Carbohydrates */}
+              <div className="bg-[#1A1A1A] p-4 rounded-lg border border-gray-700">
+                <div className="flex justify-between items-center mb-2">
+                  <span className="text-sm font-semibold text-gray-300">Carbohydrates</span>
+                  <div className="flex space-x-4 text-xs">
+                    <span className="text-[#F2B33D] font-medium">250g</span>
+                    <span className="text-gray-400">/</span>
+                    <span className="text-gray-300">300g</span>
+                    <span className="text-yellow-400">+50g</span>
+                  </div>
+                </div>
+                <div className="h-2 bg-gray-700 rounded-full overflow-hidden">
+                  <div className="h-2 bg-gradient-to-r from-[#F2B33D] to-[#FF6B35] rounded-full w-[83%] transition-all duration-300"></div>
+                </div>
+              </div>
             </div>
           </section>
 

@@ -1048,7 +1048,6 @@ return (
         </main>
       </div>
     </div>
-  </div>
   );
 };
 
