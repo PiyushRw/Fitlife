@@ -314,4 +314,91 @@ export const createExercise = async (req, res, next) => {
   } catch (error) {
     next(error);
   }
+};
+
+// @desc    Generate AI workout and save to database
+// @route   POST /api/v1/workouts/ai-generate
+// @access  Private
+export const generateAIWorkout = async (req, res, next) => {
+  try {
+    const { userPreferences, aiWorkoutData } = req.body;
+    
+    console.log('🏋️ Starting AI workout generation and database save...');
+    console.log('User preferences:', userPreferences);
+    console.log('AI workout data:', aiWorkoutData);
+
+    // Create workout data structure
+    const workoutData = {
+      title: `AI Generated Workout - ${new Date().toLocaleDateString()}`,
+      description: `AI-generated workout based on your preferences: ${userPreferences.goals.join(', ')}`,
+      type: 'mixed', // Default type for AI workouts
+      difficulty: userPreferences.experience.toLowerCase(),
+      duration: 45, // Default duration, can be enhanced
+      exercises: [],
+      tags: ['ai-generated', ...userPreferences.goals, userPreferences.experience],
+      createdBy: req.user.id,
+      isTemplate: true
+    };
+
+    // Process AI workout exercises
+    if (aiWorkoutData && aiWorkoutData.exercises) {
+      console.log('Processing AI workout exercises...');
+      
+      for (const aiExercise of aiWorkoutData.exercises) {
+        try {
+          // Create or find exercise
+          let exercise = await Exercise.findOne({ name: aiExercise.name });
+          
+          if (!exercise) {
+            console.log(`Creating new exercise: ${aiExercise.name}`);
+            exercise = await Exercise.create({
+              name: aiExercise.name,
+              description: aiExercise.description || `${aiExercise.name} exercise`,
+              category: 'strength', // Default category
+              muscleGroups: aiExercise.muscleGroups || ['full-body'],
+              equipment: aiExercise.equipment || ['bodyweight'],
+              difficulty: userPreferences.experience.toLowerCase(),
+              instructions: aiExercise.instructions || [
+                `Perform ${aiExercise.name}`,
+                'Focus on proper form',
+                'Control your movements'
+              ],
+              estimatedDuration: 5 // Default duration
+            });
+            console.log(`Exercise created: ${exercise._id}`);
+          }
+
+          // Add exercise to workout
+          workoutData.exercises.push({
+            exercise: exercise._id,
+            sets: aiExercise.sets || 3,
+            reps: aiExercise.reps || 10,
+            rest: 60, // Default rest time
+            notes: aiExercise.notes || ''
+          });
+        } catch (exerciseError) {
+          console.error(`Error processing exercise ${aiExercise.name}:`, exerciseError);
+          // Continue with other exercises even if one fails
+        }
+      }
+    }
+
+    // Create the workout
+    console.log('Creating workout with exercises:', workoutData.exercises.length);
+    const workout = await Workout.create(workoutData);
+
+    console.log('✅ AI workout created successfully:', workout._id);
+
+    res.status(201).json({
+      success: true,
+      message: 'AI workout generated and saved successfully',
+      data: {
+        workout: workout,
+        exercisesCount: workoutData.exercises.length
+      }
+    });
+  } catch (error) {
+    console.error('❌ Error generating AI workout:', error);
+    next(error);
+  }
 }; 

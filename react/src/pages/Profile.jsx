@@ -13,6 +13,7 @@ const Profile = () => {
   const [profileData, setProfileData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [currentDate, setCurrentDate] = useState(new Date());
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -47,6 +48,15 @@ const Profile = () => {
     };
     fetchUserData();
   }, [navigate]);
+
+  // Update current date every second for real-time display
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentDate(new Date());
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, []);
 
   const [isEditing, setIsEditing] = useState(false);
   const [editableProfileData, setEditableProfileData] = useState(profileData);
@@ -85,6 +95,82 @@ const Profile = () => {
 
   const setDietGoal = (goal) => {
     console.log('Diet goal set to:', goal);
+  };
+
+  // Format current date for display (without time)
+  const formatCurrentDate = () => {
+    const options = { 
+      weekday: 'long', 
+      year: 'numeric', 
+      month: 'long', 
+      day: 'numeric'
+    };
+    return currentDate.toLocaleDateString('en-US', options);
+  };
+
+  // Generate personalized welcome message based on user data
+  const generatePersonalizedMessage = () => {
+    if (!profileData) return "Welcome! Today is " + formatCurrentDate() + ". Keep pushing towards your fitness goals!";
+    
+    const messages = [];
+    
+    // Base message with date
+    messages.push(`Today is ${formatCurrentDate()}.`);
+    
+    // Goal-based message
+    if (profileData.goal) {
+      const goalMessages = {
+        'Lose weight': 'Focus on your weight loss journey',
+        'Gain muscle': 'Keep building those muscles',
+        'Improve flexibility': 'Stay flexible and mobile',
+        'Stay active': 'Maintain your active lifestyle',
+        'Build strength': 'Keep getting stronger',
+        'Improve endurance': 'Build your endurance',
+        'Maintain fitness': 'Keep up your fitness routine',
+        'Rehabilitation': 'Stay consistent with your recovery'
+      };
+      messages.push(goalMessages[profileData.goal] || 'Keep pushing towards your goals');
+    }
+    
+    // Activity level based message
+    if (profileData.activityLevel) {
+      const activityMessages = {
+        'Sedentary': 'Time to get moving!',
+        'Lightly active': 'Great start with light activity',
+        'Moderately active': 'You\'re doing great with moderate activity',
+        'Very active': 'Impressive activity level!',
+        'Extremely active': 'You\'re a fitness machine!'
+      };
+      messages.push(activityMessages[profileData.activityLevel]);
+    }
+    
+    // Performance-based motivation
+    if (profileData.caloriesBurnt && profileData.caloriesBurnt > 0) {
+      messages.push(`You've burned ${profileData.caloriesBurnt} calories so far.`);
+    }
+    
+    if (profileData.maxBench && profileData.maxBench > 0) {
+      messages.push(`Your bench press max is ${profileData.maxBench} lbs.`);
+    }
+    
+    if (profileData.maxSquat && profileData.maxSquat > 0) {
+      messages.push(`Your squat max is ${profileData.maxSquat} lbs.`);
+    }
+    
+    // Rest and recovery reminder
+    if (profileData.rest && profileData.rest < 7) {
+      messages.push('Remember to get enough rest for recovery.');
+    }
+    
+    // Heart rate monitoring
+    if (profileData.heartRate && profileData.heartRate > 0) {
+      messages.push(`Your heart rate is ${profileData.heartRate} bpm.`);
+    }
+    
+    // Final motivation
+    messages.push('Keep pushing!');
+    
+    return messages.join(' ');
   };
 
   const weekDays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
@@ -135,8 +221,8 @@ const Profile = () => {
           />
         </div>
 
-        {/* Main Dashboard - Takes remaining space */}
-        <main className="flex-1 bg-[#1E1E1E] p-6 rounded-2xl space-y-6 w-full">
+        {/* Main Dashboard */}
+        <main className="flex-1 bg-[#1E1E1E] p-6 ml-4 rounded-2xl space-y-6 w-full">
           <p className="text-xs text-gray-400">Home / Dashboard</p>
 
           {/* Welcome */}
@@ -152,12 +238,28 @@ const Profile = () => {
               </button>
             )}
             <div className="flex items-center space-x-4">
-              <div className="bg-[#121212] text-[#62E0A1] rounded-full w-10 h-10 flex items-center justify-center">
-                <i className="fas fa-smile"></i>
-              </div>
+              <Link to="/preference" title="Change Photo" className="block">
+                <div className="bg-gradient-to-br from-[#36CFFF] to-[#62E0A1] text-white rounded-full w-12 h-12 flex items-center justify-center font-bold text-lg shadow-lg cursor-pointer hover:opacity-80 transition-opacity">
+                  {(() => {
+                    const userName = profileData.fullName || profileData.firstName || 'U';
+                    if (!userName || userName === 'U') return 'U';
+                    
+                    const nameParts = userName.trim().split(' ');
+                    if (nameParts.length >= 2) {
+                      // If user has first and last name, show first letter of each
+                      const firstName = nameParts[0];
+                      const lastName = nameParts[nameParts.length - 1];
+                      return `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase();
+                    } else {
+                      // If only one name, show first letter
+                      return userName.charAt(0).toUpperCase();
+                    }
+                  })()}
+                </div>
+              </Link>
               <div className="text-sm">
                 <p className="font-bold">Welcome, {profileData.fullName || profileData.firstName}!</p>
-                <p className="text-xs">Today is a brilliant day to wokout. Keep pushing!</p>
+                <p className="text-xs">{generatePersonalizedMessage()}</p>
               </div>
             </div>
           </section>

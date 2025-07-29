@@ -253,7 +253,7 @@ const Onboarding = () => {
       .then(async (res) => {
         if (!res.ok) {
           const error = await res.json();
-          alert(error.error || 'Failed to save preferences');
+          console.error('Failed to save preferences:', error.error || 'Unknown error');
           return;
         }
         return res.json();
@@ -262,7 +262,7 @@ const Onboarding = () => {
         // Optionally handle response
       })
       .catch((err) => {
-        alert('Error saving preferences: ' + err.message);
+        console.error('Error saving preferences:', err.message);
       });
 
     // Show overview with countdown
