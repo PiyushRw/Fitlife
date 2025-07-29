@@ -474,53 +474,134 @@ const Nutrition = () => {
               <h2 className="text-lg font-bold text-[#62E0A1]">Your's Intake</h2>
             </div>
             
-            <div className="space-y-2">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               {/* Calories */}
-              <div className="bg-[#1A1A1A] p-3 rounded-lg border border-gray-700">
-                <div className="flex justify-between items-center mb-1">
-                  <span className="text-xs font-semibold text-gray-300">Calories</span>
-                  <div className="flex space-x-3 text-xs">
-                    <span className="text-[#62E0A1] font-medium">2200</span>
-                    <span className="text-gray-400">/</span>
-                    <span className="text-gray-300">2000</span>
-                    <span className="text-red-400">-200</span>
+              <div className="bg-[#1A1A1A] p-4 rounded-lg border border-gray-700 flex flex-col items-center">
+                <div className="relative w-20 h-20 mb-3">
+                  <svg className="w-20 h-20 transform -rotate-90" viewBox="0 0 36 36">
+                    <path
+                      d="M18 2.0845
+                        a 15.9155 15.9155 0 0 1 0 31.831
+                        a 15.9155 15.9155 0 0 1 0 -31.831"
+                      fill="none"
+                      stroke="#374151"
+                      strokeWidth="2"
+                    />
+                    <path
+                      d="M18 2.0845
+                        a 15.9155 15.9155 0 0 1 0 31.831
+                        a 15.9155 15.9155 0 0 1 0 -31.831"
+                      fill="none"
+                      stroke="url(#caloriesGradient)"
+                      strokeWidth="2"
+                      strokeDasharray="100"
+                      strokeDashoffset="10"
+                      strokeLinecap="round"
+                    />
+                    <defs>
+                      <linearGradient id="caloriesGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                        <stop offset="0%" stopColor="#62E0A1" />
+                        <stop offset="100%" stopColor="#36CFFF" />
+                      </linearGradient>
+                    </defs>
+                  </svg>
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <span className="text-lg font-bold text-[#62E0A1]">90%</span>
                   </div>
                 </div>
-                <div className="h-1.5 bg-gray-700 rounded-full overflow-hidden">
-                  <div className="h-1.5 bg-gradient-to-r from-[#62E0A1] to-[#36CFFF] rounded-full w-[90%] transition-all duration-300"></div>
+                <span className="text-sm font-semibold text-gray-300 mb-1">Calories</span>
+                <div className="flex items-center space-x-2 text-xs">
+                  <span className="text-[#62E0A1] font-medium">2200</span>
+                  <span className="text-gray-400">/</span>
+                  <span className="text-gray-300">2000</span>
                 </div>
+                <span className="text-red-400 text-xs">-200</span>
               </div>
 
               {/* Proteins */}
-              <div className="bg-[#1A1A1A] p-3 rounded-lg border border-gray-700">
-                <div className="flex justify-between items-center mb-1">
-                  <span className="text-xs font-semibold text-gray-300">Proteins</span>
-                  <div className="flex space-x-3 text-xs">
-                    <span className="text-[#36CFFF] font-medium">150g</span>
-                    <span className="text-gray-400">/</span>
-                    <span className="text-gray-300">200g</span>
-                    <span className="text-blue-400">+50g</span>
+              <div className="bg-[#1A1A1A] p-4 rounded-lg border border-gray-700 flex flex-col items-center">
+                <div className="relative w-20 h-20 mb-3">
+                  <svg className="w-20 h-20 transform -rotate-90" viewBox="0 0 36 36">
+                    <path
+                      d="M18 2.0845
+                        a 15.9155 15.9155 0 0 1 0 31.831
+                        a 15.9155 15.9155 0 0 1 0 -31.831"
+                      fill="none"
+                      stroke="#374151"
+                      strokeWidth="2"
+                    />
+                    <path
+                      d="M18 2.0845
+                        a 15.9155 15.9155 0 0 1 0 31.831
+                        a 15.9155 15.9155 0 0 1 0 -31.831"
+                      fill="none"
+                      stroke="url(#proteinsGradient)"
+                      strokeWidth="2"
+                      strokeDasharray="100"
+                      strokeDashoffset="25"
+                      strokeLinecap="round"
+                    />
+                    <defs>
+                      <linearGradient id="proteinsGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                        <stop offset="0%" stopColor="#36CFFF" />
+                        <stop offset="100%" stopColor="#62E0A1" />
+                      </linearGradient>
+                    </defs>
+                  </svg>
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <span className="text-lg font-bold text-[#36CFFF]">75%</span>
                   </div>
                 </div>
-                <div className="h-1.5 bg-gray-700 rounded-full overflow-hidden">
-                  <div className="h-1.5 bg-gradient-to-r from-[#36CFFF] to-[#62E0A1] rounded-full w-[75%] transition-all duration-300"></div>
+                <span className="text-sm font-semibold text-gray-300 mb-1">Proteins</span>
+                <div className="flex items-center space-x-2 text-xs">
+                  <span className="text-[#36CFFF] font-medium">150g</span>
+                  <span className="text-gray-400">/</span>
+                  <span className="text-gray-300">200g</span>
                 </div>
+                <span className="text-blue-400 text-xs">+50g</span>
               </div>
 
               {/* Carbohydrates */}
-              <div className="bg-[#1A1A1A] p-3 rounded-lg border border-gray-700">
-                <div className="flex justify-between items-center mb-1">
-                  <span className="text-xs font-semibold text-gray-300">Carbohydrates</span>
-                  <div className="flex space-x-3 text-xs">
-                    <span className="text-[#F2B33D] font-medium">250g</span>
-                    <span className="text-gray-400">/</span>
-                    <span className="text-gray-300">300g</span>
-                    <span className="text-yellow-400">+50g</span>
+              <div className="bg-[#1A1A1A] p-4 rounded-lg border border-gray-700 flex flex-col items-center">
+                <div className="relative w-20 h-20 mb-3">
+                  <svg className="w-20 h-20 transform -rotate-90" viewBox="0 0 36 36">
+                    <path
+                      d="M18 2.0845
+                        a 15.9155 15.9155 0 0 1 0 31.831
+                        a 15.9155 15.9155 0 0 1 0 -31.831"
+                      fill="none"
+                      stroke="#374151"
+                      strokeWidth="2"
+                    />
+                    <path
+                      d="M18 2.0845
+                        a 15.9155 15.9155 0 0 1 0 31.831
+                        a 15.9155 15.9155 0 0 1 0 -31.831"
+                      fill="none"
+                      stroke="url(#carbsGradient)"
+                      strokeWidth="2"
+                      strokeDasharray="100"
+                      strokeDashoffset="17"
+                      strokeLinecap="round"
+                    />
+                    <defs>
+                      <linearGradient id="carbsGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                        <stop offset="0%" stopColor="#F2B33D" />
+                        <stop offset="100%" stopColor="#FF6B35" />
+                      </linearGradient>
+                    </defs>
+                  </svg>
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <span className="text-lg font-bold text-[#F2B33D]">83%</span>
                   </div>
                 </div>
-                <div className="h-1.5 bg-gray-700 rounded-full overflow-hidden">
-                  <div className="h-1.5 bg-gradient-to-r from-[#F2B33D] to-[#FF6B35] rounded-full w-[83%] transition-all duration-300"></div>
+                <span className="text-sm font-semibold text-gray-300 mb-1">Carbohydrates</span>
+                <div className="flex items-center space-x-2 text-xs">
+                  <span className="text-[#F2B33D] font-medium">250g</span>
+                  <span className="text-gray-400">/</span>
+                  <span className="text-gray-300">300g</span>
                 </div>
+                <span className="text-yellow-400 text-xs">+50g</span>
               </div>
             </div>
           </section>
