@@ -7,6 +7,9 @@ import 'swiper/css';
 import 'swiper/css/effect-coverflow';
 import 'swiper/css/pagination';
 
+// Import custom styles
+import './NutritionCarousel.css';
+
 const NutritionCarousel = ({ items }) => {
   return (
     <Swiper

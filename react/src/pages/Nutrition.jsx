@@ -438,16 +438,18 @@ const Nutrition = () => {
   }
 
   return (
-    <div className="bg-[#121212] text-white font-sans">
-      <div className="flex min-h-screen p-4">
-        {/* Sidebar */}
-        <Sidebar 
-          userName={profileData?.fullName || profileData?.firstName || 'User'}
-          profilePhoto={profileData?.profilePicture || profileData?.photo || null} // This will trigger the AI avatar fallback if no photo
-        />
+    <div className="bg-[#121212] text-white font-sans min-h-screen p-4">
+      <div className="flex flex-col md:flex-row gap-4 max-w-full">
+        {/* Sidebar - Full width on mobile, fixed width on desktop */}
+        <div className="md:w-48 flex-shrink-0">
+          <Sidebar 
+            userName={profileData?.fullName || profileData?.firstName || 'User'}
+            profilePhoto={profileData?.profilePicture || profileData?.photo || null} // This will trigger the AI avatar fallback if no photo
+          />
+        </div>
 
         {/* Main Content */}
-        <main className="flex-1 bg-[#1E1E1E] p-6 ml-4 rounded-2xl space-y-6">
+        <main className="flex-1 bg-[#1E1E1E] p-6 rounded-2xl space-y-6 min-w-0 overflow-hidden">
           <p className="text-xs text-gray-400">Home / Nutrition</p>
 
           {/* Welcome Section */}
@@ -463,37 +465,68 @@ const Nutrition = () => {
             </div>
           </section>
 
-          {/* Calorie Intake Section */}
-          <section className="bg-[#121212] p-4 rounded-xl mt-8">
-            <p className="mb-2 text-sm font-semibold">Calorie Intake</p>
-            <div className="grid grid-cols-4 mb-2 text-xs">
-              <div></div>
-              <div className="font-semibold text-center">Total</div>
-              <div className="font-semibold text-center">Goal</div>
-              <div className="font-semibold text-center">Left</div>
+          {/* Your's Intake Section */}
+          <section className="bg-[#121212] p-4 rounded-xl mt-6 border border-gray-800 shadow-lg">
+            <div className="flex items-center mb-3">
+              <div className="bg-gradient-to-r from-[#62E0A1] to-[#36CFFF] text-black rounded-full w-6 h-6 flex items-center justify-center mr-2">
+                <i className="fas fa-chart-line text-xs"></i>
+              </div>
+              <h2 className="text-lg font-bold text-[#62E0A1]">Your's Intake</h2>
             </div>
-            <div className="flex justify-between mb-1 text-xs">
-              <span>Calories</span><span>2200</span><span>2000</span><span>-200</span>
-            </div>
-            <div className="h-1 bg-gray-700 rounded-full">
-              <div className="h-1 bg-[#62E0A1] rounded-full w-[90%]"></div>
-            </div>
-            <div className="flex justify-between mt-2 mb-1 text-xs">
-              <span>Proteins</span><span>150</span><span>200</span><span>70</span>
-            </div>
-            <div className="h-1 bg-gray-700 rounded-full">
-              <div className="h-1 bg-[#36CFFF] rounded-full w-[75%]"></div>
-            </div>
-            <div className="flex justify-between mt-2 mb-1 text-xs">
-              <span>Carbohydrates</span><span>250</span><span>300</span><span>15</span>
-            </div>
-            <div className="h-1 bg-gray-700 rounded-full">
-              <div className="h-1 bg-[#F2B33D] rounded-full w-[83%]"></div>
+            
+            <div className="space-y-2">
+              {/* Calories */}
+              <div className="bg-[#1A1A1A] p-3 rounded-lg border border-gray-700">
+                <div className="flex justify-between items-center mb-1">
+                  <span className="text-xs font-semibold text-gray-300">Calories</span>
+                  <div className="flex space-x-3 text-xs">
+                    <span className="text-[#62E0A1] font-medium">2200</span>
+                    <span className="text-gray-400">/</span>
+                    <span className="text-gray-300">2000</span>
+                    <span className="text-red-400">-200</span>
+                  </div>
+                </div>
+                <div className="h-1.5 bg-gray-700 rounded-full overflow-hidden">
+                  <div className="h-1.5 bg-gradient-to-r from-[#62E0A1] to-[#36CFFF] rounded-full w-[90%] transition-all duration-300"></div>
+                </div>
+              </div>
+
+              {/* Proteins */}
+              <div className="bg-[#1A1A1A] p-3 rounded-lg border border-gray-700">
+                <div className="flex justify-between items-center mb-1">
+                  <span className="text-xs font-semibold text-gray-300">Proteins</span>
+                  <div className="flex space-x-3 text-xs">
+                    <span className="text-[#36CFFF] font-medium">150g</span>
+                    <span className="text-gray-400">/</span>
+                    <span className="text-gray-300">200g</span>
+                    <span className="text-blue-400">+50g</span>
+                  </div>
+                </div>
+                <div className="h-1.5 bg-gray-700 rounded-full overflow-hidden">
+                  <div className="h-1.5 bg-gradient-to-r from-[#36CFFF] to-[#62E0A1] rounded-full w-[75%] transition-all duration-300"></div>
+                </div>
+              </div>
+
+              {/* Carbohydrates */}
+              <div className="bg-[#1A1A1A] p-3 rounded-lg border border-gray-700">
+                <div className="flex justify-between items-center mb-1">
+                  <span className="text-xs font-semibold text-gray-300">Carbohydrates</span>
+                  <div className="flex space-x-3 text-xs">
+                    <span className="text-[#F2B33D] font-medium">250g</span>
+                    <span className="text-gray-400">/</span>
+                    <span className="text-gray-300">300g</span>
+                    <span className="text-yellow-400">+50g</span>
+                  </div>
+                </div>
+                <div className="h-1.5 bg-gray-700 rounded-full overflow-hidden">
+                  <div className="h-1.5 bg-gradient-to-r from-[#F2B33D] to-[#FF6B35] rounded-full w-[83%] transition-all duration-300"></div>
+                </div>
+              </div>
             </div>
           </section>
 
           {/* 3D Carousel Section */}
-          <section className="w-full max-w-6xl mx-auto mb-6 px-4">
+          <section className="w-full mb-6">
             <div className="bg-[#121212] rounded-xl p-4">
               <h2 className="text-xl font-bold text-[#62E0A1] text-center mb-4">
                 Your Nutrition Journey
@@ -507,10 +540,10 @@ const Nutrition = () => {
             <h2 className="text-xl font-bold mb-6 text-[#62E0A1] flex items-center justify-center">
               <i className="mr-2 fas fa-camera"></i>Analyze Your Meal
             </h2>
-            <div className="w-full max-w-4xl mx-auto">
+            <div className="w-full">
               <div className="flex flex-col gap-10 p-8 bg-gray-800 border border-gray-700 shadow-lg md:flex-row md:items-start md:justify-center rounded-xl">
                 {/* Photo Upload & Preview */}
-                <div className="flex flex-col items-center justify-start w-full md:w-[320px]">
+                <div className="flex flex-col items-center justify-start w-full md:w-auto md:min-w-[280px]">
                   <div className="relative flex items-center justify-center w-48 h-48 mb-4">
                     <img 
                       src={uploadedImage || "https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=400&h=300&fit=crop"} 
@@ -542,7 +575,7 @@ const Nutrition = () => {
                 {/* Nutrition Facts */}
                 <div className="flex flex-col items-center justify-center flex-1 w-full mt-8 md:items-start md:mt-0 md:ml-6">
                   <h3 className="text-lg font-semibold mb-4 text-[#36CFFF] text-center md:text-left">Estimated Nutrition Facts</h3>
-                  <div className="grid w-full max-w-lg grid-cols-2 gap-8">
+                  <div className="grid w-full grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-8">
                     <div className="bg-[#121212] rounded-lg p-8 flex flex-col items-center justify-center min-h-[120px]">
                       <p className="mb-2 text-xs text-center text-gray-400">Protein</p>
                       <p className="text-2xl font-bold text-center">{foodAnalysis.protein}</p>
