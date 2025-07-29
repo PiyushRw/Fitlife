@@ -36,7 +36,6 @@ const Workout = () => {
   const [isLoadingRecommendations, setIsLoadingRecommendations] = useState(false);
   const [exerciseDetails, setExerciseDetails] = useState(null);
   const [currentVideoUrl, setCurrentVideoUrl] = useState('https://www.youtube.com/embed/vcBig73ojpE');
-  const [exerciseSearchTerm, setExerciseSearchTerm] = useState('');
   const [userPreferences, setUserPreferences] = useState({
     goals: [],
     experience: 'Beginner',
@@ -195,6 +194,12 @@ const Workout = () => {
     return Object.values(exerciseOptions).flat();
   };
 
+  const selectAIExercise = (exercise) => {
+    setSelectedExercise(exercise.name);
+    setCurrentVideoUrl(generateVideoUrl(exercise.name));
+    setExerciseDetails(exercise); // Set details for AI insights section
+  };
+
   // AI Workout Helper Functions
   const generateVideoUrl = (exerciseName = selectedExercise) => {
     // Exercise-specific YouTube video URLs for demonstrations
@@ -332,11 +337,6 @@ const Workout = () => {
     }
   };
 
-  const selectAIExercise = (exercise) => {
-    setSelectedExercise(exercise.name);
-    setExerciseDetails(exercise);
-    setCurrentVideoUrl(generateVideoUrl(exercise.name));
-  };
 
   const generateWorkoutFromPreferences = async () => {
     setIsLoadingRecommendations(true);
@@ -395,8 +395,6 @@ const Workout = () => {
         : [...prev[key], value]
     }));
   };
-
-  const location = useLocation();
 
   return (
     <div className="bg-[#121212] text-white font-sans min-h-screen p-4">
@@ -634,6 +632,19 @@ const Workout = () => {
                     {exercise}
                   </button>
                 ))}
+                {aiRecommendations.length > 0 && (
+                  <>
+                    {aiRecommendations.map((exercise, index) => (
+                      <button
+                        key={`ai-${index}`}
+                        onClick={() => selectAIExercise(exercise)}
+                        className="text-xs p-2 bg-[#1E1E1E] hover:bg-[#36CFFF] hover:text-black rounded-lg transition font-medium"
+                      >
+                        {exercise.name}
+                      </button>
+                    ))}
+                  </>
+                )}
               </div>
             </div>
 
@@ -689,41 +700,6 @@ const Workout = () => {
             </div>
           </section>
 
-          {/* AI Recommendations Section */}
-          {aiRecommendations.length > 0 && (
-            <section className="bg-[#121212] p-4 rounded-xl">
-              <div className="flex items-center mb-4">
-                <span className="mr-2 text-2xl">🤖</span>
-                <p className="text-lg font-semibold">AI Exercise Recommendations</p>
-              </div>
-              <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-                {aiRecommendations.map((exercise, index) => (
-                  <div 
-                    key={index}
-                    className="bg-[#1E1E1E] p-4 rounded-xl border border-gray-700 hover:border-[#36CFFF] transition cursor-pointer"
-                    onClick={() => selectAIExercise(exercise)}
-                  >
-                    <div className="flex items-start justify-between mb-2">
-                      <h3 className="text-sm font-semibold text-white">{exercise.name}</h3>
-                      <span className="text-xs bg-[#36CFFF] text-black px-2 py-1 rounded-full">
-                        Level {exercise.difficulty || 'N/A'}
-                      </span>
-                    </div>
-                    <div className="space-y-1 text-xs text-gray-400">
-                      <p><span className="text-[#62E0A1]">Target:</span> {exercise.targetMuscles?.join(', ') || exercise.primaryMuscles?.join(', ') || 'Multiple muscles'}</p>
-                      <p><span className="text-[#F2B33D]">Sets/Reps:</span> {exercise.setsRepsRecommendation || `${exercise.sets} x ${exercise.reps}` || '3 x 8-12'}</p>
-                      {exercise.equipment && (
-                        <p><span className="text-[#36CFFF]">Equipment:</span> {exercise.equipment.join(', ')}</p>
-                      )}
-                    </div>
-                    <button className="mt-3 w-full bg-[#36CFFF] text-black text-xs py-2 rounded-lg font-semibold hover:scale-105 transition">
-                      Select Exercise
-                    </button>
-                  </div>
-                ))}
-              </div>
-            </section>
-          )}
 
           {/* Popular Workout Videos Section */}
           <section className="bg-[#121212] p-4 rounded-xl">
@@ -1034,4 +1010,4 @@ const Workout = () => {
   );
 };
 
-export default Workout; 
+export default Workout;
