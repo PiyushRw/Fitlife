@@ -276,4 +276,160 @@ const FoodItem = mongoose.model('FoodItem', foodItemSchema);
 const Meal = mongoose.model('Meal', mealSchema);
 const NutritionPlan = mongoose.model('NutritionPlan', nutritionPlanSchema);
 
-export { FoodItem, Meal, NutritionPlan }; 
+const dailyIntakeSchema = new mongoose.Schema({
+  userId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: true
+  },
+  date: {
+    type: Date,
+    required: true,
+    default: Date.now
+  },
+  totalNutrients: {
+    calories: {
+      type: Number,
+      min: [0, 'Calories cannot be negative'],
+      default: 0
+    },
+    protein: {
+      type: Number,
+      min: [0, 'Protein cannot be negative'],
+      default: 0
+    },
+    carbohydrates: {
+      type: Number,
+      min: [0, 'Carbohydrates cannot be negative'],
+      default: 0
+    },
+    fats: {
+      type: Number,
+      min: [0, 'Fats cannot be negative'],
+      default: 0
+    },
+    fiber: {
+      type: Number,
+      min: [0, 'Fiber cannot be negative'],
+      default: 0
+    },
+    sugar: {
+      type: Number,
+      min: [0, 'Sugar cannot be negative'],
+      default: 0
+    },
+    sodium: {
+      type: Number,
+      min: [0, 'Sodium cannot be negative'],
+      default: 0
+    }
+  },
+  targetNutrients: {
+    calories: {
+      type: Number,
+      min: [0, 'Target calories cannot be negative'],
+      default: 2000
+    },
+    protein: {
+      type: Number,
+      min: [0, 'Target protein cannot be negative'],
+      default: 150
+    },
+    carbohydrates: {
+      type: Number,
+      min: [0, 'Target carbohydrates cannot be negative'],
+      default: 250
+    },
+    fats: {
+      type: Number,
+      min: [0, 'Target fats cannot be negative'],
+      default: 65
+    }
+  },
+  consumedFoods: [{
+    foodName: {
+      type: String,
+      required: true,
+      trim: true
+    },
+    nutrients: {
+      calories: {
+        type: Number,
+        min: [0, 'Calories cannot be negative'],
+        default: 0
+      },
+      protein: {
+        type: Number,
+        min: [0, 'Protein cannot be negative'],
+        default: 0
+      },
+      carbohydrates: {
+        type: Number,
+        min: [0, 'Carbohydrates cannot be negative'],
+        default: 0
+      },
+      fats: {
+        type: Number,
+        min: [0, 'Fats cannot be negative'],
+        default: 0
+      },
+      fiber: {
+        type: Number,
+        min: [0, 'Fiber cannot be negative'],
+        default: 0
+      },
+      sugar: {
+        type: Number,
+        min: [0, 'Sugar cannot be negative'],
+        default: 0
+      },
+      sodium: {
+        type: Number,
+        min: [0, 'Sodium cannot be negative'],
+        default: 0
+      }
+    },
+    consumedAt: {
+      type: Date,
+      default: Date.now
+    },
+    mealType: {
+      type: String,
+      enum: ['breakfast', 'lunch', 'dinner', 'snack'],
+      default: 'snack'
+    }
+  }],
+  notes: {
+    type: String,
+    trim: true
+  }
+}, {
+  timestamps: true
+});
+
+// Compound index for efficient queries
+dailyIntakeSchema.index({ userId: 1, date: 1 }, { unique: true });
+
+// Virtual for calculating progress percentages
+dailyIntakeSchema.virtual('progress').get(function() {
+  return {
+    calories: this.totalNutrients.calories / this.targetNutrients.calories * 100,
+    protein: this.totalNutrients.protein / this.targetNutrients.protein * 100,
+    carbohydrates: this.totalNutrients.carbohydrates / this.targetNutrients.carbohydrates * 100,
+    fats: this.totalNutrients.fats / this.targetNutrients.fats * 100
+  };
+});
+
+// Virtual for calculating remaining nutrients
+dailyIntakeSchema.virtual('remaining').get(function() {
+  return {
+    calories: Math.max(0, this.targetNutrients.calories - this.totalNutrients.calories),
+    protein: Math.max(0, this.targetNutrients.protein - this.totalNutrients.protein),
+    carbohydrates: Math.max(0, this.targetNutrients.carbohydrates - this.totalNutrients.carbohydrates),
+    fats: Math.max(0, this.targetNutrients.fats - this.totalNutrients.fats)
+  };
+});
+
+const DailyIntake = mongoose.model('DailyIntake', dailyIntakeSchema);
+
+export { FoodItem, Meal, NutritionPlan, DailyIntake }; 

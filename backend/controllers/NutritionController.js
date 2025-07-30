@@ -1,4 +1,4 @@
-import { NutritionPlan, Meal, FoodItem } from "../models/Nutrition.js";
+import { NutritionPlan, Meal, FoodItem, DailyIntake } from "../models/Nutrition.js";
 import asyncHandler from "express-async-handler";
 import fetch from 'node-fetch';
 
@@ -282,3 +282,237 @@ export const getMyFoodItems = asyncHandler(async (req, res, next) => {
     data: foods
   });
 }); 
+
+// @desc    Add food consumption to daily intake
+// @route   POST /api/v1/nutrition/daily-intake/add-food
+// @access  Private
+export const addFoodToDailyIntake = async (req, res, next) => {
+  try {
+    const { foodName, nutrients, mealType = 'snack' } = req.body;
+    
+    if (!foodName || !nutrients) {
+      return res.status(400).json({
+        success: false,
+        error: 'Food name and nutrients are required'
+      });
+    }
+
+    // Get today's date (start of day)
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    // Find or create today's intake record
+    let dailyIntake = await DailyIntake.findOne({
+      userId: req.user.id,
+      date: {
+        $gte: today,
+        $lt: new Date(today.getTime() + 24 * 60 * 60 * 1000)
+      }
+    });
+
+    if (!dailyIntake) {
+      // Create new daily intake record
+      dailyIntake = new DailyIntake({
+        userId: req.user.id,
+        date: today,
+        totalNutrients: {
+          calories: 0,
+          protein: 0,
+          carbohydrates: 0,
+          fats: 0,
+          fiber: 0,
+          sugar: 0,
+          sodium: 0
+        },
+        targetNutrients: {
+          calories: 2000,
+          protein: 150,
+          carbohydrates: 250,
+          fats: 65
+        },
+        consumedFoods: []
+      });
+    }
+
+    // Add the consumed food
+    dailyIntake.consumedFoods.push({
+      foodName,
+      nutrients: {
+        calories: nutrients.calories || 0,
+        protein: nutrients.protein || 0,
+        carbohydrates: nutrients.carbohydrates || 0,
+        fats: nutrients.fats || 0,
+        fiber: nutrients.fiber || 0,
+        sugar: nutrients.sugar || 0,
+        sodium: nutrients.sodium || 0
+      },
+      mealType,
+      consumedAt: new Date()
+    });
+
+    // Update total nutrients
+    dailyIntake.totalNutrients.calories += nutrients.calories || 0;
+    dailyIntake.totalNutrients.protein += nutrients.protein || 0;
+    dailyIntake.totalNutrients.carbohydrates += nutrients.carbohydrates || 0;
+    dailyIntake.totalNutrients.fats += nutrients.fats || 0;
+    dailyIntake.totalNutrients.fiber += nutrients.fiber || 0;
+    dailyIntake.totalNutrients.sugar += nutrients.sugar || 0;
+    dailyIntake.totalNutrients.sodium += nutrients.sodium || 0;
+
+    await dailyIntake.save();
+
+    res.status(200).json({
+      success: true,
+      message: 'Food added to daily intake successfully',
+      data: {
+        dailyIntake: {
+          totalNutrients: dailyIntake.totalNutrients,
+          targetNutrients: dailyIntake.targetNutrients,
+          progress: dailyIntake.progress,
+          remaining: dailyIntake.remaining
+        }
+      }
+    });
+
+  } catch (error) {
+    next(error);
+  }
+};
+
+// @desc    Get today's intake stats
+// @route   GET /api/v1/nutrition/daily-intake/today
+// @access  Private
+export const getTodayIntake = async (req, res, next) => {
+  try {
+    // Get today's date (start of day)
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    // Find today's intake record
+    const dailyIntake = await DailyIntake.findOne({
+      userId: req.user.id,
+      date: {
+        $gte: today,
+        $lt: new Date(today.getTime() + 24 * 60 * 60 * 1000)
+      }
+    });
+
+    if (!dailyIntake) {
+      // Return default values if no intake record exists
+      return res.status(200).json({
+        success: true,
+        data: {
+          totalNutrients: {
+            calories: 0,
+            protein: 0,
+            carbohydrates: 0,
+            fats: 0,
+            fiber: 0,
+            sugar: 0,
+            sodium: 0
+          },
+          targetNutrients: {
+            calories: 2000,
+            protein: 150,
+            carbohydrates: 250,
+            fats: 65
+          },
+          progress: {
+            calories: 0,
+            protein: 0,
+            carbohydrates: 0,
+            fats: 0
+          },
+          remaining: {
+            calories: 2000,
+            protein: 150,
+            carbohydrates: 250,
+            fats: 65
+          },
+          consumedFoods: []
+        }
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      data: {
+        totalNutrients: dailyIntake.totalNutrients,
+        targetNutrients: dailyIntake.targetNutrients,
+        progress: dailyIntake.progress,
+        remaining: dailyIntake.remaining,
+        consumedFoods: dailyIntake.consumedFoods
+      }
+    });
+
+  } catch (error) {
+    next(error);
+  }
+};
+
+// @desc    Update target nutrients for daily intake
+// @route   PUT /api/v1/nutrition/daily-intake/targets
+// @access  Private
+export const updateTargetNutrients = async (req, res, next) => {
+  try {
+    const { calories, protein, carbohydrates, fats } = req.body;
+
+    // Get today's date (start of day)
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    // Find or create today's intake record
+    let dailyIntake = await DailyIntake.findOne({
+      userId: req.user.id,
+      date: {
+        $gte: today,
+        $lt: new Date(today.getTime() + 24 * 60 * 60 * 1000)
+      }
+    });
+
+    if (!dailyIntake) {
+      // Create new daily intake record
+      dailyIntake = new DailyIntake({
+        userId: req.user.id,
+        date: today,
+        totalNutrients: {
+          calories: 0,
+          protein: 0,
+          carbohydrates: 0,
+          fats: 0,
+          fiber: 0,
+          sugar: 0,
+          sodium: 0
+        },
+        targetNutrients: {
+          calories: calories || 2000,
+          protein: protein || 150,
+          carbohydrates: carbohydrates || 250,
+          fats: fats || 65
+        },
+        consumedFoods: []
+      });
+    } else {
+      // Update target nutrients
+      dailyIntake.targetNutrients.calories = calories || dailyIntake.targetNutrients.calories;
+      dailyIntake.targetNutrients.protein = protein || dailyIntake.targetNutrients.protein;
+      dailyIntake.targetNutrients.carbohydrates = carbohydrates || dailyIntake.targetNutrients.carbohydrates;
+      dailyIntake.targetNutrients.fats = fats || dailyIntake.targetNutrients.fats;
+    }
+
+    await dailyIntake.save();
+
+    res.status(200).json({
+      success: true,
+      message: 'Target nutrients updated successfully',
+      data: {
+        targetNutrients: dailyIntake.targetNutrients,
+        progress: dailyIntake.progress,
+        remaining: dailyIntake.remaining
+      }
+    });
+
+  } catch (error) {
+    next(error);
+  }
+}; 

@@ -1,7 +1,7 @@
 import express from 'express';
 import { protect, optionalAuth } from '../middleware/auth.js';
 import { FoodItem, Meal, NutritionPlan } from '../models/Nutrition.js';
-import { saveAINutritionPlan, analyzeFoodAndSave, getMyFoodItems } from '../controllers/NutritionController.js';
+import { saveAINutritionPlan, analyzeFoodAndSave, getMyFoodItems, addFoodToDailyIntake, getTodayIntake, updateTargetNutrients } from '../controllers/NutritionController.js';
 
 const router = express.Router();
 
@@ -213,6 +213,41 @@ router.post('/analyze-food', protect, analyzeFoodAndSave);
 // @access  Private
 router.get('/my-foods', protect, getMyFoodItems);
 
+// @desc    Get user's latest AI nutrition plan
+// @route   GET /api/v1/nutrition/latest-ai-plan
+// @access  Private
+router.get('/latest-ai-plan', protect, async (req, res, next) => {
+  try {
+    // Find the user's most recent nutrition plan (removed AI title restriction)
+    const latestPlan = await NutritionPlan.findOne({ 
+      createdBy: req.user.id
+    })
+    .sort({ createdAt: -1 })
+    .populate({
+      path: 'meals.meals',
+      populate: {
+        path: 'foods.food',
+        model: 'FoodItem'
+      }
+    });
+
+    if (!latestPlan) {
+      return res.status(200).json({
+        success: true,
+        data: null,
+        message: 'No nutrition plan found'
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      data: latestPlan
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
 // @desc    Get user's meals
 // @route   GET /api/v1/nutrition/my-meals
 // @access  Private
@@ -255,5 +290,21 @@ router.get('/my-meals', protect, async (req, res, next) => {
     next(error);
   }
 });
+
+// Daily Intake Routes
+// @desc    Add food to daily intake
+// @route   POST /api/v1/nutrition/daily-intake/add-food
+// @access  Private
+router.post('/daily-intake/add-food', protect, addFoodToDailyIntake);
+
+// @desc    Get today's intake stats
+// @route   GET /api/v1/nutrition/daily-intake/today
+// @access  Private
+router.get('/daily-intake/today', protect, getTodayIntake);
+
+// @desc    Update target nutrients
+// @route   PUT /api/v1/nutrition/daily-intake/targets
+// @access  Private
+router.put('/daily-intake/targets', protect, updateTargetNutrients);
 
 export default router; 
