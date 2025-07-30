@@ -473,7 +473,7 @@ const HomePage = () => {
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
               <i className="fas fa-robot text-[#62E0A1] text-xl"></i>
-              <h3 className="text-lg font-semibold">FitLife AI Companion</h3>
+              <h3 className="text-lg font-semibold text-gray-300">FitLife AI Companion</h3>
             </div>
             <button 
               onClick={() => setIsAIOpen(false)}

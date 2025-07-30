@@ -194,8 +194,8 @@ const AIAssistant = () => {
           <div className="flex items-center gap-2">
             <i className="fas fa-robot text-[#62E0A1] text-xl"></i>
             <h3
-              className="text-lg font-semibold ai-glow-text"
-              style={{ position: 'relative', zIndex: 1, color: '#111' }}
+              className="text-lg font-semibold ai-glow-text text-gray-300"
+              style={{ position: 'relative', zIndex: 1 }}
             >
               FitLife AI Companion
             </h3>
@@ -275,20 +275,9 @@ const AIAssistant = () => {
           className="flex gap-2 pt-2 border-t border-[#2a2a2a] bg-transparent"
           onSubmit={handleSubmit}
         >
-          <label className="cursor-pointer flex items-center justify-center w-10 h-10 rounded-lg bg-[#1a1a1a] text-[#62E0A1] border border-[#2a2a2a] hover:bg-[#2a2a2a] hover:text-[#36CFFF] transition">
-            <i className="fas fa-paperclip"></i>
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept="image/*,.pdf,.doc,.docx,.txt"
-              className="hidden"
-              multiple
-              onChange={handleFileChange}
-            />
-          </label>
           <input
             type="text"
-            placeholder="Ask about workouts, nutrition, or upload a photo..."
+            placeholder="Ask about workouts, nutrition..."
             className="flex-1 px-4 py-2 rounded-lg bg-[#1a1a1a] border border-[#62E0A1] focus:outline-none text-white"
             value={inputMessage}
             onChange={(e) => setInputMessage(e.target.value)}
@@ -300,27 +289,6 @@ const AIAssistant = () => {
             <i className="fas fa-paper-plane"></i>
           </button>
         </form>
-
-        {/* File Preview */}
-        {selectedFiles.length > 0 && (
-          <div className="mt-2 flex flex-wrap gap-2">
-            {selectedFiles.map((file, index) => (
-              <div key={index}>
-                {file.type.startsWith('image/') ? (
-                  <img
-                    src={URL.createObjectURL(file)}
-                    className="w-16 h-16 object-cover rounded-lg border-2 border-[#F2B33D]"
-                    alt="preview"
-                  />
-                ) : (
-                  <div className="flex items-center gap-2 bg-[#1E1E1E] border border-[#F2B33D] px-2 py-1 rounded-lg text-xs text-[#F2B33D]">
-                    <i className="fas fa-file-alt"></i> {file.name}
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
-        )}
       </div>
 
       <style jsx>{`
@@ -397,7 +365,7 @@ const AIAssistant = () => {
           animation-delay: 0.4s;
         }
         .ai-glow-text {
-          color: #111; /* Black text */
+          color: #d1d5db; /* Light grey text */
           text-shadow:
             0 0 8px #62e0a1 inset,
             0 0 16px #36cfff88 inset,
