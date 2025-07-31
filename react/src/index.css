@@ -25,6 +25,33 @@ input, select, textarea {
   color: white !important;
 }
 
+/* Specific styling for contact form inputs */
+.contact-form input[type="text"],
+.contact-form input[type="email"],
+.contact-form input[type="text"]:focus,
+.contact-form input[type="email"]:focus,
+.contact-form textarea,
+.contact-form textarea:focus,
+#contact-page .contact-form input[type="text"],
+#contact-page .contact-form input[type="email"],
+#contact-page .contact-form textarea {
+  background-color: #222222 !important;
+  background: #222222 !important;
+  -webkit-background-clip: text !important;
+  background-clip: text !important;
+  -webkit-text-fill-color: white !important;
+  color: white !important;
+  border: none !important;
+  border-bottom: 1px solid #4b5563 !important;
+  border-radius: 0 !important;
+  padding: 0.25rem 0.25rem !important;
+  outline: none !important;
+  box-shadow: none !important;
+  -webkit-appearance: none !important;
+  -moz-appearance: textfield !important;
+  appearance: textfield !important;
+}
+
 input:focus, select:focus, textarea:focus {
   background-color: transparent !important;
   color: white !important;

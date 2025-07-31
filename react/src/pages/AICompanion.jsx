@@ -20,34 +20,104 @@ const AICompanion = () => {
   const chatWindowRef = useRef(null);
   const fileInputRef = useRef(null);
 
-  // Fetch chat history from backend on mount
-  useEffect(() => {
-    const fetchChatHistory = async () => {
-      try {
-        const data = await ApiService.getChatHistory();
-        if (data.success && Array.isArray(data.data)) {
-          // Map backend chat history to conversation format
-          const backendConversations = data.data.map((chat) => ({
-            id: chat._id,
-            title: chat.type.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase()),
-            messages: [
-              { id: chat._id + '-user', sender: 'user', content: chat.metadata?.question || chat.metadata?.fitnessGoals || '' },
-              { id: chat._id + '-ai', sender: 'ai', content: typeof chat.content === 'string' ? chat.content : JSON.stringify(chat.content) }
-            ],
-            timestamp: chat.createdAt,
-            lastMessage: typeof chat.content === 'string' ? chat.content : JSON.stringify(chat.content)
-          }));
-          setConversations(backendConversations);
-          if (backendConversations.length > 0) {
-            setCurrentSession(backendConversations[0].id);
-            setMessages(backendConversations[0].messages);
+  // Generate conversation title using Gemini API
+  const generateConversationTitle = async (firstMessage) => {
+    try {
+      const response = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-goog-api-key': 'AIzaSyAkJm9kDRHoDwlv39Eyvm4Se1IubxtZOto',
+        },
+        body: JSON.stringify({
+          contents: [
+            {
+              parts: [
+                { 
+                  text: `Generate a short, descriptive title (max 5 words) for a fitness conversation that starts with this message: "${firstMessage}". 
+                  Return only the title, nothing else. Make it relevant to fitness, health, or wellness.`
+                }
+              ]
+            }
+          ],
+          generationConfig: {
+            temperature: 0.3,
+            maxOutputTokens: 20,
           }
-        }
-      } catch (error) {
-        console.error('Failed to fetch chat history:', error);
+        }),
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        const title = data.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
+        return title || 'Fitness Chat';
       }
-    };
-    fetchChatHistory();
+    } catch (error) {
+      console.error('Error generating title:', error);
+    }
+    return 'Fitness Chat';
+  };
+
+  // Load conversations from localStorage and sync with backend
+  const loadConversations = async () => {
+    try {
+      // First, try to load from localStorage
+      const localConversations = localStorage.getItem('fitlife_conversations');
+      let conversations = localConversations ? JSON.parse(localConversations) : [];
+      
+      // If authenticated, sync with backend
+      if (ApiService.isAuthenticated()) {
+        try {
+          const data = await ApiService.getChatHistory();
+          if (data.success && Array.isArray(data.data)) {
+            // Map backend chat history to conversation format
+            const backendConversations = data.data.map((chat) => ({
+              id: chat._id,
+              title: chat.metadata?.title || chat.type.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase()),
+              messages: [
+                { id: chat._id + '-user', sender: 'user', content: chat.metadata?.question || chat.metadata?.fitnessGoals || '' },
+                { id: chat._id + '-ai', sender: 'ai', content: typeof chat.content === 'string' ? chat.content : JSON.stringify(chat.content) }
+              ],
+              timestamp: chat.createdAt,
+              lastMessage: typeof chat.content === 'string' ? chat.content : JSON.stringify(chat.content),
+              backendId: chat._id
+            }));
+            
+            // Merge with local conversations, prioritizing backend data
+            const backendIds = new Set(backendConversations.map(c => c.backendId));
+            const localOnlyConversations = conversations.filter(c => !c.backendId || !backendIds.has(c.backendId));
+            conversations = [...backendConversations, ...localOnlyConversations];
+          }
+        } catch (error) {
+          console.error('Failed to fetch chat history from backend:', error);
+        }
+      }
+      
+      setConversations(conversations);
+      
+      // Set current session and messages
+      if (conversations.length > 0) {
+        const currentConv = conversations.find(c => c.id === currentSession) || conversations[0];
+        setCurrentSession(currentConv.id);
+        setMessages(currentConv.messages);
+      }
+    } catch (error) {
+      console.error('Failed to load conversations:', error);
+    }
+  };
+
+  // Save conversations to localStorage
+  const saveConversationsToLocal = (conversations) => {
+    try {
+      localStorage.setItem('fitlife_conversations', JSON.stringify(conversations));
+    } catch (error) {
+      console.error('Failed to save conversations to localStorage:', error);
+    }
+  };
+
+  // Load conversations on mount
+  useEffect(() => {
+    loadConversations();
   }, []);
 
   useEffect(() => {
@@ -74,20 +144,60 @@ const AICompanion = () => {
     setMessages(conversation.messages);
   };
 
-  const deleteConversation = (conversationId) => {
-    const updatedConversations = conversations.filter(c => c.id !== conversationId);
-    setConversations(updatedConversations);
-    localStorage.setItem('fitlife_chat_history', JSON.stringify(updatedConversations));
-    
-    if (currentSession === conversationId) {
-      setCurrentSession(null);
-      setMessages([
+  const createNewConversation = () => {
+    const newConversationId = 'new-' + Date.now();
+    const newConversation = {
+      id: newConversationId,
+      title: 'New Conversation',
+      messages: [
         {
           id: 1,
           sender: 'ai',
           content: "Hi! I'm your FitLife AI companion! 💪 I'm here to help you with workouts, nutrition, form checks, and all your fitness goals. You can upload workout photos for form analysis, ask about exercises, get meal suggestions, or just chat about your fitness journey. What would you like to work on today?"
         }
-      ]);
+      ],
+      timestamp: new Date(),
+      lastMessage: "Hi! I'm your FitLife AI companion! 💪 I'm here to help you with workouts, nutrition, form checks, and all your fitness goals. You can upload workout photos for form analysis, ask about exercises, get meal suggestions, or just chat about your fitness journey. What would you like to work on today?"
+    };
+    
+    const updatedConversations = [newConversation, ...conversations];
+    setConversations(updatedConversations);
+    saveConversationsToLocal(updatedConversations);
+    setCurrentSession(newConversationId);
+    setMessages(newConversation.messages);
+  };
+
+  const deleteConversation = async (conversationId) => {
+    const conversation = conversations.find(c => c.id === conversationId);
+    const updatedConversations = conversations.filter(c => c.id !== conversationId);
+    
+    // If it's a backend conversation, delete from backend too
+    if (conversation?.backendId && ApiService.isAuthenticated()) {
+      try {
+        // Note: You might need to add a delete specific chat endpoint to your backend
+        // For now, we'll just remove from local storage
+      } catch (error) {
+        console.error('Failed to delete from backend:', error);
+      }
+    }
+    
+    setConversations(updatedConversations);
+    saveConversationsToLocal(updatedConversations);
+    
+    if (currentSession === conversationId) {
+      if (updatedConversations.length > 0) {
+        setCurrentSession(updatedConversations[0].id);
+        setMessages(updatedConversations[0].messages);
+      } else {
+        setCurrentSession(null);
+        setMessages([
+          {
+            id: 1,
+            sender: 'ai',
+            content: "Hi! I'm your FitLife AI companion! 💪 I'm here to help you with workouts, nutrition, form checks, and all your fitness goals. You can upload workout photos for form analysis, ask about exercises, get meal suggestions, or just chat about your fitness journey. What would you like to work on today?"
+          }
+        ]);
+      }
     }
   };
 
@@ -100,6 +210,7 @@ const AICompanion = () => {
       }
     }
     setConversations([]);
+    saveConversationsToLocal([]);
     setCurrentSession(null);
     setMessages([
       {
@@ -121,6 +232,7 @@ const AICompanion = () => {
     let userMessage = inputMessage.trim();
     let aiResponse = null;
     setIsTyping(true);
+    
     try {
       if (userMessage) {
         if (ApiService.isAuthenticated()) {
@@ -132,25 +244,45 @@ const AICompanion = () => {
               sender: 'ai',
               content: backendRes.data.advice.answer || 'Advice generated.'
             };
-            setMessages(prev => [
-              ...prev,
+            
+            // Update messages
+            const updatedMessages = [
+              ...messages,
               { id: Date.now(), sender: 'user', content: userMessage },
               aiResponse
-            ]);
-            // Optionally, refetch chat history to update sidebar
-            const data = await ApiService.getChatHistory();
-            if (data.success && Array.isArray(data.data)) {
-              const backendConversations = data.data.map((chat) => ({
-                id: chat._id,
-                title: chat.type.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase()),
-                messages: [
-                  { id: chat._id + '-user', sender: 'user', content: chat.metadata?.question || chat.metadata?.fitnessGoals || '' },
-                  { id: chat._id + '-ai', sender: 'ai', content: typeof chat.content === 'string' ? chat.content : JSON.stringify(chat.content) }
-                ],
-                timestamp: chat.createdAt,
-                lastMessage: typeof chat.content === 'string' ? chat.content : JSON.stringify(chat.content)
-              }));
-              setConversations(backendConversations);
+            ];
+            setMessages(updatedMessages);
+            
+            // Update current conversation in place
+            if (currentSession) {
+              const updatedConversations = conversations.map(conv => {
+                if (conv.id === currentSession) {
+                  const updatedConv = {
+                    ...conv,
+                    messages: updatedMessages,
+                    lastMessage: aiResponse.content,
+                    timestamp: new Date()
+                  };
+                  
+                  // Generate title if this is the first user message
+                  if (conv.messages.length === 1 && conv.messages[0].sender === 'ai') {
+                    generateConversationTitle(userMessage).then(title => {
+                      updatedConv.title = title;
+                      const finalConversations = conversations.map(c => 
+                        c.id === currentSession ? updatedConv : c
+                      );
+                      setConversations(finalConversations);
+                      saveConversationsToLocal(finalConversations);
+                    });
+                  }
+                  
+                  return updatedConv;
+                }
+                return conv;
+              });
+              
+              setConversations(updatedConversations);
+              saveConversationsToLocal(updatedConversations);
             }
           }
         } else {
@@ -162,21 +294,59 @@ const AICompanion = () => {
               sender: 'ai',
               content: publicRes.data.advice.answer || 'Advice generated.'
             };
-            setMessages(prev => [
-              ...prev,
+            
+            // Update messages
+            const updatedMessages = [
+              ...messages,
               { id: Date.now(), sender: 'user', content: userMessage },
               aiResponse
-            ]);
+            ];
+            setMessages(updatedMessages);
+            
+            // Update current conversation in place
+            if (currentSession) {
+              const updatedConversations = conversations.map(conv => {
+                if (conv.id === currentSession) {
+                  const updatedConv = {
+                    ...conv,
+                    messages: updatedMessages,
+                    lastMessage: aiResponse.content,
+                    timestamp: new Date()
+                  };
+                  
+                  // Generate title if this is the first user message
+                  if (conv.messages.length === 1 && conv.messages[0].sender === 'ai') {
+                    generateConversationTitle(userMessage).then(title => {
+                      updatedConv.title = title;
+                      const finalConversations = conversations.map(c => 
+                        c.id === currentSession ? updatedConv : c
+                      );
+                      setConversations(finalConversations);
+                      saveConversationsToLocal(finalConversations);
+                    });
+                  }
+                  
+                  return updatedConv;
+                }
+                return conv;
+              });
+              
+              setConversations(updatedConversations);
+              saveConversationsToLocal(updatedConversations);
+            }
           }
         }
       }
     } catch (error) {
       console.error('Error sending message:', error);
-      setMessages(prev => [
-        ...prev,
-        { id: Date.now(), sender: 'ai', content: "I'm having trouble connecting right now. Please try again in a moment!" }
-      ]);
+      const errorMessage = {
+        id: Date.now(),
+        sender: 'ai',
+        content: "I'm having trouble connecting right now. Please try again in a moment!"
+      };
+      setMessages(prev => [...prev, errorMessage]);
     }
+    
     setInputMessage('');
     setSelectedFiles([]);
     if (fileInputRef.current) fileInputRef.current.value = '';
@@ -196,18 +366,28 @@ const AICompanion = () => {
         <div className="w-80 bg-[#1E1E1E] rounded-2xl shadow-lg p-4 flex flex-col">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-lg font-semibold text-white">Chat History</h3>
-            <button 
-              onClick={clearHistory}
-              className="text-[#F2B33D] hover:text-yellow-400 text-sm transition"
-            >
-              <i className="fas fa-trash"></i> Clear
-            </button>
+            <div className="flex items-center gap-2">
+              <button 
+                onClick={createNewConversation}
+                className="text-[#62E0A1] hover:text-[#36CFFF] text-sm transition"
+                title="Create New Conversation"
+              >
+                <i className="fas fa-plus"></i> New
+              </button>
+              <button 
+                onClick={clearHistory}
+                className="text-[#F2B33D] hover:text-yellow-400 text-sm transition"
+                title="Clear All History"
+              >
+                <i className="fas fa-trash"></i> Clear
+              </button>
+            </div>
           </div>
           <div className="flex-1 overflow-y-auto space-y-2">
             {conversations.map(conv => (
               <div 
                 key={conv.id}
-                className="bg-[#121212] p-3 rounded-lg cursor-pointer hover:bg-gray-700 transition group"
+                className={`bg-[#121212] p-3 rounded-lg cursor-pointer hover:bg-gray-700 transition group ${currentSession === conv.id ? 'ring-2 ring-[#62E0A1]' : ''}`}
                 onClick={() => loadConversation(conv.id)}
               >
                 <div className="flex items-center justify-between">
