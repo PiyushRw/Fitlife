@@ -57,7 +57,8 @@ const Contact = () => {
   };
 
   return (
-    <div className="bg-[#121212] text-white font-sans min-h-screen w-full">
+    <div id="contact-page" className="min-h-screen bg-[#121212] text-white pt-24 sm:pt-32 px-4 sm:px-6 lg:px-8">
+
 
 
       <div className="bg-[#121212] w-full h-6"></div>
@@ -111,12 +112,13 @@ const Contact = () => {
           </div>
 
           {/* Contact Form */}
-          <form className="sm:w-2/3 p-6 sm:p-8 space-y-6 bg-[#222222] rounded-b-xl sm:rounded-r-xl sm:rounded-bl-none" onSubmit={handleSubmit}>
+          <form className="contact-form sm:w-2/3 p-6 sm:p-8 space-y-6 bg-[#222222] rounded-b-xl sm:rounded-r-xl sm:rounded-bl-none" onSubmit={handleSubmit}>
+
             <div className="flex flex-col sm:flex-row sm:space-x-6 space-y-6 sm:space-y-0">
               <div className="flex-1">
                 <label className="block text-[11px] font-semibold text-gray-300 mb-1" htmlFor="name">Your Name</label>
                 <input 
-                  className="w-full border-b border-gray-500 bg-transparent text-[13px] font-semibold text-white focus:outline-none focus:border-[#24d0a4] pb-1" 
+                  className="w-full fitlife-input"
                   id="name" 
                   name="name" 
                   type="text" 
@@ -128,7 +130,7 @@ const Contact = () => {
               <div className="flex-1">
                 <label className="block text-[11px] font-semibold text-gray-300 mb-1" htmlFor="email">Your Email</label>
                 <input 
-                  className="w-full border-b border-gray-500 bg-transparent text-[13px] font-semibold text-white focus:outline-none focus:border-[#24d0a4] pb-1" 
+                  className="w-full fitlife-input"
                   id="email" 
                   name="email" 
                   type="email" 
@@ -142,7 +144,7 @@ const Contact = () => {
             <div>
               <label className="block text-[11px] font-semibold text-gray-300 mb-1" htmlFor="subject">Your Subject</label>
               <input 
-                className="w-full border-b border-gray-500 bg-transparent text-[13px] font-semibold text-white focus:outline-none focus:border-[#24d0a4] pb-1" 
+                className="w-full"
                 id="subject" 
                 name="subject" 
                 type="text" 
@@ -155,7 +157,7 @@ const Contact = () => {
             <div>
               <label className="block text-[11px] font-semibold text-[#24d0a4] mb-1" htmlFor="message">Message</label>
               <textarea 
-                className="w-full border-b border-gray-500 bg-transparent text-[13px] font-normal text-white focus:outline-none focus:border-[#24d0a4] pb-1 resize-none" 
+                className="w-full resize-none fitlife-input"
                 id="message" 
                 name="message" 
                 rows="3" 

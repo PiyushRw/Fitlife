@@ -1373,25 +1373,21 @@ const Nutrition = () => {
                       ))}
                     </div>
                   </div>
-                </div>
-                {/* Day Selection */}
-                <div className="mt-6">
-                  <label className="block mb-3 text-base font-semibold text-white">Select Plan Duration</label>
-                  <div className="flex flex-wrap gap-2">
-                    {[1, 2, 3, 4, 5, 6, 7].map((days) => (
-                      <button
-                        key={days}
-                        type="button"
-                        onClick={() => setSelectedDays(days)}
-                        className={`px-4 py-2 rounded-full font-medium transition ${
-                          selectedDays === days
-                            ? 'bg-gradient-to-r from-[#62E0A1] to-[#36CFFF] text-black'
-                            : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
-                        }`}
-                      >
-                        {days} Day{days > 1 ? 's' : ''}
-                      </button>
-                    ))}
+                  {/* Plan Duration */}
+                  <div className="mt-6">
+                    <label className="block mb-3 text-base font-semibold text-white">Select Plan Duration</label>
+                    <div className="flex flex-wrap gap-2">
+                      {[1, 2, 3, 4, 5, 6, 7].map((days) => (
+                        <button
+                          key={days}
+                          type="button"
+                          onClick={() => setSelectedDays(days)}
+                          className={`plan-btn ${selectedDays === days ? 'selected' : ''}`}
+                        >
+                          {days} Day{days > 1 ? 's' : ''}
+                        </button>
+                      ))}
+                    </div>
                   </div>
                 </div>
                 {/* Combined Tags and Input Box with Action Box */}
@@ -1399,15 +1395,19 @@ const Nutrition = () => {
                   <div className="flex-1 flex flex-col gap-2 p-4 bg-[#121212] rounded-lg border border-gray-700 min-h-[56px]">
                     <div className="flex items-center gap-2 px-2 py-1 rounded bg-transparent border-none min-h-[40px] h-[40px] overflow-x-auto overflow-y-hidden flex-wrap-nowrap">
                       {allTags.map((tag, index) => (
-                        <span key={index} className="bg-[#62E0A1] text-black rounded-full px-3 py-1 text-sm font-medium flex items-center gap-2">
+                        <div key={index} className="bg-[#62E0A1] text-black rounded px-2 py-1 text-sm font-medium flex items-center gap-1 mr-1">
                           {tag}
                           <button 
-                            onClick={() => removeTag(Object.keys(selectedTags).find(key => selectedTags[key].includes(tag)), tag)}
-                            className="text-black hover:text-gray-700"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              removeTag(Object.keys(selectedTags).find(key => selectedTags[key].includes(tag)), tag);
+                            }}
+                            className="text-black hover:text-gray-700 text-xs ml-1"
+                            title="Remove tag"
                           >
                             ×
                           </button>
-                        </span>
+                        </div>
                       ))}
                       <input 
                         type="text" 
@@ -1441,22 +1441,25 @@ const Nutrition = () => {
                       type="button" 
                       onClick={generateNutritionPlan}
                       disabled={isGenerating}
-                      className="bg-gradient-to-r from-[#62E0A1] to-[#F2B33D] text-white px-6 py-2 rounded-full font-semibold flex items-center justify-center gap-2 shadow-lg border-2 border-[#F2B33D] hover:scale-105 focus:ring-2 focus:ring-[#F2B33D] focus:ring-opacity-50 transition-all w-full disabled:opacity-50 disabled:cursor-not-allowed" 
-                      title="Send"
+                      className="relative overflow-hidden group bg-gradient-to-br from-[#1a2a3a] to-[#0f1724] text-[#e2e8f0] px-6 py-2.5 rounded-lg font-semibold flex items-center justify-center gap-2 w-full disabled:opacity-60 disabled:cursor-not-allowed
+                        border border-[#2d3748] hover:border-[#4299e1] transition-all duration-300 ease-out
+                        hover:shadow-[0_0_15px_rgba(66,153,225,0.2)]"
+                      title="Generate Nutrition Plan"
                     >
-                      {isGenerating ? (
-                        <div className="flex items-center justify-center gap-2">
-                          <div className="w-5 h-5">
-                            <div className="w-full h-full border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                          </div>
-                          <span className="hidden md:inline">Generating...</span>
-                        </div>
-                      ) : (
-                        <>
-                          <i className="fas fa-paper-plane text-lg"></i>
-                          <span className="hidden md:inline">Send</span>
-                        </>
-                      )}
+                      <span className="relative z-10 flex items-center gap-2">
+                        {isGenerating ? (
+                          <>
+                            <div className="w-4 h-4 border-2 border-[#62E0A1] border-t-transparent rounded-full animate-spin"></div>
+                            <span className="hidden md:inline text-[#a0aec0]">Generating...</span>
+                          </>
+                        ) : (
+                          <>
+                            <i className="fas fa-magic text-[#62E0A1]"></i>
+                            <span className="hidden md:inline text-[#e2e8f0]">Generate Plan</span>
+                          </>
+                        )}
+                      </span>
+                      <span className="absolute inset-0 bg-gradient-to-r from-[#4299e1] to-[#38b2ac] opacity-0 group-hover:opacity-10 transition-opacity duration-300"></span>
                     </button>
                   </div>
                 </div>
@@ -1690,39 +1693,38 @@ const Nutrition = () => {
           </div>
         </div>
       )}
-
+      
       <style jsx>{`
         .plan-btn {
-          min-width: 110px;
-          min-height: 38px;
-          padding: 0.5em 1em;
-          border-radius: 9999px;
+          background: #1a1a1a;
+          border: 1px solid #333;
+          color: #e5e7eb;
+          padding: 0.5rem 1rem;
+          border-radius: 6px;
+          font-size: 0.9rem;
           font-weight: 500;
-          font-size: 1rem;
-          border: 2px solid #333 !important;
-          background: linear-gradient(90deg, #232526 0%, #414345 100%) !important;
-          color: #e5e7eb !important;
-          box-shadow: 0 2px 8px 0 rgba(0,0,0,0.10);
-          transition: background 0.18s, color 0.18s, border 0.18s, box-shadow 0.18s;
           cursor: pointer;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          margin: 0.18em 0.3em 0.18em 0;
+          transition: all 0.2s ease;
+          margin: 0.1rem;
+          white-space: nowrap;
         }
-        .plan-btn.selected, .plan-btn:focus {
-          background: linear-gradient(90deg, #62E0A1 0%, #36CFFF 100%) !important;
-          color: #111 !important;
-          border-color: #62E0A1 !important;
+        
+        .plan-btn:hover {
+          background: #2a2a2a;
+          border-color: #62E0A1;
+          color: #fff;
+        }
+        
+        .plan-btn.selected {
+          background: linear-gradient(90deg, #62E0A1 0%, #36CFFF 100%);
+          color: #111;
+          border-color: #62E0A1;
+          box-shadow: 0 4px 16px 0 rgba(98, 224, 161, 0.15);
+        }
+        
+        .plan-btn:focus {
           outline: none;
-          box-shadow: 0 4px 16px 0 rgba(98,224,161,0.15) !important;
-        }
-        @keyframes marquee {
-          0% { transform: translateX(0); }
-          100% { transform: translateX(-50%); }
-        }
-        .animate-marquee {
-          animation: marquee 32s linear infinite;
+          box-shadow: 0 0 0 2px rgba(98, 224, 161, 0.3);
         }
       `}</style>
     </div>

@@ -17,13 +17,27 @@ const NutritionCarousel = ({ items }) => {
       grabCursor={true}
       centeredSlides={true}
       slidesPerView={3}
+      spaceBetween={20}
       loop={true}
       coverflowEffect={{
-        rotate: 46,
+        rotate: 10,
         stretch: 0,
-        depth: 330,
-        modifier: 1,
+        depth: 200,
+        modifier: 1.2,
         slideShadows: false,
+        scale: 0.9,
+      }}
+      breakpoints={{
+        640: {
+          slidesPerView: 3,
+          coverflowEffect: {
+            rotate: 10,
+            stretch: 0,
+            depth: 200,
+            modifier: 1.2,
+            scale: 0.9
+          }
+        }
       }}
       autoplay={{
         delay: 3000,
