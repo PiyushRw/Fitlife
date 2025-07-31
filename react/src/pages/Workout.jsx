@@ -15,6 +15,8 @@ const Workout = () => {
     { id: 2, name: 'Incline Dumbbell Press', sets: 3, reps: 12 },
     { id: 3, name: 'Tricep Dips', sets: 3, reps: 15 }
   ]);
+  const [completedExercisesCount, setCompletedExercisesCount] = useState(0);
+  const [totalExercisesCount, setTotalExercisesCount] = useState(workoutList.length);
   const [showAddModal, setShowAddModal] = useState(false);
   const [selectedMuscleGroup, setSelectedMuscleGroup] = useState('Select Muscle Group');
   const [selectedSubgroup, setSelectedSubgroup] = useState('Select Subgroup');
@@ -44,6 +46,10 @@ const Workout = () => {
     bodyParts: [],
     frequency: '3-4 times per week'
   });
+
+  const [streak, setStreak] = useState(0);
+  const [workoutDuration, setWorkoutDuration] = useState(0); // in minutes
+  const [caloriesBurned, setCaloriesBurned] = useState(0);
 
   const subgroupOptions = {
     'Chest': ['Upper Chest', 'Lower Chest', 'Inner Chest', 'Outer Chest'],
@@ -113,6 +119,7 @@ const Workout = () => {
 
   const removeExercise = (id) => {
     setWorkoutList(prev => prev.filter(exercise => exercise.id !== id));
+    setTotalExercisesCount(prev => Math.max(prev - 1, 0));
   };
 
   const addExercise = async (e) => {
@@ -156,6 +163,7 @@ const Workout = () => {
         };
         
         setWorkoutList(prev => [...prev, newExercise]);
+        setTotalExercisesCount(prev => prev + 1);
         setModalExercise('Select Exercise');
         setModalSets('');
         setModalReps('');
@@ -175,11 +183,42 @@ const Workout = () => {
       };
       
       setWorkoutList(prev => [...prev, newExercise]);
+      setTotalExercisesCount(prev => prev + 1);
       setModalExercise('Select Exercise');
       setModalSets('');
       setModalReps('');
       setShowAddModal(false);
     }
+  };
+
+  const toggleDoneForm = (exerciseId) => {
+    setDoneFormOpenFor(prev => (prev === exerciseId ? null : exerciseId));
+    setDoneFormData({ weight: '', satisfied: false });
+  };
+
+  const handleDoneFormChange = (e) => {
+    const { name, value, type, checked } = e.target;
+    setDoneFormData(prev => ({
+      ...prev,
+      [name]: type === 'checkbox' ? checked : value
+    }));
+  };
+
+  const handleDoneFormSubmit = (e, exerciseId) => {
+    e.preventDefault();
+    // Here you can handle the submitted data (e.g., save to backend)
+    setCompletedExercisesCount(prev => {
+      const newCount = Math.min(prev + 1, totalExercisesCount);
+      if (newCount > 0) {
+        setStreak(1);
+        setWorkoutDuration(prevDuration => prevDuration + Math.floor(Math.random() * 4) + 10); 
+        setCaloriesBurned(prevCalories => prevCalories + Math.floor(Math.random() * 11) + 15); 
+      }
+      return newCount;
+    });
+    setWorkoutList(prev => prev.filter(exercise => exercise.id !== exerciseId));
+    setDoneFormOpenFor(null);
+    setDoneFormData({ weight: '', satisfied: false });
   };
 
   const getCurrentSubgroupOptions = () => {
@@ -430,33 +469,36 @@ const Workout = () => {
               <div className="bg-[#62E0A1] text-black rounded-full w-8 h-8 flex items-center justify-center mx-auto">
                 <i className="fas fa-calendar-check"></i>
               </div>
-              <p className="text-sm">Streak</p>
-              <p className="text-lg font-bold">5 Days</p>
-            </div>
-            <div className="bg-[#121212] rounded-xl p-4 text-center">
-              <div className="bg-[#36CFFF] text-black rounded-full w-8 h-8 flex items-center justify-center mx-auto">
-                <i className="fas fa-stopwatch"></i>
-              </div>
-              <p className="text-sm">Workout Duration</p>
-              <p className="text-lg font-bold">1 hr 15 min</p>
-            </div>
-            <div className="bg-[#121212] rounded-xl p-4 text-center">
-              <div className="bg-[#F2B33D] text-black rounded-full w-8 h-8 flex items-center justify-center mx-auto">
-                <i className="fas fa-fire"></i>
-              </div>
-              <p className="text-sm">Calories Burned</p>
-              <p className="text-lg font-bold">320 kcal</p>
-            </div>
-          </section>
+          <p className="text-sm">Streak</p>
+          <p className="text-lg font-bold">{streak} {streak === 1 ? 'Day' : 'Days'}</p>
+        </div>
+        <div className="bg-[#121212] rounded-xl p-4 text-center">
+          <div className="bg-[#36CFFF] text-black rounded-full w-8 h-8 flex items-center justify-center mx-auto">
+            <i className="fas fa-stopwatch"></i>
+          </div>
+          <p className="text-sm">Workout Duration</p>
+          <p className="text-lg font-bold">{workoutDuration} min</p>
+        </div>
+        <div className="bg-[#121212] rounded-xl p-4 text-center">
+          <div className="bg-[#F2B33D] text-black rounded-full w-8 h-8 flex items-center justify-center mx-auto">
+            <i className="fas fa-fire"></i>
+          </div>
+          <p className="text-sm">Calories Burned</p>
+          <p className="text-lg font-bold">{caloriesBurned} kcal</p>
+        </div>
+      </section>
 
           {/* Progress Bar */}
           <section className="bg-[#121212] p-4 rounded-xl">
             <p className="mb-2 text-sm font-semibold">Workout Completion</p>
-            <p className="mb-1 text-xs">Completed: 8 / 10 sets</p>
-            <div className="h-2 bg-gray-700 rounded-full">
-              <div className="h-2 bg-[#62E0A1] rounded-full w-[80%]"></div>
-            </div>
-          </section>
+          <p className="mb-1 text-xs">Completed: {completedExercisesCount} / {totalExercisesCount} sets</p>
+          <div className="h-2 bg-gray-700 rounded-full">
+            <div 
+              className="h-2 bg-[#62E0A1] rounded-full" 
+              style={{ width: `${(completedExercisesCount / totalExercisesCount) * 100}%` }}
+            ></div>
+          </div>
+        </section>
 
           {/* Today's Workout List */}
           <section className="bg-[#121212] p-4 rounded-xl">
