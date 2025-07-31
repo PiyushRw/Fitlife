@@ -45,29 +45,91 @@ const Nutrition = () => {
   const [aiMealPlan, setAiMealPlan] = useState(null);
   const [loadingMealPlan, setLoadingMealPlan] = useState(false);
 
+  // Plan History State
+  const [planHistory, setPlanHistory] = useState([]);
+  const [showHistoryModal, setShowHistoryModal] = useState(false);
+  const [loadingHistory, setLoadingHistory] = useState(false);
+
   // Place this at the top level inside Nutrition component, after useState declarations:
   const fetchAiMealPlan = async () => {
     setLoadingMealPlan(true);
     try {
       const token = localStorage.getItem('fitlife_token');
-      if (!token) return;
+      if (!token) {
+        console.log('❌ No token found for AI meal plan');
+        return;
+      }
+      console.log('🔍 Fetching AI meal plan...');
       const response = await fetch('http://127.0.0.1:5001/api/v1/nutrition/latest-ai-plan', {
         headers: { 'Authorization': `Bearer ${token}` }
       });
+      console.log('📡 AI meal plan response status:', response.status);
       if (response.ok) {
         const data = await response.json();
+        console.log('📊 AI meal plan data:', data);
         if (data.success && data.data) {
+          console.log('✅ Setting AI meal plan');
           setAiMealPlan(data.data);
+        } else {
+          console.log('❌ No AI meal plan data or success is false');
         }
+      } else {
+        console.log('❌ AI meal plan response not ok:', response.status, response.statusText);
       }
     } catch (error) {
-      console.error('Error fetching AI meal plan:', error);
+      console.error('❌ Error fetching AI meal plan:', error);
     } finally {
       setLoadingMealPlan(false);
     }
   };
 
+  // Fetch real nutrition plan history from database
+  const fetchPlanHistory = async () => {
+    setLoadingHistory(true);
+    try {
+      const token = localStorage.getItem('fitlife_token');
+      if (!token) {
+        console.log('❌ No token found');
+        return;
+      }
+      
+      console.log('🔍 Fetching real plan history...');
+      const response = await fetch('http://127.0.0.1:5001/api/v1/nutrition/plan-history', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        console.log('📊 Real plan history data:', data);
+        if (data.success && data.data && Array.isArray(data.data)) {
+          console.log('✅ Setting real plan history:', data.data.length, 'plans found');
+          setPlanHistory(data.data);
+        } else {
+          console.log('❌ No real data in response');
+          setPlanHistory([]);
+        }
+      } else {
+        console.log('❌ Failed to fetch plan history:', response.status);
+        setPlanHistory([]);
+      }
+    } catch (error) {
+      console.error('❌ Error fetching plan history:', error);
+      setPlanHistory([]);
+    } finally {
+      setLoadingHistory(false);
+    }
+  };
+
+  // Show real plan history modal
+  const handleShowHistory = async () => {
+    await fetchPlanHistory();
+    setShowHistoryModal(true);
+  };
+
   React.useEffect(() => {
+    // Fetch latest AI meal plan
+    fetchAiMealPlan();
+    
     const fetchUserData = async () => {
       setLoading(true);
       setError(null);
@@ -124,6 +186,11 @@ const Nutrition = () => {
       }
     };
     fetchDailyIntake();
+  }, []);
+
+  // Add useEffect to fetch plan history on component mount
+  React.useEffect(() => {
+    fetchPlanHistory();
   }, []);
 
   // Add useEffect to fetch AI meal plan from database
@@ -309,12 +376,12 @@ const Nutrition = () => {
 
       // Calculate protein target based on goals (higher protein for fitness goals)
       const calculateProteinTarget = (goals, targetCalories) => {
-        let proteinPercentage = 20; // Default 20% protein (reduced from 30%)
+        let proteinPercentage = 25; // Default 25% protein for balanced nutrition
         
         if (goals.includes('Muscle Gain') || goals.includes('High Protein')) {
-          proteinPercentage = 30; // Higher protein for muscle gain (reduced from 40%)
+          proteinPercentage = 35; // Higher protein for muscle gain
         } else if (goals.includes('Weight Loss')) {
-          proteinPercentage = 25; // Higher protein for weight loss to preserve muscle (reduced from 35%)
+          proteinPercentage = 30; // Higher protein for weight loss to preserve muscle
         }
         
         return Math.round((proteinPercentage / 100) * targetCalories / 4);
@@ -367,337 +434,11 @@ const Nutrition = () => {
               fats: Math.round((result.data.recommendation.macroSplit.fats / 100) * result.data.recommendation.targetCalories / 9)
             }
           },
-          mealPlan: result.data.recommendation.dailyPlans || {
-            day1: {
-              breakfast: {
-                name: 'Protein Oatmeal Bowl',
-                calories: result.data.recommendation.targetCalories * 0.25,
-                protein: Math.round((result.data.recommendation.macroSplit.protein / 100) * result.data.recommendation.targetCalories * 0.25 / 4) + 15,
-                carbs: Math.round((result.data.recommendation.macroSplit.carbohydrates / 100) * result.data.recommendation.targetCalories * 0.25 / 4),
-                fats: Math.round((result.data.recommendation.macroSplit.fats / 100) * result.data.recommendation.targetCalories * 0.25 / 9),
-                ingredients: ['Oatmeal', 'Banana', 'Almonds', 'Protein Powder'],
-                instructions: 'Cook oatmeal with water, add protein powder, top with sliced banana and almonds'
-              },
-              lunch: {
-                name: 'Grilled Chicken Quinoa Bowl',
-                calories: result.data.recommendation.targetCalories * 0.35,
-                protein: Math.round((result.data.recommendation.macroSplit.protein / 100) * result.data.recommendation.targetCalories * 0.35 / 4) + 25,
-                carbs: Math.round((result.data.recommendation.macroSplit.carbohydrates / 100) * result.data.recommendation.targetCalories * 0.35 / 4),
-                fats: Math.round((result.data.recommendation.macroSplit.fats / 100) * result.data.recommendation.targetCalories * 0.35 / 9),
-                ingredients: ['Chicken Breast', 'Quinoa', 'Broccoli', 'Olive Oil'],
-                instructions: 'Grill chicken, cook quinoa, steam broccoli, combine with olive oil'
-              },
-              dinner: {
-                name: 'Salmon with Sweet Potato',
-                calories: result.data.recommendation.targetCalories * 0.30,
-                protein: Math.round((result.data.recommendation.macroSplit.protein / 100) * result.data.recommendation.targetCalories * 0.30 / 4) + 20,
-                carbs: Math.round((result.data.recommendation.macroSplit.carbohydrates / 100) * result.data.recommendation.targetCalories * 0.30 / 4),
-                fats: Math.round((result.data.recommendation.macroSplit.fats / 100) * result.data.recommendation.targetCalories * 0.30 / 9),
-                ingredients: ['Salmon', 'Sweet Potato', 'Spinach', 'Lemon'],
-                instructions: 'Bake salmon with lemon, roast sweet potato, sauté spinach'
-              },
-              snack1: {
-                name: 'Greek Yogurt with Berries',
-                calories: result.data.recommendation.targetCalories * 0.05,
-                protein: Math.round((result.data.recommendation.macroSplit.protein / 100) * result.data.recommendation.targetCalories * 0.05 / 4) + 8,
-                carbs: Math.round((result.data.recommendation.macroSplit.carbohydrates / 100) * result.data.recommendation.targetCalories * 0.05 / 4),
-                fats: Math.round((result.data.recommendation.macroSplit.fats / 100) * result.data.recommendation.targetCalories * 0.05 / 9),
-                ingredients: ['Greek Yogurt', 'Mixed Berries'],
-                instructions: 'Mix Greek yogurt with fresh berries'
-              },
-              snack2: {
-                name: 'Apple with Peanut Butter',
-                calories: result.data.recommendation.targetCalories * 0.05,
-                protein: Math.round((result.data.recommendation.macroSplit.protein / 100) * result.data.recommendation.targetCalories * 0.05 / 4) + 8,
-                carbs: Math.round((result.data.recommendation.macroSplit.carbohydrates / 100) * result.data.recommendation.targetCalories * 0.05 / 4),
-                fats: Math.round((result.data.recommendation.macroSplit.fats / 100) * result.data.recommendation.targetCalories * 0.05 / 9),
-                ingredients: ['Apple', 'Peanut Butter'],
-                instructions: 'Slice apple and serve with peanut butter'
-              }
-            },
-            day2: {
-              breakfast: {
-                name: 'Protein Pancakes',
-                calories: result.data.recommendation.targetCalories * 0.25,
-                protein: Math.round((result.data.recommendation.macroSplit.protein / 100) * result.data.recommendation.targetCalories * 0.25 / 4) + 15,
-                carbs: Math.round((result.data.recommendation.macroSplit.carbohydrates / 100) * result.data.recommendation.targetCalories * 0.25 / 4),
-                fats: Math.round((result.data.recommendation.macroSplit.fats / 100) * result.data.recommendation.targetCalories * 0.25 / 9),
-                ingredients: ['Egg Whites', 'Flour', 'Banana', 'Chia Seeds'],
-                instructions: 'Mix egg whites, flour, banana, and chia seeds. Cook pancakes on a non-stick pan.'
-              },
-              lunch: {
-                name: 'Grilled Tofu Stir Fry',
-                calories: result.data.recommendation.targetCalories * 0.35,
-                protein: Math.round((result.data.recommendation.macroSplit.protein / 100) * result.data.recommendation.targetCalories * 0.35 / 4) + 25,
-                carbs: Math.round((result.data.recommendation.macroSplit.carbohydrates / 100) * result.data.recommendation.targetCalories * 0.35 / 4),
-                fats: Math.round((result.data.recommendation.macroSplit.fats / 100) * result.data.recommendation.targetCalories * 0.35 / 9),
-                ingredients: ['Tofu', 'Broccoli', 'Carrots', 'Soy Sauce'],
-                instructions: 'Grill tofu, stir fry broccoli and carrots with soy sauce.'
-              },
-              dinner: {
-                name: 'Chicken Caesar Salad',
-                calories: result.data.recommendation.targetCalories * 0.30,
-                protein: Math.round((result.data.recommendation.macroSplit.protein / 100) * result.data.recommendation.targetCalories * 0.30 / 4) + 20,
-                carbs: Math.round((result.data.recommendation.macroSplit.carbohydrates / 100) * result.data.recommendation.targetCalories * 0.30 / 4),
-                fats: Math.round((result.data.recommendation.macroSplit.fats / 100) * result.data.recommendation.targetCalories * 0.30 / 9),
-                ingredients: ['Chicken Breast', 'Romaine Lettuce', 'Caesar Dressing', 'Parmesan Cheese'],
-                instructions: 'Grill chicken, toss with romaine lettuce, Caesar dressing, and parmesan.'
-              },
-              snack1: {
-                name: 'Hummus with Veggies',
-                calories: result.data.recommendation.targetCalories * 0.05,
-                protein: Math.round((result.data.recommendation.macroSplit.protein / 100) * result.data.recommendation.targetCalories * 0.05 / 4) + 8,
-                carbs: Math.round((result.data.recommendation.macroSplit.carbohydrates / 100) * result.data.recommendation.targetCalories * 0.05 / 4),
-                fats: Math.round((result.data.recommendation.macroSplit.fats / 100) * result.data.recommendation.targetCalories * 0.05 / 9),
-                ingredients: ['Hummus', 'Carrots', 'Celery'],
-                instructions: 'Mix hummus with carrots and celery.'
-              },
-              snack2: {
-                name: 'Apple with Almond Butter',
-                calories: result.data.recommendation.targetCalories * 0.05,
-                protein: Math.round((result.data.recommendation.macroSplit.protein / 100) * result.data.recommendation.targetCalories * 0.05 / 4) + 8,
-                carbs: Math.round((result.data.recommendation.macroSplit.carbohydrates / 100) * result.data.recommendation.targetCalories * 0.05 / 4),
-                fats: Math.round((result.data.recommendation.macroSplit.fats / 100) * result.data.recommendation.targetCalories * 0.05 / 9),
-                ingredients: ['Apple', 'Almond Butter'],
-                instructions: 'Slice apple and serve with almond butter'
-              }
-            },
-            day3: {
-              breakfast: {
-                name: 'Avocado Toast with Egg',
-                calories: result.data.recommendation.targetCalories * 0.25,
-                protein: Math.round((result.data.recommendation.macroSplit.protein / 100) * result.data.recommendation.targetCalories * 0.25 / 4) + 15,
-                carbs: Math.round((result.data.recommendation.macroSplit.carbohydrates / 100) * result.data.recommendation.targetCalories * 0.25 / 4),
-                fats: Math.round((result.data.recommendation.macroSplit.fats / 100) * result.data.recommendation.targetCalories * 0.25 / 9),
-                ingredients: ['Avocado', 'Egg Whites', 'Whole Wheat Bread', 'Spinach'],
-                instructions: 'Toast bread, spread avocado, top with egg whites and spinach.'
-              },
-              lunch: {
-                name: 'Quinoa Chickpea Salad',
-                calories: result.data.recommendation.targetCalories * 0.35,
-                protein: Math.round((result.data.recommendation.macroSplit.protein / 100) * result.data.recommendation.targetCalories * 0.35 / 4) + 25,
-                carbs: Math.round((result.data.recommendation.macroSplit.carbohydrates / 100) * result.data.recommendation.targetCalories * 0.35 / 4),
-                fats: Math.round((result.data.recommendation.macroSplit.fats / 100) * result.data.recommendation.targetCalories * 0.35 / 9),
-                ingredients: ['Quinoa', 'Chickpeas', 'Tomatoes', 'Olive Oil'],
-                instructions: 'Cook quinoa, mix with chickpeas, tomatoes, and olive oil.'
-              },
-              dinner: {
-                name: 'Beef and Broccoli Stir Fry',
-                calories: result.data.recommendation.targetCalories * 0.30,
-                protein: Math.round((result.data.recommendation.macroSplit.protein / 100) * result.data.recommendation.targetCalories * 0.30 / 4) + 20,
-                carbs: Math.round((result.data.recommendation.macroSplit.carbohydrates / 100) * result.data.recommendation.targetCalories * 0.30 / 4),
-                fats: Math.round((result.data.recommendation.macroSplit.fats / 100) * result.data.recommendation.targetCalories * 0.30 / 9),
-                ingredients: ['Beef Sirloin', 'Broccoli', 'Carrots', 'Soy Sauce'],
-                instructions: 'Stir fry beef, broccoli, and carrots with soy sauce.'
-              },
-              snack1: {
-                name: 'Greek Yogurt with Honey',
-                calories: result.data.recommendation.targetCalories * 0.05,
-                protein: Math.round((result.data.recommendation.macroSplit.protein / 100) * result.data.recommendation.targetCalories * 0.05 / 4) + 8,
-                carbs: Math.round((result.data.recommendation.macroSplit.carbohydrates / 100) * result.data.recommendation.targetCalories * 0.05 / 4),
-                fats: Math.round((result.data.recommendation.macroSplit.fats / 100) * result.data.recommendation.targetCalories * 0.05 / 9),
-                ingredients: ['Greek Yogurt', 'Honey'],
-                instructions: 'Mix Greek yogurt with honey.'
-              },
-              snack2: {
-                name: 'Apple with Cinnamon',
-                calories: result.data.recommendation.targetCalories * 0.05,
-                protein: Math.round((result.data.recommendation.macroSplit.protein / 100) * result.data.recommendation.targetCalories * 0.05 / 4) + 8,
-                carbs: Math.round((result.data.recommendation.macroSplit.carbohydrates / 100) * result.data.recommendation.targetCalories * 0.05 / 4),
-                fats: Math.round((result.data.recommendation.macroSplit.fats / 100) * result.data.recommendation.targetCalories * 0.05 / 9),
-                ingredients: ['Apple', 'Cinnamon'],
-                instructions: 'Slice apple and sprinkle cinnamon.'
-              }
-            },
-            day4: {
-              breakfast: {
-                name: 'Greek Yogurt Parfait',
-                calories: result.data.recommendation.targetCalories * 0.25,
-                protein: Math.round((result.data.recommendation.macroSplit.protein / 100) * result.data.recommendation.targetCalories * 0.25 / 4) + 15,
-                carbs: Math.round((result.data.recommendation.macroSplit.carbohydrates / 100) * result.data.recommendation.targetCalories * 0.25 / 4),
-                fats: Math.round((result.data.recommendation.macroSplit.fats / 100) * result.data.recommendation.targetCalories * 0.25 / 9),
-                ingredients: ['Greek Yogurt', 'Granola', 'Strawberries', 'Honey'],
-                instructions: 'Layer Greek yogurt, granola, strawberries, and honey in a glass.'
-              },
-              lunch: {
-                name: 'Mediterranean Quinoa Bowl',
-                calories: result.data.recommendation.targetCalories * 0.35,
-                protein: Math.round((result.data.recommendation.macroSplit.protein / 100) * result.data.recommendation.targetCalories * 0.35 / 4) + 25,
-                carbs: Math.round((result.data.recommendation.macroSplit.carbohydrates / 100) * result.data.recommendation.targetCalories * 0.35 / 4),
-                fats: Math.round((result.data.recommendation.macroSplit.fats / 100) * result.data.recommendation.targetCalories * 0.35 / 9),
-                ingredients: ['Quinoa', 'Cucumber', 'Tomatoes', 'Feta Cheese'],
-                instructions: 'Cook quinoa, mix with cucumber, tomatoes, and feta cheese.'
-              },
-              dinner: {
-                name: 'Grilled Salmon with Asparagus',
-                calories: result.data.recommendation.targetCalories * 0.30,
-                protein: Math.round((result.data.recommendation.macroSplit.protein / 100) * result.data.recommendation.targetCalories * 0.30 / 4) + 20,
-                carbs: Math.round((result.data.recommendation.macroSplit.carbohydrates / 100) * result.data.recommendation.targetCalories * 0.30 / 4),
-                fats: Math.round((result.data.recommendation.macroSplit.fats / 100) * result.data.recommendation.targetCalories * 0.30 / 9),
-                ingredients: ['Salmon', 'Asparagus', 'Lemon', 'Olive Oil'],
-                instructions: 'Grill salmon with lemon, roast asparagus with olive oil.'
-              },
-              snack1: {
-                name: 'Trail Mix',
-                calories: result.data.recommendation.targetCalories * 0.05,
-                protein: Math.round((result.data.recommendation.macroSplit.protein / 100) * result.data.recommendation.targetCalories * 0.05 / 4) + 8,
-                carbs: Math.round((result.data.recommendation.macroSplit.carbohydrates / 100) * result.data.recommendation.targetCalories * 0.05 / 4),
-                fats: Math.round((result.data.recommendation.macroSplit.fats / 100) * result.data.recommendation.targetCalories * 0.05 / 9),
-                ingredients: ['Almonds', 'Raisins', 'Dark Chocolate'],
-                instructions: 'Mix almonds, raisins, and dark chocolate pieces.'
-              },
-              snack2: {
-                name: 'Cottage Cheese with Pineapple',
-                calories: result.data.recommendation.targetCalories * 0.05,
-                protein: Math.round((result.data.recommendation.macroSplit.protein / 100) * result.data.recommendation.targetCalories * 0.05 / 4) + 8,
-                carbs: Math.round((result.data.recommendation.macroSplit.carbohydrates / 100) * result.data.recommendation.targetCalories * 0.05 / 4),
-                fats: Math.round((result.data.recommendation.macroSplit.fats / 100) * result.data.recommendation.targetCalories * 0.05 / 9),
-                ingredients: ['Cottage Cheese', 'Pineapple'],
-                instructions: 'Mix cottage cheese with fresh pineapple chunks.'
-              }
-            },
-            day5: {
-              breakfast: {
-                name: 'Scrambled Eggs with Spinach',
-                calories: result.data.recommendation.targetCalories * 0.25,
-                protein: Math.round((result.data.recommendation.macroSplit.protein / 100) * result.data.recommendation.targetCalories * 0.25 / 4) + 15,
-                carbs: Math.round((result.data.recommendation.macroSplit.carbohydrates / 100) * result.data.recommendation.targetCalories * 0.25 / 4),
-                fats: Math.round((result.data.recommendation.macroSplit.fats / 100) * result.data.recommendation.targetCalories * 0.25 / 9),
-                ingredients: ['Eggs', 'Spinach', 'Whole Wheat Toast', 'Butter'],
-                instructions: 'Scramble eggs with spinach, serve with buttered toast.'
-              },
-              lunch: {
-                name: 'Turkey and Avocado Wrap',
-                calories: result.data.recommendation.targetCalories * 0.35,
-                protein: Math.round((result.data.recommendation.macroSplit.protein / 100) * result.data.recommendation.targetCalories * 0.35 / 4) + 25,
-                carbs: Math.round((result.data.recommendation.macroSplit.carbohydrates / 100) * result.data.recommendation.targetCalories * 0.35 / 4),
-                fats: Math.round((result.data.recommendation.macroSplit.fats / 100) * result.data.recommendation.targetCalories * 0.35 / 9),
-                ingredients: ['Turkey Breast', 'Avocado', 'Tortilla', 'Lettuce'],
-                instructions: 'Wrap turkey, avocado, and lettuce in tortilla.'
-              },
-              dinner: {
-                name: 'Baked Chicken with Sweet Potato',
-                calories: result.data.recommendation.targetCalories * 0.30,
-                protein: Math.round((result.data.recommendation.macroSplit.protein / 100) * result.data.recommendation.targetCalories * 0.30 / 4) + 20,
-                carbs: Math.round((result.data.recommendation.macroSplit.carbohydrates / 100) * result.data.recommendation.targetCalories * 0.30 / 4),
-                fats: Math.round((result.data.recommendation.macroSplit.fats / 100) * result.data.recommendation.targetCalories * 0.30 / 9),
-                ingredients: ['Chicken Breast', 'Sweet Potato', 'Green Beans', 'Olive Oil'],
-                instructions: 'Bake chicken, roast sweet potato and green beans with olive oil.'
-              },
-              snack1: {
-                name: 'Protein Shake',
-                calories: result.data.recommendation.targetCalories * 0.05,
-                protein: Math.round((result.data.recommendation.macroSplit.protein / 100) * result.data.recommendation.targetCalories * 0.05 / 4) + 8,
-                carbs: Math.round((result.data.recommendation.macroSplit.carbohydrates / 100) * result.data.recommendation.targetCalories * 0.05 / 4),
-                fats: Math.round((result.data.recommendation.macroSplit.fats / 100) * result.data.recommendation.targetCalories * 0.05 / 9),
-                ingredients: ['Protein Powder', 'Almond Milk', 'Banana'],
-                instructions: 'Blend protein powder with almond milk and banana.'
-              },
-              snack2: {
-                name: 'Celery with Peanut Butter',
-                calories: result.data.recommendation.targetCalories * 0.05,
-                protein: Math.round((result.data.recommendation.macroSplit.protein / 100) * result.data.recommendation.targetCalories * 0.05 / 4) + 8,
-                carbs: Math.round((result.data.recommendation.macroSplit.carbohydrates / 100) * result.data.recommendation.targetCalories * 0.05 / 4),
-                fats: Math.round((result.data.recommendation.macroSplit.fats / 100) * result.data.recommendation.targetCalories * 0.05 / 9),
-                ingredients: ['Celery', 'Peanut Butter'],
-                instructions: 'Spread peanut butter on celery stalks.'
-              }
-            },
-            day6: {
-              breakfast: {
-                name: 'Smoothie Bowl',
-                calories: result.data.recommendation.targetCalories * 0.25,
-                protein: Math.round((result.data.recommendation.macroSplit.protein / 100) * result.data.recommendation.targetCalories * 0.25 / 4) + 15,
-                carbs: Math.round((result.data.recommendation.macroSplit.carbohydrates / 100) * result.data.recommendation.targetCalories * 0.25 / 4),
-                fats: Math.round((result.data.recommendation.macroSplit.fats / 100) * result.data.recommendation.targetCalories * 0.25 / 9),
-                ingredients: ['Frozen Berries', 'Banana', 'Almond Milk', 'Chia Seeds'],
-                instructions: 'Blend frozen berries, banana, and almond milk, top with chia seeds.'
-              },
-              lunch: {
-                name: 'Grilled Shrimp Salad',
-                calories: result.data.recommendation.targetCalories * 0.35,
-                protein: Math.round((result.data.recommendation.macroSplit.protein / 100) * result.data.recommendation.targetCalories * 0.35 / 4) + 25,
-                carbs: Math.round((result.data.recommendation.macroSplit.carbohydrates / 100) * result.data.recommendation.targetCalories * 0.35 / 4),
-                fats: Math.round((result.data.recommendation.macroSplit.fats / 100) * result.data.recommendation.targetCalories * 0.35 / 9),
-                ingredients: ['Shrimp', 'Mixed Greens', 'Cherry Tomatoes', 'Balsamic Vinaigrette'],
-                instructions: 'Grill shrimp, toss with mixed greens, tomatoes, and vinaigrette.'
-              },
-              dinner: {
-                name: 'Beef Stir Fry with Rice',
-                calories: result.data.recommendation.targetCalories * 0.30,
-                protein: Math.round((result.data.recommendation.macroSplit.protein / 100) * result.data.recommendation.targetCalories * 0.30 / 4) + 20,
-                carbs: Math.round((result.data.recommendation.macroSplit.carbohydrates / 100) * result.data.recommendation.targetCalories * 0.30 / 4),
-                fats: Math.round((result.data.recommendation.macroSplit.fats / 100) * result.data.recommendation.targetCalories * 0.30 / 9),
-                ingredients: ['Beef Strips', 'Brown Rice', 'Bell Peppers', 'Soy Sauce'],
-                instructions: 'Stir fry beef with bell peppers, serve over brown rice with soy sauce.'
-              },
-              snack1: {
-                name: 'Apple with Almond Butter',
-                calories: result.data.recommendation.targetCalories * 0.05,
-                protein: Math.round((result.data.recommendation.macroSplit.protein / 100) * result.data.recommendation.targetCalories * 0.05 / 4) + 8,
-                carbs: Math.round((result.data.recommendation.macroSplit.carbohydrates / 100) * result.data.recommendation.targetCalories * 0.05 / 4),
-                fats: Math.round((result.data.recommendation.macroSplit.fats / 100) * result.data.recommendation.targetCalories * 0.05 / 9),
-                ingredients: ['Apple', 'Almond Butter'],
-                instructions: 'Slice apple and serve with almond butter.'
-              },
-              snack2: {
-                name: 'Greek Yogurt with Berries',
-                calories: result.data.recommendation.targetCalories * 0.05,
-                protein: Math.round((result.data.recommendation.macroSplit.protein / 100) * result.data.recommendation.targetCalories * 0.05 / 4) + 8,
-                carbs: Math.round((result.data.recommendation.macroSplit.carbohydrates / 100) * result.data.recommendation.targetCalories * 0.05 / 4),
-                fats: Math.round((result.data.recommendation.macroSplit.fats / 100) * result.data.recommendation.targetCalories * 0.05 / 9),
-                ingredients: ['Greek Yogurt', 'Mixed Berries'],
-                instructions: 'Mix Greek yogurt with fresh berries.'
-              }
-            },
-            day7: {
-              breakfast: {
-                name: 'Breakfast Burrito',
-                calories: result.data.recommendation.targetCalories * 0.25,
-                protein: Math.round((result.data.recommendation.macroSplit.protein / 100) * result.data.recommendation.targetCalories * 0.25 / 4) + 15,
-                carbs: Math.round((result.data.recommendation.macroSplit.carbohydrates / 100) * result.data.recommendation.targetCalories * 0.25 / 4),
-                fats: Math.round((result.data.recommendation.macroSplit.fats / 100) * result.data.recommendation.targetCalories * 0.25 / 9),
-                ingredients: ['Eggs', 'Tortilla', 'Black Beans', 'Salsa'],
-                instructions: 'Scramble eggs, wrap with black beans and salsa in tortilla.'
-              },
-              lunch: {
-                name: 'Mediterranean Pasta Salad',
-                calories: result.data.recommendation.targetCalories * 0.35,
-                protein: Math.round((result.data.recommendation.macroSplit.protein / 100) * result.data.recommendation.targetCalories * 0.35 / 4) + 25,
-                carbs: Math.round((result.data.recommendation.macroSplit.carbohydrates / 100) * result.data.recommendation.targetCalories * 0.35 / 4),
-                fats: Math.round((result.data.recommendation.macroSplit.fats / 100) * result.data.recommendation.targetCalories * 0.35 / 9),
-                ingredients: ['Whole Wheat Pasta', 'Cherry Tomatoes', 'Cucumber', 'Olive Oil'],
-                instructions: 'Cook pasta, mix with tomatoes, cucumber, and olive oil.'
-              },
-              dinner: {
-                name: 'Grilled Tuna with Vegetables',
-                calories: result.data.recommendation.targetCalories * 0.30,
-                protein: Math.round((result.data.recommendation.macroSplit.protein / 100) * result.data.recommendation.targetCalories * 0.30 / 4) + 20,
-                carbs: Math.round((result.data.recommendation.macroSplit.carbohydrates / 100) * result.data.recommendation.targetCalories * 0.30 / 4),
-                fats: Math.round((result.data.recommendation.macroSplit.fats / 100) * result.data.recommendation.targetCalories * 0.30 / 9),
-                ingredients: ['Tuna Steak', 'Zucchini', 'Carrots', 'Lemon'],
-                instructions: 'Grill tuna with lemon, roast zucchini and carrots.'
-              },
-              snack1: {
-                name: 'Hummus with Carrots',
-                calories: result.data.recommendation.targetCalories * 0.05,
-                protein: Math.round((result.data.recommendation.macroSplit.protein / 100) * result.data.recommendation.targetCalories * 0.05 / 4) + 8,
-                carbs: Math.round((result.data.recommendation.macroSplit.carbohydrates / 100) * result.data.recommendation.targetCalories * 0.05 / 4),
-                fats: Math.round((result.data.recommendation.macroSplit.fats / 100) * result.data.recommendation.targetCalories * 0.05 / 9),
-                ingredients: ['Hummus', 'Carrots'],
-                instructions: 'Serve hummus with carrot sticks.'
-              },
-              snack2: {
-                name: 'Mixed Nuts',
-                calories: result.data.recommendation.targetCalories * 0.05,
-                protein: Math.round((result.data.recommendation.macroSplit.protein / 100) * result.data.recommendation.targetCalories * 0.05 / 4) + 8,
-                carbs: Math.round((result.data.recommendation.macroSplit.carbohydrates / 100) * result.data.recommendation.targetCalories * 0.05 / 4),
-                fats: Math.round((result.data.recommendation.macroSplit.fats / 100) * result.data.recommendation.targetCalories * 0.05 / 9),
-                ingredients: ['Almonds', 'Walnuts', 'Cashews'],
-                instructions: 'Mix almonds, walnuts, and cashews.'
-              }
-            }
-          },
+          mealPlan: result.data.recommendation.dailyPlans || generateDynamicMealPlan(
+            result.data.recommendation.targetCalories,
+            result.data.recommendation.macroSplit,
+            result.data.daysCount || selectedDays
+          ),
           shoppingList: {
             proteins: ['Chicken breast', 'Salmon', 'Greek yogurt', 'Protein powder'],
             vegetables: ['Broccoli', 'Spinach', 'Sweet potato'],
@@ -711,6 +452,8 @@ const Nutrition = () => {
         setDietPlan(plan);
         setCurrentDay(1); // Reset to day 1 when showing new plan
         setShowResultsModal(true);
+        
+        // Refresh the AI meal plan from database after generating new plan
         await fetchAiMealPlan();
       } else {
         throw new Error(result.error || 'Plan generation failed');
@@ -725,7 +468,9 @@ const Nutrition = () => {
   const changeMealDay = (direction) => {
     setCurrentDay(prev => {
       const newDay = prev + direction;
-      return Math.max(1, Math.min(selectedDays, newDay));
+      const maxDays = dietPlan?.summary?.totalDays || selectedDays;
+      console.log('🔍 Changing meal day:', { prev, direction, newDay, maxDays, selectedDays });
+      return Math.max(1, Math.min(maxDays, newDay));
     });
   };
 
@@ -787,9 +532,6 @@ const Nutrition = () => {
           carbs: `${analysis.carbohydrates || 42} g`
         });
         setAnalysisError(null); // Clear any previous errors
-
-        // Add the analyzed food to daily intake
-        await addFoodToDailyIntake(analysis);
       } else {
         // Handle error response (including non-food image error)
         const errorMessage = result.error || 'Failed to analyze food';
@@ -859,6 +601,326 @@ const Nutrition = () => {
     } catch (error) {
       console.error('Error adding food to daily intake:', error);
     }
+  };
+
+  // Generate dynamic meal plan for any number of days
+  const generateDynamicMealPlan = (targetCalories, macroSplit, daysCount) => {
+    const mealPlan = {};
+    
+    // Meal templates with variety
+    const breakfastTemplates = [
+      {
+        name: 'Protein Oatmeal Bowl',
+        ingredients: ['Oatmeal', 'Banana', 'Almonds', 'Protein Powder'],
+        instructions: 'Cook oatmeal with water, add protein powder, top with sliced banana and almonds'
+      },
+      {
+        name: 'Protein Pancakes',
+        ingredients: ['Egg Whites', 'Flour', 'Banana', 'Chia Seeds'],
+        instructions: 'Mix egg whites, flour, banana, and chia seeds. Cook pancakes on a non-stick pan.'
+      },
+      {
+        name: 'Avocado Toast with Egg',
+        ingredients: ['Avocado', 'Egg Whites', 'Whole Wheat Bread', 'Spinach'],
+        instructions: 'Toast bread, spread avocado, top with egg whites and spinach.'
+      },
+      {
+        name: 'Greek Yogurt Parfait',
+        ingredients: ['Greek Yogurt', 'Granola', 'Strawberries', 'Honey'],
+        instructions: 'Layer Greek yogurt, granola, strawberries, and honey in a glass.'
+      },
+      {
+        name: 'Scrambled Eggs with Spinach',
+        ingredients: ['Eggs', 'Spinach', 'Whole Wheat Toast', 'Butter'],
+        instructions: 'Scramble eggs with spinach, serve with buttered toast.'
+      },
+      {
+        name: 'Smoothie Bowl',
+        ingredients: ['Frozen Berries', 'Banana', 'Almond Milk', 'Chia Seeds'],
+        instructions: 'Blend frozen berries, banana, and almond milk, top with chia seeds.'
+      },
+      {
+        name: 'Breakfast Burrito',
+        ingredients: ['Eggs', 'Tortilla', 'Black Beans', 'Salsa'],
+        instructions: 'Scramble eggs, wrap with black beans and salsa in tortilla.'
+      },
+      {
+        name: 'Protein French Toast',
+        ingredients: ['Whole Wheat Bread', 'Eggs', 'Protein Powder', 'Cinnamon'],
+        instructions: 'Dip bread in egg mixture with protein powder, cook until golden.'
+      }
+    ];
+
+    const lunchTemplates = [
+      {
+        name: 'Grilled Chicken Quinoa Bowl',
+        ingredients: ['Chicken Breast', 'Quinoa', 'Broccoli', 'Olive Oil'],
+        instructions: 'Grill chicken, cook quinoa, steam broccoli, combine with olive oil'
+      },
+      {
+        name: 'Grilled Tofu Stir Fry',
+        ingredients: ['Tofu', 'Broccoli', 'Carrots', 'Soy Sauce'],
+        instructions: 'Grill tofu, stir fry broccoli and carrots with soy sauce.'
+      },
+      {
+        name: 'Quinoa Chickpea Salad',
+        ingredients: ['Quinoa', 'Chickpeas', 'Tomatoes', 'Olive Oil'],
+        instructions: 'Cook quinoa, mix with chickpeas, tomatoes, and olive oil.'
+      },
+      {
+        name: 'Mediterranean Quinoa Bowl',
+        ingredients: ['Quinoa', 'Cucumber', 'Tomatoes', 'Feta Cheese'],
+        instructions: 'Cook quinoa, mix with cucumber, tomatoes, and feta cheese.'
+      },
+      {
+        name: 'Turkey and Avocado Wrap',
+        ingredients: ['Turkey Breast', 'Avocado', 'Tortilla', 'Lettuce'],
+        instructions: 'Wrap turkey, avocado, and lettuce in tortilla.'
+      },
+      {
+        name: 'Grilled Shrimp Salad',
+        ingredients: ['Shrimp', 'Mixed Greens', 'Cherry Tomatoes', 'Balsamic Vinaigrette'],
+        instructions: 'Grill shrimp, toss with mixed greens, tomatoes, and vinaigrette.'
+      },
+      {
+        name: 'Mediterranean Pasta Salad',
+        ingredients: ['Whole Wheat Pasta', 'Cherry Tomatoes', 'Olives', 'Feta Cheese'],
+        instructions: 'Cook pasta, mix with tomatoes, olives, and feta cheese.'
+      },
+      {
+        name: 'Chicken Caesar Salad',
+        ingredients: ['Chicken Breast', 'Romaine Lettuce', 'Caesar Dressing', 'Parmesan Cheese'],
+        instructions: 'Grill chicken, toss with romaine lettuce, Caesar dressing, and parmesan.'
+      }
+    ];
+
+    const dinnerTemplates = [
+      {
+        name: 'Salmon with Sweet Potato',
+        ingredients: ['Salmon', 'Sweet Potato', 'Spinach', 'Lemon'],
+        instructions: 'Bake salmon with lemon, roast sweet potato, sauté spinach'
+      },
+      {
+        name: 'Beef and Broccoli Stir Fry',
+        ingredients: ['Beef Sirloin', 'Broccoli', 'Carrots', 'Soy Sauce'],
+        instructions: 'Stir fry beef, broccoli, and carrots with soy sauce.'
+      },
+      {
+        name: 'Grilled Salmon with Asparagus',
+        ingredients: ['Salmon', 'Asparagus', 'Lemon', 'Olive Oil'],
+        instructions: 'Grill salmon with lemon, roast asparagus with olive oil.'
+      },
+      {
+        name: 'Baked Chicken with Sweet Potato',
+        ingredients: ['Chicken Breast', 'Sweet Potato', 'Green Beans', 'Olive Oil'],
+        instructions: 'Bake chicken, roast sweet potato and green beans with olive oil.'
+      },
+      {
+        name: 'Beef Stir Fry with Rice',
+        ingredients: ['Beef Strips', 'Brown Rice', 'Bell Peppers', 'Soy Sauce'],
+        instructions: 'Stir fry beef with bell peppers, serve over brown rice with soy sauce.'
+      },
+      {
+        name: 'Grilled Tuna with Vegetables',
+        ingredients: ['Tuna Steak', 'Zucchini', 'Bell Peppers', 'Olive Oil'],
+        instructions: 'Grill tuna, roast vegetables with olive oil.'
+      },
+      {
+        name: 'Chicken Tikka Masala',
+        ingredients: ['Chicken Breast', 'Coconut Milk', 'Tomatoes', 'Spices'],
+        instructions: 'Cook chicken in coconut milk with tomatoes and spices.'
+      },
+      {
+        name: 'Vegetarian Buddha Bowl',
+        ingredients: ['Quinoa', 'Sweet Potato', 'Kale', 'Tahini Dressing'],
+        instructions: 'Cook quinoa and sweet potato, serve with kale and tahini dressing.'
+      }
+    ];
+
+    const snackTemplates = [
+      {
+        name: 'Greek Yogurt with Berries',
+        ingredients: ['Greek Yogurt', 'Mixed Berries'],
+        instructions: 'Mix Greek yogurt with fresh berries'
+      },
+      {
+        name: 'Apple with Peanut Butter',
+        ingredients: ['Apple', 'Peanut Butter'],
+        instructions: 'Slice apple and serve with peanut butter'
+      },
+      {
+        name: 'Hummus with Veggies',
+        ingredients: ['Hummus', 'Carrots', 'Celery'],
+        instructions: 'Mix hummus with carrots and celery.'
+      },
+      {
+        name: 'Apple with Almond Butter',
+        ingredients: ['Apple', 'Almond Butter'],
+        instructions: 'Slice apple and serve with almond butter.'
+      },
+      {
+        name: 'Greek Yogurt with Honey',
+        ingredients: ['Greek Yogurt', 'Honey'],
+        instructions: 'Mix Greek yogurt with honey.'
+      },
+      {
+        name: 'Apple with Cinnamon',
+        ingredients: ['Apple', 'Cinnamon'],
+        instructions: 'Slice apple and sprinkle cinnamon.'
+      },
+      {
+        name: 'Trail Mix',
+        ingredients: ['Almonds', 'Raisins', 'Dark Chocolate'],
+        instructions: 'Mix almonds, raisins, and dark chocolate pieces.'
+      },
+      {
+        name: 'Cottage Cheese with Pineapple',
+        ingredients: ['Cottage Cheese', 'Pineapple'],
+        instructions: 'Mix cottage cheese with fresh pineapple chunks.'
+      },
+      {
+        name: 'Protein Shake',
+        ingredients: ['Protein Powder', 'Almond Milk', 'Banana'],
+        instructions: 'Blend protein powder with almond milk and banana.'
+      },
+      {
+        name: 'Celery with Peanut Butter',
+        ingredients: ['Celery', 'Peanut Butter'],
+        instructions: 'Spread peanut butter on celery stalks.'
+      }
+    ];
+
+    // Generate meals for each day
+    for (let day = 1; day <= daysCount; day++) {
+      const breakfastIndex = (day - 1) % breakfastTemplates.length;
+      const lunchIndex = (day - 1) % lunchTemplates.length;
+      const dinnerIndex = (day - 1) % dinnerTemplates.length;
+      const snack1Index = (day - 1) % snackTemplates.length;
+      const snack2Index = (day + 2) % snackTemplates.length; // Different snack
+
+      const breakfast = breakfastTemplates[breakfastIndex];
+      const lunch = lunchTemplates[lunchIndex];
+      const dinner = dinnerTemplates[dinnerIndex];
+      const snack1 = snackTemplates[snack1Index];
+      const snack2 = snackTemplates[snack2Index];
+
+      mealPlan[`day${day}`] = {
+        breakfast: {
+          name: breakfast.name,
+          calories: targetCalories * 0.25,
+          protein: Math.round((macroSplit.protein / 100) * targetCalories * 0.25 / 4),
+          carbs: Math.round((macroSplit.carbohydrates / 100) * targetCalories * 0.25 / 4),
+          fats: Math.round((macroSplit.fats / 100) * targetCalories * 0.25 / 9),
+          ingredients: breakfast.ingredients,
+          instructions: breakfast.instructions
+        },
+        lunch: {
+          name: lunch.name,
+          calories: targetCalories * 0.35,
+          protein: Math.round((macroSplit.protein / 100) * targetCalories * 0.35 / 4),
+          carbs: Math.round((macroSplit.carbohydrates / 100) * targetCalories * 0.35 / 4),
+          fats: Math.round((macroSplit.fats / 100) * targetCalories * 0.35 / 9),
+          ingredients: lunch.ingredients,
+          instructions: lunch.instructions
+        },
+        dinner: {
+          name: dinner.name,
+          calories: targetCalories * 0.30,
+          protein: Math.round((macroSplit.protein / 100) * targetCalories * 0.30 / 4),
+          carbs: Math.round((macroSplit.carbohydrates / 100) * targetCalories * 0.30 / 4),
+          fats: Math.round((macroSplit.fats / 100) * targetCalories * 0.30 / 9),
+          ingredients: dinner.ingredients,
+          instructions: dinner.instructions
+        },
+        snack1: {
+          name: snack1.name,
+          calories: targetCalories * 0.05,
+          protein: Math.round((macroSplit.protein / 100) * targetCalories * 0.05 / 4),
+          carbs: Math.round((macroSplit.carbohydrates / 100) * targetCalories * 0.05 / 4),
+          fats: Math.round((macroSplit.fats / 100) * targetCalories * 0.05 / 9),
+          ingredients: snack1.ingredients,
+          instructions: snack1.instructions
+        },
+        snack2: {
+          name: snack2.name,
+          calories: targetCalories * 0.05,
+          protein: Math.round((macroSplit.protein / 100) * targetCalories * 0.05 / 4),
+          carbs: Math.round((macroSplit.carbohydrates / 100) * targetCalories * 0.05 / 4),
+          fats: Math.round((macroSplit.fats / 100) * targetCalories * 0.05 / 9),
+          ingredients: snack2.ingredients,
+          instructions: snack2.instructions
+        }
+      };
+    }
+
+    return mealPlan;
+  };
+
+  // Transform AI meal plan to diet plan format for display
+  const transformAiMealPlanToDietPlan = (plan) => {
+    // Handle different plan formats
+    if (plan.mealPlan) {
+      // If plan already has mealPlan structure, return as is
+      return plan;
+    }
+    
+    // If plan has recommendation structure (from AI), transform it
+    if (plan.recommendation) {
+      const proteinTarget = Math.round((plan.recommendation.macroSplit?.protein || 25) / 100 * plan.recommendation.targetCalories / 4);
+      const daysCount = plan.daysCount || 7;
+      
+      return {
+        summary: {
+          totalDays: daysCount,
+          dailyCalories: plan.recommendation.targetCalories,
+          macroBreakdown: {
+            protein: proteinTarget,
+            carbs: Math.round((plan.recommendation.macroSplit?.carbohydrates || 40) / 100 * plan.recommendation.targetCalories / 4),
+            fats: Math.round((plan.recommendation.macroSplit?.fats || 30) / 100 * plan.recommendation.targetCalories / 9)
+          }
+        },
+        mealPlan: plan.recommendation.dailyPlans || generateDynamicMealPlan(
+          plan.recommendation.targetCalories,
+          plan.recommendation.macroSplit || { protein: 25, carbohydrates: 40, fats: 35 },
+          daysCount
+        ),
+        shoppingList: {
+          proteins: ['Chicken Breast', 'Salmon', 'Eggs', 'Tofu', 'Turkey Breast'],
+          vegetables: ['Broccoli', 'Spinach', 'Sweet Potato', 'Asparagus', 'Bell Peppers'],
+          fruits: ['Banana', 'Mixed Berries', 'Apple', 'Pineapple'],
+          grains: ['Oatmeal', 'Quinoa', 'Whole Wheat Bread', 'Brown Rice'],
+          dairy: ['Greek yogurt', 'Cottage Cheese', 'Feta Cheese'],
+          pantry: ['Almonds', 'Olive oil', 'Peanut butter', 'Lemon', 'Honey', 'Chia Seeds']
+        }
+      };
+    }
+    
+    // Default fallback for basic plan structure
+    const daysCount = plan.daysCount || 7;
+    return {
+      summary: {
+        totalDays: daysCount,
+        dailyCalories: plan.targetCalories || 2000,
+        macroBreakdown: {
+          protein: Math.round((plan.macroSplit?.protein || 25) / 100 * (plan.targetCalories || 2000) / 4),
+          carbs: Math.round((plan.macroSplit?.carbohydrates || 40) / 100 * (plan.targetCalories || 2000) / 4),
+          fats: Math.round((plan.macroSplit?.fats || 35) / 100 * (plan.targetCalories || 2000) / 9)
+        }
+      },
+      mealPlan: generateDynamicMealPlan(
+        plan.targetCalories || 2000,
+        plan.macroSplit || { protein: 25, carbohydrates: 40, fats: 35 },
+        daysCount
+      ),
+      shoppingList: {
+        proteins: ['Chicken Breast', 'Salmon', 'Eggs', 'Tofu', 'Turkey Breast'],
+        vegetables: ['Broccoli', 'Spinach', 'Sweet Potato', 'Asparagus', 'Bell Peppers'],
+        fruits: ['Banana', 'Mixed Berries', 'Apple', 'Pineapple'],
+        grains: ['Oatmeal', 'Quinoa', 'Whole Wheat Bread', 'Brown Rice'],
+        dairy: ['Greek yogurt', 'Cottage Cheese', 'Feta Cheese'],
+        pantry: ['Almonds', 'Olive oil', 'Peanut butter', 'Lemon', 'Honey', 'Chia Seeds']
+      }
+    };
   };
 
   const allTags = [
@@ -952,7 +1014,7 @@ const Nutrition = () => {
                       stroke="url(#caloriesGradient)"
                       strokeWidth="2"
                       strokeDasharray="100"
-                      strokeDashoffset={Math.max(0, 100 - dailyIntake.progress.calories)}
+                      strokeDashoffset={Math.max(0, 100 - (dailyIntake.totalNutrients.calories / (aiMealPlan?.targetCalories || dailyIntake.targetNutrients.calories) * 100))}
                       strokeLinecap="round"
                     />
                     <defs>
@@ -963,17 +1025,17 @@ const Nutrition = () => {
                     </defs>
                   </svg>
                   <div className="absolute inset-0 flex items-center justify-center">
-                    <span className="text-lg font-bold text-[#62E0A1]">{Math.round(dailyIntake.progress.calories)}%</span>
+                    <span className="text-lg font-bold text-[#62E0A1]">{Math.round(dailyIntake.totalNutrients.calories / (aiMealPlan?.targetCalories || dailyIntake.targetNutrients.calories) * 100)}%</span>
                   </div>
                 </div>
                 <span className="text-sm font-semibold text-gray-300 mb-1">Calories</span>
                 <div className="flex items-center space-x-2 text-xs">
                   <span className="text-[#62E0A1] font-medium">{Math.round(dailyIntake.totalNutrients.calories)}</span>
                   <span className="text-gray-400">/</span>
-                  <span className="text-gray-300">{dailyIntake.targetNutrients.calories}</span>
+                  <span className="text-gray-300">{aiMealPlan?.targetCalories ? Math.round(aiMealPlan.targetCalories) : dailyIntake.targetNutrients.calories}</span>
                 </div>
-                <span className={`text-xs ${dailyIntake.remaining.calories > 0 ? 'text-red-400' : 'text-green-400'}`}>
-                  {dailyIntake.remaining.calories > 0 ? `-${Math.round(dailyIntake.remaining.calories)}` : `+${Math.round(Math.abs(dailyIntake.remaining.calories))}`}
+                <span className={`text-xs ${((aiMealPlan?.targetCalories || dailyIntake.targetNutrients.calories) - dailyIntake.totalNutrients.calories) > 0 ? 'text-red-400' : 'text-green-400'}`}>
+                  {((aiMealPlan?.targetCalories || dailyIntake.targetNutrients.calories) - dailyIntake.totalNutrients.calories) > 0 ? `-${Math.round((aiMealPlan?.targetCalories || dailyIntake.targetNutrients.calories) - dailyIntake.totalNutrients.calories)}` : `+${Math.round(Math.abs((aiMealPlan?.targetCalories || dailyIntake.targetNutrients.calories) - dailyIntake.totalNutrients.calories))}`}
                 </span>
               </div>
 
@@ -997,7 +1059,7 @@ const Nutrition = () => {
                       stroke="url(#proteinsGradient)"
                       strokeWidth="2"
                       strokeDasharray="100"
-                      strokeDashoffset={Math.max(0, 100 - dailyIntake.progress.protein)}
+                      strokeDashoffset={Math.max(0, 100 - (dailyIntake.totalNutrients.protein / ((aiMealPlan?.macroSplit?.protein ? Math.round((aiMealPlan.macroSplit.protein / 100) * aiMealPlan.targetCalories / 4) : dailyIntake.targetNutrients.protein)) * 100))}
                       strokeLinecap="round"
                     />
                     <defs>
@@ -1008,17 +1070,17 @@ const Nutrition = () => {
                     </defs>
                   </svg>
                   <div className="absolute inset-0 flex items-center justify-center">
-                    <span className="text-lg font-bold text-[#36CFFF]">{Math.round(dailyIntake.progress.protein)}%</span>
+                    <span className="text-lg font-bold text-[#36CFFF]">{Math.round(dailyIntake.totalNutrients.protein / ((aiMealPlan?.macroSplit?.protein ? Math.round((aiMealPlan.macroSplit.protein / 100) * aiMealPlan.targetCalories / 4) : dailyIntake.targetNutrients.protein)) * 100)}%</span>
                   </div>
                 </div>
                 <span className="text-sm font-semibold text-gray-300 mb-1">Proteins</span>
                 <div className="flex items-center space-x-2 text-xs">
                   <span className="text-[#36CFFF] font-medium">{Math.round(dailyIntake.totalNutrients.protein)}g</span>
                   <span className="text-gray-400">/</span>
-                  <span className="text-gray-300">{dailyIntake.targetNutrients.protein}g</span>
+                  <span className="text-gray-300">{aiMealPlan?.macroSplit?.protein ? `${Math.round((aiMealPlan.macroSplit.protein / 100) * aiMealPlan.targetCalories / 4)}g` : `${dailyIntake.targetNutrients.protein}g`}</span>
                 </div>
-                <span className={`text-xs ${dailyIntake.remaining.protein > 0 ? 'text-red-400' : 'text-green-400'}`}>
-                  {dailyIntake.remaining.protein > 0 ? `-${Math.round(dailyIntake.remaining.protein)}g` : `+${Math.round(Math.abs(dailyIntake.remaining.protein))}g`}
+                <span className={`text-xs ${(((aiMealPlan?.macroSplit?.protein ? Math.round((aiMealPlan.macroSplit.protein / 100) * aiMealPlan.targetCalories / 4) : dailyIntake.targetNutrients.protein)) - dailyIntake.totalNutrients.protein) > 0 ? 'text-red-400' : 'text-green-400'}`}>
+                  {(((aiMealPlan?.macroSplit?.protein ? Math.round((aiMealPlan.macroSplit.protein / 100) * aiMealPlan.targetCalories / 4) : dailyIntake.targetNutrients.protein)) - dailyIntake.totalNutrients.protein) > 0 ? `-${Math.round(((aiMealPlan?.macroSplit?.protein ? Math.round((aiMealPlan.macroSplit.protein / 100) * aiMealPlan.targetCalories / 4) : dailyIntake.targetNutrients.protein)) - dailyIntake.totalNutrients.protein)}g` : `+${Math.round(Math.abs(((aiMealPlan?.macroSplit?.protein ? Math.round((aiMealPlan.macroSplit.protein / 100) * aiMealPlan.targetCalories / 4) : dailyIntake.targetNutrients.protein)) - dailyIntake.totalNutrients.protein))}g`}
                 </span>
               </div>
 
@@ -1042,7 +1104,7 @@ const Nutrition = () => {
                       stroke="url(#carbsGradient)"
                       strokeWidth="2"
                       strokeDasharray="100"
-                      strokeDashoffset={Math.max(0, 100 - dailyIntake.progress.carbohydrates)}
+                      strokeDashoffset={Math.max(0, 100 - (dailyIntake.totalNutrients.carbohydrates / ((aiMealPlan?.macroSplit?.carbohydrates ? Math.round((aiMealPlan.macroSplit.carbohydrates / 100) * aiMealPlan.targetCalories / 4) : dailyIntake.targetNutrients.carbohydrates)) * 100))}
                       strokeLinecap="round"
                     />
                     <defs>
@@ -1053,17 +1115,17 @@ const Nutrition = () => {
                     </defs>
                   </svg>
                   <div className="absolute inset-0 flex items-center justify-center">
-                    <span className="text-lg font-bold text-[#F2B33D]">{Math.round(dailyIntake.progress.carbohydrates)}%</span>
+                    <span className="text-lg font-bold text-[#F2B33D]">{Math.round(dailyIntake.totalNutrients.carbohydrates / ((aiMealPlan?.macroSplit?.carbohydrates ? Math.round((aiMealPlan.macroSplit.carbohydrates / 100) * aiMealPlan.targetCalories / 4) : dailyIntake.targetNutrients.carbohydrates)) * 100)}%</span>
                   </div>
                 </div>
                 <span className="text-sm font-semibold text-gray-300 mb-1">Carbohydrates</span>
                 <div className="flex items-center space-x-2 text-xs">
                   <span className="text-[#F2B33D] font-medium">{Math.round(dailyIntake.totalNutrients.carbohydrates)}g</span>
                   <span className="text-gray-400">/</span>
-                  <span className="text-gray-300">{dailyIntake.targetNutrients.carbohydrates}g</span>
+                  <span className="text-gray-300">{aiMealPlan?.macroSplit?.carbohydrates ? `${Math.round((aiMealPlan.macroSplit.carbohydrates / 100) * aiMealPlan.targetCalories / 4)}g` : `${dailyIntake.targetNutrients.carbohydrates}g`}</span>
                 </div>
-                <span className={`text-xs ${dailyIntake.remaining.carbohydrates > 0 ? 'text-red-400' : 'text-green-400'}`}>
-                  {dailyIntake.remaining.carbohydrates > 0 ? `-${Math.round(dailyIntake.remaining.carbohydrates)}g` : `+${Math.round(Math.abs(dailyIntake.remaining.carbohydrates))}g`}
+                <span className={`text-xs ${(((aiMealPlan?.macroSplit?.carbohydrates ? Math.round((aiMealPlan.macroSplit.carbohydrates / 100) * aiMealPlan.targetCalories / 4) : dailyIntake.targetNutrients.carbohydrates)) - dailyIntake.totalNutrients.carbohydrates) > 0 ? 'text-red-400' : 'text-green-400'}`}>
+                  {(((aiMealPlan?.macroSplit?.carbohydrates ? Math.round((aiMealPlan.macroSplit.carbohydrates / 100) * aiMealPlan.targetCalories / 4) : dailyIntake.targetNutrients.carbohydrates)) - dailyIntake.totalNutrients.carbohydrates) > 0 ? `-${Math.round(((aiMealPlan?.macroSplit?.carbohydrates ? Math.round((aiMealPlan.macroSplit.carbohydrates / 100) * aiMealPlan.targetCalories / 4) : dailyIntake.targetNutrients.carbohydrates)) - dailyIntake.totalNutrients.carbohydrates)}g` : `+${Math.round(Math.abs(((aiMealPlan?.macroSplit?.carbohydrates ? Math.round((aiMealPlan.macroSplit.carbohydrates / 100) * aiMealPlan.targetCalories / 4) : dailyIntake.targetNutrients.carbohydrates)) - dailyIntake.totalNutrients.carbohydrates))}g`}
                 </span>
               </div>
             </div>
@@ -1089,7 +1151,7 @@ const Nutrition = () => {
               <div className="space-y-4">
                 {/* Today's Meals */}
                 <div className="bg-[#1A1A1A] p-4 rounded-lg border border-gray-700">
-                  <h3 className="text-md font-semibold text-[#36CFFF] mb-3">Today's Meals</h3>
+                  <h3 className="text-md font-semibold text-[#36CFFF] mb-3">🍽️ What to Eat Today</h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
                     {/* Breakfast */}
                     <div className="bg-[#121212] p-3 rounded-lg border border-gray-600">
@@ -1100,9 +1162,29 @@ const Nutrition = () => {
                       <p className="text-xs text-gray-300 mb-1">
                         {aiMealPlan.meals?.[0]?.meals?.[0]?.name || 'Oatmeal with berries and nuts'}
                       </p>
-                      <p className="text-xs text-gray-400">
+                      <p className="text-xs text-gray-400 mb-2">
                         {aiMealPlan.meals?.[0]?.meals?.[0]?.totalNutrients?.calories || Math.round((aiMealPlan.targetCalories || 2000) * 0.25)} calories
                       </p>
+                      <button
+                        onClick={() => {
+                          const calories = aiMealPlan.meals?.[0]?.meals?.[0]?.totalNutrients?.calories || Math.round((aiMealPlan.targetCalories || 2000) * 0.25);
+                          const protein = aiMealPlan.meals?.[0]?.meals?.[0]?.totalNutrients?.protein || Math.round((aiMealPlan.macroSplit?.protein || 25) / 100 * (aiMealPlan.targetCalories || 2000) * 0.25 / 4);
+                          const carbs = aiMealPlan.meals?.[0]?.meals?.[0]?.totalNutrients?.carbohydrates || Math.round((aiMealPlan.macroSplit?.carbohydrates || 40) / 100 * (aiMealPlan.targetCalories || 2000) * 0.25 / 4);
+                          const fats = aiMealPlan.meals?.[0]?.meals?.[0]?.totalNutrients?.fats || Math.round((aiMealPlan.macroSplit?.fats || 35) / 100 * (aiMealPlan.targetCalories || 2000) * 0.25 / 9);
+                          
+                          addFoodToDailyIntake({
+                            name: aiMealPlan.meals?.[0]?.meals?.[0]?.name || 'Breakfast',
+                            calories: calories,
+                            protein: protein,
+                            carbohydrates: carbs,
+                            fats: fats
+                          });
+                        }}
+                        className="w-full bg-[#62E0A1] text-black px-2 py-1 rounded text-xs font-semibold hover:bg-[#36CFFF] transition-all duration-300"
+                        title="Mark as eaten"
+                      >
+                        ✓ Eaten
+                      </button>
                     </div>
 
                     {/* Lunch */}
@@ -1114,9 +1196,29 @@ const Nutrition = () => {
                       <p className="text-xs text-gray-300 mb-1">
                         {aiMealPlan.meals?.[0]?.meals?.[1]?.name || 'Grilled chicken salad'}
                       </p>
-                      <p className="text-xs text-gray-400">
+                      <p className="text-xs text-gray-400 mb-2">
                         {aiMealPlan.meals?.[0]?.meals?.[1]?.totalNutrients?.calories || Math.round((aiMealPlan.targetCalories || 2000) * 0.35)} calories
                       </p>
+                      <button
+                        onClick={() => {
+                          const calories = aiMealPlan.meals?.[0]?.meals?.[1]?.totalNutrients?.calories || Math.round((aiMealPlan.targetCalories || 2000) * 0.35);
+                          const protein = aiMealPlan.meals?.[0]?.meals?.[1]?.totalNutrients?.protein || Math.round((aiMealPlan.macroSplit?.protein || 25) / 100 * (aiMealPlan.targetCalories || 2000) * 0.35 / 4);
+                          const carbs = aiMealPlan.meals?.[0]?.meals?.[1]?.totalNutrients?.carbohydrates || Math.round((aiMealPlan.macroSplit?.carbohydrates || 40) / 100 * (aiMealPlan.targetCalories || 2000) * 0.35 / 4);
+                          const fats = aiMealPlan.meals?.[0]?.meals?.[1]?.totalNutrients?.fats || Math.round((aiMealPlan.macroSplit?.fats || 35) / 100 * (aiMealPlan.targetCalories || 2000) * 0.35 / 9);
+                          
+                          addFoodToDailyIntake({
+                            name: aiMealPlan.meals?.[0]?.meals?.[1]?.name || 'Lunch',
+                            calories: calories,
+                            protein: protein,
+                            carbohydrates: carbs,
+                            fats: fats
+                          });
+                        }}
+                        className="w-full bg-[#36CFFF] text-black px-2 py-1 rounded text-xs font-semibold hover:bg-[#F2B33D] transition-all duration-300"
+                        title="Mark as eaten"
+                      >
+                        ✓ Eaten
+                      </button>
                     </div>
 
                     {/* Dinner */}
@@ -1128,9 +1230,29 @@ const Nutrition = () => {
                       <p className="text-xs text-gray-300 mb-1">
                         {aiMealPlan.meals?.[0]?.meals?.[2]?.name || 'Salmon with quinoa'}
                       </p>
-                      <p className="text-xs text-gray-400">
+                      <p className="text-xs text-gray-400 mb-2">
                         {aiMealPlan.meals?.[0]?.meals?.[2]?.totalNutrients?.calories || Math.round((aiMealPlan.targetCalories || 2000) * 0.30)} calories
                       </p>
+                      <button
+                        onClick={() => {
+                          const calories = aiMealPlan.meals?.[0]?.meals?.[2]?.totalNutrients?.calories || Math.round((aiMealPlan.targetCalories || 2000) * 0.30);
+                          const protein = aiMealPlan.meals?.[0]?.meals?.[2]?.totalNutrients?.protein || Math.round((aiMealPlan.macroSplit?.protein || 25) / 100 * (aiMealPlan.targetCalories || 2000) * 0.30 / 4);
+                          const carbs = aiMealPlan.meals?.[0]?.meals?.[2]?.totalNutrients?.carbohydrates || Math.round((aiMealPlan.macroSplit?.carbohydrates || 40) / 100 * (aiMealPlan.targetCalories || 2000) * 0.30 / 4);
+                          const fats = aiMealPlan.meals?.[0]?.meals?.[2]?.totalNutrients?.fats || Math.round((aiMealPlan.macroSplit?.fats || 35) / 100 * (aiMealPlan.targetCalories || 2000) * 0.30 / 9);
+                          
+                          addFoodToDailyIntake({
+                            name: aiMealPlan.meals?.[0]?.meals?.[2]?.name || 'Dinner',
+                            calories: calories,
+                            protein: protein,
+                            carbohydrates: carbs,
+                            fats: fats
+                          });
+                        }}
+                        className="w-full bg-[#F2B33D] text-black px-2 py-1 rounded text-xs font-semibold hover:bg-[#FF6B35] transition-all duration-300"
+                        title="Mark as eaten"
+                      >
+                        ✓ Eaten
+                      </button>
                     </div>
 
                     {/* Snacks */}
@@ -1142,9 +1264,52 @@ const Nutrition = () => {
                       <p className="text-xs text-gray-300 mb-1">
                         {aiMealPlan.meals?.[0]?.meals?.[3]?.name || 'Apple with nuts'}
                       </p>
-                      <p className="text-xs text-gray-400">
+                      <p className="text-xs text-gray-400 mb-2">
                         {aiMealPlan.meals?.[0]?.meals?.[3]?.totalNutrients?.calories || Math.round((aiMealPlan.targetCalories || 2000) * 0.05)} calories
                       </p>
+                      <button
+                        onClick={() => {
+                          const calories = aiMealPlan.meals?.[0]?.meals?.[3]?.totalNutrients?.calories || Math.round((aiMealPlan.targetCalories || 2000) * 0.05);
+                          const protein = aiMealPlan.meals?.[0]?.meals?.[3]?.totalNutrients?.protein || Math.round((aiMealPlan.macroSplit?.protein || 25) / 100 * (aiMealPlan.targetCalories || 2000) * 0.05 / 4);
+                          const carbs = aiMealPlan.meals?.[0]?.meals?.[3]?.totalNutrients?.carbohydrates || Math.round((aiMealPlan.macroSplit?.carbohydrates || 40) / 100 * (aiMealPlan.targetCalories || 2000) * 0.05 / 4);
+                          const fats = aiMealPlan.meals?.[0]?.meals?.[3]?.totalNutrients?.fats || Math.round((aiMealPlan.macroSplit?.fats || 35) / 100 * (aiMealPlan.targetCalories || 2000) * 0.05 / 9);
+                          
+                          addFoodToDailyIntake({
+                            name: aiMealPlan.meals?.[0]?.meals?.[3]?.name || 'Snacks',
+                            calories: calories,
+                            protein: protein,
+                            carbohydrates: carbs,
+                            fats: fats
+                          });
+                        }}
+                        className="w-full bg-[#FF6B35] text-black px-2 py-1 rounded text-xs font-semibold hover:bg-[#62E0A1] transition-all duration-300"
+                        title="Mark as eaten"
+                      >
+                        ✓ Eaten
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Nutrition Summary */}
+                <div className="bg-[#1A1A1A] p-4 rounded-lg border border-gray-700">
+                  <h3 className="text-md font-semibold text-[#62E0A1] mb-3">📊 Daily Nutrition Summary</h3>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                    <div className="text-center">
+                      <p className="text-xs text-gray-400">Target Calories</p>
+                      <p className="text-sm font-bold text-[#62E0A1]">{aiMealPlan.targetCalories ? Math.round(aiMealPlan.targetCalories) : 2000}</p>
+                    </div>
+                    <div className="text-center">
+                      <p className="text-xs text-gray-400">Protein</p>
+                      <p className="text-sm font-bold text-[#36CFFF]">{aiMealPlan.macroSplit?.protein ? `${Math.round((aiMealPlan.macroSplit.protein / 100) * aiMealPlan.targetCalories / 4)}g` : `${Math.round((25 / 100) * (aiMealPlan.targetCalories || 2000) / 4)}g`}</p>
+                    </div>
+                    <div className="text-center">
+                      <p className="text-xs text-gray-400">Carbs</p>
+                      <p className="text-sm font-bold text-[#F2B33D]">{aiMealPlan.macroSplit?.carbohydrates ? `${Math.round((aiMealPlan.macroSplit.carbohydrates / 100) * aiMealPlan.targetCalories / 4)}g` : '250g'}</p>
+                    </div>
+                    <div className="text-center">
+                      <p className="text-xs text-gray-400">Fats</p>
+                      <p className="text-sm font-bold text-[#FF6B35]">{aiMealPlan.macroSplit?.fats ? `${Math.round((aiMealPlan.macroSplit.fats / 100) * aiMealPlan.targetCalories / 9)}g` : '65g'}</p>
                     </div>
                   </div>
                 </div>
@@ -1184,39 +1349,18 @@ const Nutrition = () => {
                   </div>
                 </div>
 
-                {/* Daily Nutrition Summary */}
-                <div className="bg-[#1A1A1A] p-4 rounded-lg border border-gray-700">
-                  <h3 className="text-md font-semibold text-[#36CFFF] mb-3">📊 Daily Nutrition Summary</h3>
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                    <div className="text-center">
-                      <p className="text-xs text-gray-400">Target Calories</p>
-                      <p className="text-sm font-bold text-[#62E0A1]">{aiMealPlan.targetCalories ? Math.round(aiMealPlan.targetCalories) : 2000}</p>
-                    </div>
-                    <div className="text-center">
-                      <p className="text-xs text-gray-400">Protein</p>
-                      <p className="text-sm font-bold text-[#36CFFF]">{aiMealPlan.macroSplit?.protein ? `${Math.round((aiMealPlan.macroSplit.protein / 100) * aiMealPlan.targetCalories / 4)}g` : '80g'}</p>
-                    </div>
-                    <div className="text-center">
-                      <p className="text-xs text-gray-400">Carbs</p>
-                      <p className="text-sm font-bold text-[#F2B33D]">{aiMealPlan.macroSplit?.carbohydrates ? `${Math.round((aiMealPlan.macroSplit.carbohydrates / 100) * aiMealPlan.targetCalories / 4)}g` : '250g'}</p>
-                    </div>
-                    <div className="text-center">
-                      <p className="text-xs text-gray-400">Fats</p>
-                      <p className="text-sm font-bold text-[#FF6B35]">{aiMealPlan.macroSplit?.fats ? `${Math.round((aiMealPlan.macroSplit.fats / 100) * aiMealPlan.targetCalories / 9)}g` : '65g'}</p>
-                    </div>
-                  </div>
-                </div>
+
               </div>
             ) : (
               <div className="bg-[#1A1A1A] p-6 rounded-lg border border-gray-700 text-center">
                 <div className="text-4xl mb-3">🍽️</div>
-                <h3 className="text-lg font-semibold text-[#F2B33D] mb-2">No Meal Plan Generated Yet</h3>
+                <h3 className="text-lg font-semibold text-[#F2B33D] mb-2">No Latest Plan Found</h3>
                 <p className="text-sm text-gray-400 mb-4">
-                  Generate your personalized AI meal plan below to see your recommended meals and timing.
+                  Generate your personalized AI nutrition plan below to see your plan summary and details here.
                 </p>
                 <div className="flex items-center justify-center space-x-2 text-xs text-gray-500">
-                  <i className="fas fa-clock"></i>
-                  <span>Meal timing recommendations will appear here</span>
+                  <i className="fas fa-plus-circle"></i>
+                  <span>Create your first nutrition plan to see the summary</span>
                 </div>
               </div>
             )}
@@ -1301,6 +1445,30 @@ const Nutrition = () => {
                       <p className="text-2xl font-bold text-center">{foodAnalysis.carbs}</p>
                     </div>
                   </div>
+                  
+                  {/* Add to Daily Intake Button */}
+                  {foodAnalysis.calories !== 'N/A' && (
+                    <div className="mt-6 w-full flex justify-center items-center">
+                      <button
+                        onClick={() => {
+                          const analysis = {
+                            name: 'Analyzed Food',
+                            calories: parseFloat(foodAnalysis.calories) || 0,
+                            protein: parseFloat(foodAnalysis.protein) || 0,
+                            carbohydrates: parseFloat(foodAnalysis.carbs) || 0,
+                            fats: 0, // Default to 0 since fats aren't analyzed
+                            sugar: parseFloat(foodAnalysis.sugar) || 0
+                          };
+                          addFoodToDailyIntake(analysis);
+                        }}
+                        className="bg-gradient-to-r from-[#62E0A1] to-[#36CFFF] text-black px-8 py-3 rounded-lg font-semibold hover:from-[#36CFFF] hover:to-[#62E0A1] transition-all duration-300 shadow-lg"
+                        title="Add this food to your daily intake"
+                      >
+                        <i className="fas fa-plus mr-2"></i>
+                        Add to Daily Intake
+                      </button>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
@@ -1312,11 +1480,11 @@ const Nutrition = () => {
           <section className="w-full mb-8">
             <div className="bg-[#121212] rounded-2xl shadow-2xl p-0 sm:p-1 relative">
               <button 
-                onClick={generateNutritionPlan}
+                onClick={handleShowHistory}
                 className="absolute top-4 right-4 text-gray-400 hover:text-[#F2B33D] text-2xl p-2 rounded-full focus:outline-none focus:ring-2 focus:ring-[#F2B33D] focus:ring-opacity-50 transition" 
-                title="Show Meal Plan"
+                title="Show Plan History"
               >
-                <i className="fas fa-ellipsis-h"></i>
+                <i className="fas fa-history"></i>
               </button>
               <div className="bg-[#121212] rounded-2xl p-6 sm:p-10">
                 <h2 className="text-2xl sm:text-3xl font-bold text-white mb-6 text-center bg-gradient-to-r from-[#62E0A1] via-[#36CFFF] to-[#F2B33D] bg-clip-text text-transparent">
@@ -1525,7 +1693,7 @@ const Nutrition = () => {
                   </div>
                   <button 
                     onClick={() => changeMealDay(1)}
-                    disabled={currentDay === selectedDays}
+                    disabled={currentDay === (dietPlan?.summary?.totalDays || selectedDays)}
                     className="bg-gray-800 hover:bg-[#62E0A1] hover:text-black text-gray-300 rounded-full w-10 h-10 flex items-center justify-center text-2xl transition disabled:opacity-40"
                     title="Next Day"
                   >
@@ -1533,6 +1701,13 @@ const Nutrition = () => {
                   </button>
                 </div>
                 <div className="grid gap-4 md:grid-cols-3">
+                  {/* Debug info */}
+                  {(() => {
+                    console.log('🔍 Rendering meals for day:', currentDay);
+                    console.log('🔍 Diet plan:', dietPlan);
+                    console.log('🔍 Meal plan for current day:', dietPlan?.mealPlan?.[`day${currentDay}`]);
+                    return null;
+                  })()}
                   {/* Breakfast */}
                   <div className="bg-[#121212] p-4 rounded-xl">
                     <h4 className="font-bold text-[#62E0A1] mb-2">Breakfast</h4>
@@ -1693,38 +1868,160 @@ const Nutrition = () => {
           </div>
         </div>
       )}
-      
+      {/* Simple Real Plan History Modal */}
+      {showHistoryModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-60 backdrop-blur-sm p-4">
+          <div className="relative w-full max-w-4xl mx-auto bg-gray-900 rounded-2xl shadow-2xl border border-gray-700 max-h-[80vh] overflow-hidden">
+            {/* Header */}
+            <div className="flex items-center justify-between p-4 border-b border-gray-700 bg-gradient-to-r from-[#121212] to-[#1A1A1A]">
+              <div className="flex items-center space-x-3">
+                <div className="bg-gradient-to-r from-[#62E0A1] to-[#36CFFF] text-black rounded-full w-8 h-8 flex items-center justify-center">
+                  <i className="fas fa-history"></i>
+                </div>
+                <div>
+                  <h2 className="text-xl font-bold text-white">Generated Plans</h2>
+                  <p className="text-xs text-gray-400">Your nutrition plan history</p>
+                </div>
+              </div>
+            <button 
+              onClick={() => setShowHistoryModal(false)}
+                className="text-gray-400 hover:text-[#F2B33D] text-xl font-bold focus:outline-none p-2 rounded-full hover:bg-gray-800 transition"
+              title="Close"
+            >
+              ×
+            </button>
+            </div>
+            
+            {/* Content */}
+            <div className="p-4 overflow-y-auto max-h-[calc(80vh-100px)]">
+            {loadingHistory ? (
+              <div className="flex items-center justify-center py-12">
+                  <div className="w-6 h-6 border-2 border-[#F2B33D] border-t-transparent rounded-full animate-spin mr-3"></div>
+                  <span className="text-[#F2B33D] font-medium">Loading plans...</span>
+              </div>
+            ) : planHistory.length > 0 ? (
+                <div className="space-y-4">
+                  {/* Debug info */}
+                  {(() => {
+                    console.log('🔍 Plan history data:', planHistory);
+                    return null;
+                  })()}
+                  {/* Plans List */}
+                {planHistory.map((plan, index) => (
+                    <div key={plan._id || index} className="bg-[#121212] rounded-lg border border-gray-700 p-4 hover:border-[#62E0A1] transition-all duration-300">
+                      <div className="flex items-center justify-between mb-3">
+                        <div className="flex items-center space-x-3">
+                          <div className="bg-gradient-to-r from-[#62E0A1] to-[#36CFFF] text-black rounded-full w-8 h-8 flex items-center justify-center text-sm font-bold">
+                            {planHistory.length - index}
+                          </div>
+                          <div>
+                            <h3 className="text-sm font-bold text-white">
+                              {plan.title || `Nutrition Plan ${planHistory.length - index}`}
+                      </h3>
+                            <p className="text-xs text-gray-400">
+                              {new Date(plan.createdAt).toLocaleDateString('en-US', {
+                                year: 'numeric',
+                                month: 'short',
+                                day: 'numeric',
+                                hour: '2-digit',
+                                minute: '2-digit'
+                              })}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                            plan.goal === 'weight_loss' ? 'bg-red-900/30 text-red-300' :
+                            plan.goal === 'muscle_gain' ? 'bg-blue-900/30 text-blue-300' :
+                            plan.goal === 'maintenance' ? 'bg-green-900/30 text-green-300' :
+                            'bg-gray-700 text-gray-300'
+                          }`}>
+                            {plan.goal || 'Custom'}
+                      </span>
+                        </div>
+                    </div>
+                    
+                      <div className="grid grid-cols-3 gap-4 mb-3">
+                      <div className="text-center">
+                          <p className="text-xs text-gray-400">Type</p>
+                          <p className="text-sm font-bold text-[#62E0A1]">
+                            {plan.goal === 'weight_loss' ? 'Weight Loss' :
+                             plan.goal === 'muscle_gain' ? 'Muscle Gain' :
+                             plan.goal === 'maintenance' ? 'Maintenance' : 'Custom'}
+                        </p>
+                      </div>
+                      <div className="text-center">
+                          <p className="text-xs text-gray-400">Calories</p>
+                          <p className="text-sm font-bold text-[#36CFFF]">
+                            {plan.targetCalories || 'N/A'}
+                        </p>
+                      </div>
+                      <div className="text-center">
+                          <p className="text-xs text-gray-400">Protein</p>
+                          <p className="text-sm font-bold text-[#F2B33D]">
+                            {plan.macroSplit?.protein ? `${Math.round((plan.macroSplit.protein / 100) * plan.targetCalories / 4)}g` : 'N/A'}
+                        </p>
+                      </div>
+                    </div>
+                    
+
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-12">
+                  <div className="bg-gradient-to-r from-[#62E0A1] to-[#36CFFF] text-black rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
+                    <i className="fas fa-history text-2xl"></i>
+                  </div>
+                  <h3 className="text-lg font-bold text-[#F2B33D] mb-2">No Plans Found</h3>
+                  <p className="text-gray-400 text-sm mb-4">
+                    Generate nutrition plans to see them here.
+                  </p>
+                  <button
+                    onClick={() => setShowHistoryModal(false)}
+                    className="bg-gradient-to-r from-[#62E0A1] to-[#36CFFF] text-black px-4 py-2 rounded-lg text-sm font-semibold hover:from-[#36CFFF] hover:to-[#62E0A1] transition-all duration-300"
+                  >
+                    Generate Plan
+                  </button>
+              </div>
+            )}
+            </div>
+          </div>
+        </div>
+      )}
+
       <style jsx>{`
         .plan-btn {
-          background: #1a1a1a;
-          border: 1px solid #333;
-          color: #e5e7eb;
-          padding: 0.5rem 1rem;
-          border-radius: 6px;
-          font-size: 0.9rem;
+          min-width: 110px;
+          min-height: 38px;
+          padding: 0.5em 1em;
+          border-radius: 9999px;
           font-weight: 500;
+          font-size: 1rem;
+          border: 2px solid #333 !important;
+          background: linear-gradient(90deg, #232526 0%, #414345 100%) !important;
+          color: #e5e7eb !important;
+          box-shadow: 0 2px 8px 0 rgba(0,0,0,0.10);
+          transition: background 0.18s, color 0.18s, border 0.18s, box-shadow 0.18s;
           cursor: pointer;
-          transition: all 0.2s ease;
-          margin: 0.1rem;
-          white-space: nowrap;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          margin: 0.18em 0.3em 0.18em 0;
         }
-        
-        .plan-btn:hover {
-          background: #2a2a2a;
-          border-color: #62E0A1;
-          color: #fff;
-        }
-        
-        .plan-btn.selected {
-          background: linear-gradient(90deg, #62E0A1 0%, #36CFFF 100%);
-          color: #111;
-          border-color: #62E0A1;
-          box-shadow: 0 4px 16px 0 rgba(98, 224, 161, 0.15);
-        }
-        
-        .plan-btn:focus {
+        .plan-btn.selected, .plan-btn:focus {
+          background: linear-gradient(90deg, #62E0A1 0%, #36CFFF 100%) !important;
+          color: #111 !important;
+          border-color: #62E0A1 !important;
           outline: none;
-          box-shadow: 0 0 0 2px rgba(98, 224, 161, 0.3);
+          box-shadow: 0 4px 16px 0 rgba(98,224,161,0.15) !important;
+        }
+        @keyframes marquee {
+          0% { transform: translateX(0); }
+          100% { transform: translateX(-50%); }
+        }
+        .animate-marquee {
+          animation: marquee 32s linear infinite;
         }
       `}</style>
     </div>

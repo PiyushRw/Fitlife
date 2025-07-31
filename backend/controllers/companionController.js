@@ -875,7 +875,8 @@ CRITICAL: You MUST generate ${selectedDays} days with different meals. Each day 
       restrictions: validatedRestrictions,
       createdBy: req.user.id,
       isPublic: false,
-      isTemplate: false
+      isTemplate: false,
+      daysCount: selectedDays
     });
 
     res.status(201).json({

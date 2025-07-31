@@ -98,6 +98,39 @@ router.post('/plans', protect, async (req, res, next) => {
   }
 });
 
+// @desc    Delete nutrition plan
+// @route   DELETE /api/v1/nutrition/plans/:id
+// @access  Private
+router.delete('/plans/:id', protect, async (req, res, next) => {
+  try {
+    const plan = await NutritionPlan.findById(req.params.id);
+    
+    if (!plan) {
+      return res.status(404).json({
+        success: false,
+        error: 'Nutrition plan not found'
+      });
+    }
+    
+    // Check if user owns the plan
+    if (plan.createdBy.toString() !== req.user.id) {
+      return res.status(403).json({
+        success: false,
+        error: 'Not authorized to delete this plan'
+      });
+    }
+    
+    await NutritionPlan.findByIdAndDelete(req.params.id);
+    
+    res.status(200).json({
+      success: true,
+      message: 'Nutrition plan deleted successfully'
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
 // @desc    Save AI-generated nutrition plan
 // @route   POST /api/v1/nutrition/save-ai-plan
 // @access  Private
@@ -218,18 +251,16 @@ router.get('/my-foods', protect, getMyFoodItems);
 // @access  Private
 router.get('/latest-ai-plan', protect, async (req, res, next) => {
   try {
+    console.log('🔍 Fetching latest AI plan for user:', req.user.id);
+    
     // Find the user's most recent nutrition plan (removed AI title restriction)
     const latestPlan = await NutritionPlan.findOne({ 
       createdBy: req.user.id
     })
     .sort({ createdAt: -1 })
-    .populate({
-      path: 'meals.meals',
-      populate: {
-        path: 'foods.food',
-        model: 'FoodItem'
-      }
-    });
+    .lean(); // Use lean() for better performance
+
+    console.log('📊 Latest plan found:', latestPlan ? 'Yes' : 'No');
 
     if (!latestPlan) {
       return res.status(200).json({
@@ -244,7 +275,58 @@ router.get('/latest-ai-plan', protect, async (req, res, next) => {
       data: latestPlan
     });
   } catch (error) {
-    next(error);
+    console.error('❌ Error in latest-ai-plan endpoint:', error);
+    console.error('Error stack:', error.stack);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to fetch latest plan',
+      details: error.message
+    });
+  }
+});
+
+// @desc    Get user's nutrition plan history
+// @route   GET /api/v1/nutrition/plan-history
+// @access  Private
+router.get('/plan-history', protect, async (req, res, next) => {
+  try {
+    const { limit = 10, page = 1 } = req.query;
+    const skip = (parseInt(page) - 1) * parseInt(limit);
+    
+    console.log('🔍 Fetching plan history for user:', req.user.id);
+    
+    // Get all nutrition plans for the user, sorted by creation date (newest first)
+    const plans = await NutritionPlan.find({ 
+      createdBy: req.user.id
+    })
+    .sort({ createdAt: -1 })
+    .limit(parseInt(limit))
+    .skip(skip)
+    .lean(); // Use lean() for better performance and avoid populate issues
+
+    console.log('📊 Found plans:', plans.length);
+
+    const total = await NutritionPlan.countDocuments({ createdBy: req.user.id });
+
+    res.status(200).json({
+      success: true,
+      count: plans.length,
+      pagination: {
+        page: parseInt(page),
+        limit: parseInt(limit),
+        total,
+        pages: Math.ceil(total / parseInt(limit))
+      },
+      data: plans
+    });
+  } catch (error) {
+    console.error('❌ Error in plan-history endpoint:', error);
+    console.error('Error stack:', error.stack);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to fetch plan history',
+      details: error.message
+    });
   }
 });
 
