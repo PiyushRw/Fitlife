@@ -57,12 +57,8 @@ const Contact = () => {
   };
 
   return (
-    <div id="contact-page" className="min-h-screen bg-[#121212] text-white pt-24 sm:pt-32 px-4 sm:px-6 lg:px-8">
-
-
-
-      <div className="bg-[#121212] w-full h-6"></div>
-<div className="relative max-w-7xl mx-auto w-full px-6 sm:px-10 lg:px-16 py-10 sm:py-16 bg-[#1e1e1e] rounded-[32px] overflow-visible mt-6 shadow-2xl">
+    <div id="contact-page" className="min-h-screen bg-[#121212] text-white pt-12 sm:pt-16 px-4 sm:px-6 lg:px-8">
+      <div className="relative max-w-7xl mx-auto w-full px-4 sm:px-8 lg:px-12 py-8 sm:py-12 bg-[#1e1e1e] rounded-3xl overflow-visible shadow-2xl mt-4">
         {/* Decorative Contact Agent Icon */}
         <div className="absolute -bottom-20 -right-20 w-72 h-72 bg-[#1e1e1e] rounded-[64px] overflow-hidden flex items-center justify-center">
           <img 
@@ -181,20 +177,29 @@ const Contact = () => {
         </section>
       </div>
 
-      <footer className="max-w-7xl mx-auto w-full px-6 sm:px-10 lg:px-16 py-8 flex flex-col sm:flex-row items-center justify-between text-[11px] text-gray-400 font-normal">
-        <Link to="/" className="flex items-center space-x-1 mb-4 sm:mb-0">
-          <span className="text-[#24d0a4] font-semibold text-lg leading-none">Fit</span>
-          <span className="text-white font-semibold text-lg leading-none">Life</span>
+      <footer className="max-w-7xl mx-auto w-full px-4 sm:px-8 lg:px-12 py-6 flex flex-col sm:flex-row items-center justify-between text-[11px] text-gray-400 font-normal border-t border-[#2a2a2a] mt-8">
+        <Link to="/" className="flex items-center space-x-1 mb-4 sm:mb-0 group">
+          <span className="text-[#24d0a4] font-semibold text-lg leading-none group-hover:text-[#36CFFF] transition-colors">Fit</span>
+          <span className="text-white font-semibold text-lg leading-none group-hover:text-gray-300 transition-colors">Life</span>
         </Link>
         <nav className="flex space-x-6 mb-4 sm:mb-0">
-          <a className="hover:underline" href="#">Terms</a>
-          <a className="hover:underline" href="#">Privacy</a>
-          <a className="hover:underline" href="#">Cookies</a>
+          <Link to="/terms" className="hover:text-[#24d0a4] transition-colors">Terms</Link>
+          <Link to="/privacy" className="hover:text-[#24d0a4] transition-colors">Privacy</Link>
+          <Link to="/cookies" className="hover:text-[#24d0a4] transition-colors">Cookies</Link>
         </nav>
         <div className="flex space-x-6 text-[#24d0a4] text-[14px]">
-          <a aria-label="LinkedIn" className="hover:text-[#2fd1c0]" href="#"><i className="fab fa-linkedin-in"></i></a>
-          <a aria-label="Facebook" className="hover:text-[#2fd1c0]" href="#"><i className="fab fa-facebook-f"></i></a>
-          <a aria-label="Twitter" className="hover:text-[#2fd1c0]" href="#"><i className="fab fa-twitter"></i></a>
+          <a aria-label="LinkedIn" className="hover:text-[#2fd1c0] transition-colors" href="https://linkedin.com/company/fitlife" target="_blank" rel="noopener noreferrer">
+            <i className="fab fa-linkedin-in"></i>
+          </a>
+          <a aria-label="Facebook" className="hover:text-[#2fd1c0] transition-colors" href="https://facebook.com/fitlife" target="_blank" rel="noopener noreferrer">
+            <i className="fab fa-facebook-f"></i>
+          </a>
+          <a aria-label="Twitter" className="hover:text-[#2fd1c0] transition-colors" href="https://twitter.com/fitlife" target="_blank" rel="noopener noreferrer">
+            <i className="fab fa-twitter"></i>
+          </a>
+          <a aria-label="Instagram" className="hover:text-[#2fd1c0] transition-colors" href="https://instagram.com/fitlife" target="_blank" rel="noopener noreferrer">
+            <i className="fab fa-instagram"></i>
+          </a>
         </div>
       </footer>
       {/* Animations */}

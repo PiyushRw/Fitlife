@@ -210,6 +210,87 @@ class ApiService {
       body: JSON.stringify({ userPreferences, aiWorkoutData }),
     });
   }
+
+  // ======================
+  // TESTIMONIAL ENDPOINTS
+  // ======================
+
+  /**
+   * Get all approved testimonials
+   * @param {Object} params - Query parameters (page, limit, sort, etc.)
+   * @returns {Promise<Array>} Array of testimonials
+   */
+  static async getTestimonials(params = {}) {
+    try {
+      // Convert params object to query string
+      const queryParams = new URLSearchParams();
+      Object.entries(params).forEach(([key, value]) => {
+        if (value !== undefined && value !== null) {
+          queryParams.append(key, value);
+        }
+      });
+      
+      const queryString = queryParams.toString();
+      const endpoint = `/testimonials${queryString ? `?${queryString}` : ''}`;
+      
+      const response = await this.makeRequest(endpoint);
+      
+      // Handle different response formats
+      if (Array.isArray(response)) {
+        return response; // Direct array response
+      } else if (response.data && Array.isArray(response.data)) {
+        return response.data; // { data: [...] } format
+      } else if (response.testimonials && Array.isArray(response.testimonials)) {
+        return response.testimonials; // { testimonials: [...] } format
+      } else if (response.data?.testimonials && Array.isArray(response.data.testimonials)) {
+        return response.data.testimonials; // { data: { testimonials: [...] } } format
+      }
+      
+      console.error('Unexpected testimonials response format:', response);
+      return [];
+    } catch (error) {
+      console.error('Error fetching testimonials:', error);
+      // Return empty array instead of throwing to allow default testimonials to show
+      return [];
+    }
+  }
+
+  /**
+   * Submit a new testimonial
+   * @param {Object} testimonialData - The testimonial data to submit
+   * @param {string} testimonialData.content - The testimonial content
+   * @param {number} testimonialData.rating - The rating (1-5)
+   * @param {string} [testimonialData.name] - Optional name (defaults to current user's name)
+   * @param {string} [testimonialData.role] - Optional role (defaults to 'Member')
+   * @returns {Promise<Object>} The created testimonial
+   */
+  static async submitTestimonial(testimonialData) {
+    try {
+      const response = await this.makeRequest('/testimonials', {
+        method: 'POST',
+        body: JSON.stringify(testimonialData),
+      });
+      
+      return response.data?.testimonial || response;
+    } catch (error) {
+      console.error('Error submitting testimonial:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Get current user's testimonials
+   * @returns {Promise<Array>} Array of user's testimonials
+   */
+  static async getMyTestimonials() {
+    try {
+      const response = await this.makeRequest('/testimonials/my-testimonials');
+      return response.data?.testimonials || response.testimonials || [];
+    } catch (error) {
+      console.error('Error fetching user testimonials:', error);
+      throw error;
+    }
+  }
 }
 
 export default ApiService;

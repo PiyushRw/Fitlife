@@ -20,6 +20,11 @@ const Onboarding = lazy(() => import('./pages/Onboarding'));
 const Nutrition = lazy(() => import('./pages/Nutrition'));
 const Workout = lazy(() => import('./pages/Workout'));
 const Preference = lazy(() => import('./pages/Preference'));
+const Testimonials = lazy(() => import('./pages/Testimonials'));
+const SeniorWellness = lazy(() => import('./pages/SeniorWellness'));
+const TermsPage = lazy(() => import('./pages/TermsPage'));
+const PrivacyPage = lazy(() => import('./pages/PrivacyPage'));
+const FaqPage = lazy(() => import('./pages/FaqPage'));
 
 // Component to conditionally render AI Assistant
 const ConditionalAIAssistant = () => {
@@ -64,6 +69,11 @@ function App() {
             <Route path="/workout" element={<Workout />} />
             <Route path="/preference" element={<Preference />} />
             <Route path="/preferences" element={<Preference />} />
+            <Route path="/testimonials" element={<Testimonials />} />
+            <Route path="/senior-wellness" element={<SeniorWellness />} />
+            <Route path="/terms" element={<TermsPage />} />
+            <Route path="/privacy" element={<PrivacyPage />} />
+            <Route path="/faq" element={<FaqPage />} />
             {/* Redirect old HTML routes to React routes */}
             <Route path="/HomePage.html" element={<Navigate to="/" replace />} />
             <Route path="/login.html" element={<Navigate to="/login" replace />} />

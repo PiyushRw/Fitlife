@@ -27,10 +27,15 @@ class ErrorBoundary extends React.Component {
             <FitLifeLogo />
           </div>
           <nav className="flex items-center space-x-8 text-[17px] font-semibold">
-            <NavLink to="/" className="text-white hover:text-[#62E0A1]">Home</NavLink>
-            <NavLink to="/register" className="ml-4 bg-gradient-to-r from-[#62E0A1] to-[#F2B33D] text-black px-5 py-2 rounded-full font-semibold">
-              Get Started
-            </NavLink>
+            <Link to="/workouts" className="text-gray-300 hover:bg-gray-700 hover:text-white block px-3 py-2 rounded-md text-base font-medium">
+              Workouts
+            </Link>
+            <Link to="/nutrition" className="text-gray-300 hover:bg-gray-700 hover:text-white block px-3 py-2 rounded-md text-base font-medium">
+              Nutrition
+            </Link>
+            <Link to="/senior-wellness" className="text-gray-300 hover:bg-gray-700 hover:text-white block px-3 py-2 rounded-md text-base font-medium">
+              Senior Wellness
+            </Link>
           </nav>
         </div>
       );

@@ -16,9 +16,9 @@ import userRoutes from './routes/users.js';
 import workoutRoutes from './routes/workouts.js';
 import nutritionRoutes from './routes/nutrition.js';
 import aiAssistantRoutes from './routes/aiAssistant.js';
-
 import fitnessAdviceRouter from './routes/fitnessAdviceRoutes.js'; 
 import contactRoutes from './routes/contact.js';
+import testimonialRoutes from './routes/testimonialRoutes.js';
 
 
 
@@ -77,6 +77,7 @@ app.use(`/api/${apiVersion}/nutrition`, nutritionRoutes);
 
 app.use(`/api/${apiVersion}/ai-assistant`, aiAssistantRoutes);
 app.use(`/api/${apiVersion}/contact`, contactRoutes);
+app.use(`/api/${apiVersion}/testimonials`, testimonialRoutes);
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {
