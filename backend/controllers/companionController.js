@@ -155,7 +155,7 @@ export const getWorkoutRecommendations = async (req, res, next) => {
 // @access  Private
 export const saveNutritionRecommendation = async (req, res, next) => {
   try {
-    const { goal, dietaryRestrictions, targetCalories, mealCount } = req.body;
+    const { goal, dietaryRestrictions, targetCalories, mealCount, selectedDays = 7 } = req.body;
 
     if (!goal || !targetCalories || !mealCount) {
       return res.status(400).json({
@@ -187,54 +187,598 @@ export const saveNutritionRecommendation = async (req, res, next) => {
       });
     }
 
-    // Mock recommendation (simplified)
-    const recommendation = {
-      goal: goal || 'maintenance',
-      targetCalories: targetCalories || 2000,
+    // Generate dynamic nutrition plan using AI
+    const nutritionPrompt = `You are a nutrition expert. Create a detailed ${selectedDays}-day nutrition plan.
+
+REQUIREMENTS:
+- Generate EXACTLY ${selectedDays} different days
+- Each day must have COMPLETELY DIFFERENT meals (no repetition)
+- Include breakfast, lunch, dinner, snack1, snack2 for each day
+- Goal: ${goal}
+- Target Calories: ${targetCalories} per day
+- Dietary Restrictions: ${validatedRestrictions.join(', ') || 'None'}
+
+MEAL DIVERSITY REQUIREMENTS:
+- Different proteins each day (chicken, fish, beef, tofu, eggs, shrimp, tuna)
+- Different vegetables each day (broccoli, spinach, carrots, asparagus, zucchini, bell peppers)
+- Different grains each day (quinoa, rice, oats, pasta, bread)
+- Different fruits each day (banana, apple, berries, pineapple)
+- Different cooking methods each day (grilled, baked, steamed, raw, sautéed, stir-fried)
+
+EXAMPLE STRUCTURE - You MUST follow this EXACTLY:
+{
+  "goal": "${goal}",
+  "targetCalories": ${targetCalories},
+  "macroSplit": {
+    "protein": 30,
+    "carbohydrates": 40,
+    "fats": 30
+  },
+  "dailyPlans": {
+    "day1": {
+      "breakfast": {
+        "name": "Oatmeal with Berries",
+        "foods": [{"name": "Oatmeal", "quantity": 1, "unit": "cup", "calories": 150}],
+        "totalCalories": 300,
+        "protein": 15,
+        "carbs": 45,
+        "fats": 8,
+        "instructions": "Cook oatmeal, top with berries"
+      },
+      "lunch": { ... },
+      "dinner": { ... },
+      "snack1": { ... },
+      "snack2": { ... }
+    },
+    "day2": {
+      "breakfast": {
+        "name": "Protein Pancakes",
+        "foods": [{"name": "Eggs", "quantity": 2, "unit": "large", "calories": 140}],
+        "totalCalories": 350,
+        "protein": 20,
+        "carbs": 40,
+        "fats": 10,
+        "instructions": "Mix eggs and flour, cook pancakes"
+      },
+      "lunch": { ... },
+      "dinner": { ... },
+      "snack1": { ... },
+      "snack2": { ... }
+    },
+    "day3": { ... },
+    "day4": { ... },
+    "day5": { ... },
+    "day6": { ... },
+    "day7": { ... }
+  }
+}
+
+CRITICAL: You MUST generate ${selectedDays} days with different meals. Each day should have unique breakfast, lunch, dinner, and snacks.`;
+
+    console.log('🤖 Generating AI nutrition plan...');
+    
+    // Call Gemini API for dynamic meal generation
+    const aiResponse = await fetch(GEMINI_API_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-goog-api-key': GEMINI_API_KEY,
+      },
+      body: JSON.stringify({
+        contents: [
+          {
+            parts: [
+              { text: nutritionPrompt }
+            ]
+          }
+        ],
+        generationConfig: {
+          temperature: 0.8,
+          topK: 40,
+          topP: 0.95,
+          maxOutputTokens: 8192,
+        }
+      }),
+    });
+
+    if (!aiResponse.ok) {
+      throw new Error(`AI API request failed: ${aiResponse.status}`);
+    }
+
+    const aiData = await aiResponse.json();
+    const generatedText = aiData.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
+    
+    if (!generatedText) {
+      throw new Error('No response from AI service');
+    }
+
+    console.log('📝 AI Response received, parsing...');
+    console.log('🤖 Raw AI Response:', generatedText.substring(0, 500) + '...');
+    
+    // Parse AI response
+    let recommendation;
+    try {
+      // Extract JSON from the response
+      const jsonMatch = generatedText.match(/\{[\s\S]*\}/);
+      if (jsonMatch) {
+        recommendation = JSON.parse(jsonMatch[0]);
+        console.log('✅ Successfully parsed AI response');
+        console.log('📊 Daily plans found:', Object.keys(recommendation.dailyPlans || {}));
+      } else {
+        throw new Error('No JSON found in AI response');
+      }
+    } catch (parseError) {
+      console.error('❌ Error parsing AI response:', parseError);
+      console.log('🔄 Using fallback recommendation with multiple days...');
+      // Fallback to default recommendation with multiple days
+      recommendation = {
+        goal: goal,
+        targetCalories: targetCalories,
       macroSplit: {
         protein: 30,
         carbohydrates: 40,
         fats: 30
       },
-      meals: [
-        {
-          type: 'breakfast',
+        dailyPlans: {
+          day1: {
+            breakfast: {
+              name: 'Protein Oatmeal Bowl',
           foods: [
             { name: 'Oatmeal', quantity: 1, unit: 'cup', calories: 150 },
             { name: 'Banana', quantity: 1, unit: 'piece', calories: 105 },
-            { name: 'Almonds', quantity: 10, unit: 'pieces', calories: 70 }
-          ],
-          totalCalories: 325
+                { name: 'Almonds', quantity: 10, unit: 'pieces', calories: 70 },
+                { name: 'Protein Powder', quantity: 1, unit: 'scoop', calories: 120 }
+              ],
+              totalCalories: 445,
+              protein: 25,
+              carbs: 45,
+              fats: 12,
+              instructions: 'Cook oatmeal with water, add protein powder, top with sliced banana and almonds'
+            },
+            lunch: {
+              name: 'Grilled Chicken Quinoa Bowl',
+              foods: [
+                { name: 'Chicken Breast', quantity: 150, unit: 'g', calories: 250 },
+                { name: 'Quinoa', quantity: 1, unit: 'cup', calories: 222 },
+                { name: 'Broccoli', quantity: 1, unit: 'cup', calories: 55 },
+                { name: 'Olive Oil', quantity: 1, unit: 'tbsp', calories: 120 }
+              ],
+              totalCalories: 647,
+              protein: 35,
+              carbs: 45,
+              fats: 18,
+              instructions: 'Grill chicken, cook quinoa, steam broccoli, combine with olive oil'
+            },
+            dinner: {
+              name: 'Salmon with Sweet Potato',
+              foods: [
+                { name: 'Salmon', quantity: 150, unit: 'g', calories: 280 },
+                { name: 'Sweet Potato', quantity: 1, unit: 'medium', calories: 103 },
+                { name: 'Spinach', quantity: 2, unit: 'cups', calories: 14 },
+                { name: 'Lemon', quantity: 1, unit: 'slice', calories: 2 }
+              ],
+              totalCalories: 399,
+              protein: 30,
+              carbs: 25,
+              fats: 15,
+              instructions: 'Bake salmon with lemon, roast sweet potato, sauté spinach'
+            },
+            snack1: {
+              name: 'Greek Yogurt with Berries',
+              foods: [
+                { name: 'Greek Yogurt', quantity: 1, unit: 'cup', calories: 130 },
+                { name: 'Mixed Berries', quantity: 0.5, unit: 'cup', calories: 40 }
+              ],
+              totalCalories: 170,
+              protein: 15,
+              carbs: 12,
+              fats: 2,
+              instructions: 'Mix Greek yogurt with fresh berries'
+            },
+            snack2: {
+              name: 'Apple with Peanut Butter',
+              foods: [
+                { name: 'Apple', quantity: 1, unit: 'medium', calories: 95 },
+                { name: 'Peanut Butter', quantity: 1, unit: 'tbsp', calories: 95 }
+              ],
+              totalCalories: 190,
+              protein: 4,
+              carbs: 20,
+              fats: 8,
+              instructions: 'Slice apple and serve with peanut butter'
+            }
+          },
+          day2: {
+            breakfast: {
+              name: 'Protein Pancakes',
+              foods: [
+                { name: 'Egg Whites', quantity: 2, unit: 'scoop', calories: 100 },
+                { name: 'Flour', quantity: 1, unit: 'cup', calories: 150 },
+                { name: 'Banana', quantity: 1, unit: 'medium', calories: 105 },
+                { name: 'Chia Seeds', quantity: 1, unit: 'tbsp', calories: 10 }
+              ],
+              totalCalories: 365,
+              protein: 25,
+              carbs: 40,
+              fats: 10,
+              instructions: 'Mix egg whites, flour, banana, and chia seeds. Cook pancakes on a non-stick pan.'
+            },
+            lunch: {
+              name: 'Grilled Tofu Stir Fry',
+              foods: [
+                { name: 'Tofu', quantity: 150, unit: 'g', calories: 120 },
+                { name: 'Broccoli', quantity: 1, unit: 'cup', calories: 55 },
+                { name: 'Carrots', quantity: 1, unit: 'cup', calories: 45 },
+                { name: 'Soy Sauce', quantity: 1, unit: 'tbsp', calories: 10 }
+              ],
+              totalCalories: 330,
+              protein: 20,
+              carbs: 30,
+              fats: 10,
+              instructions: 'Grill tofu, stir fry broccoli and carrots with soy sauce.'
+            },
+            dinner: {
+              name: 'Chicken Caesar Salad',
+              foods: [
+                { name: 'Chicken Breast', quantity: 150, unit: 'g', calories: 250 },
+                { name: 'Romaine Lettuce', quantity: 1, unit: 'cup', calories: 10 },
+                { name: 'Caesar Dressing', quantity: 1, unit: 'tbsp', calories: 50 },
+                { name: 'Parmesan Cheese', quantity: 1, unit: 'tbsp', calories: 100 }
+              ],
+              totalCalories: 410,
+              protein: 30,
+              carbs: 20,
+              fats: 15,
+              instructions: 'Grill chicken, toss with romaine lettuce, Caesar dressing, and parmesan.'
+            },
+            snack1: {
+              name: 'Hummus with Veggies',
+              foods: [
+                { name: 'Hummus', quantity: 1, unit: 'cup', calories: 150 },
+                { name: 'Carrots', quantity: 1, unit: 'cup', calories: 45 },
+                { name: 'Celery', quantity: 1, unit: 'cup', calories: 10 }
+              ],
+              totalCalories: 205,
+              protein: 10,
+              carbs: 15,
+              fats: 10,
+              instructions: 'Mix hummus with carrots and celery.'
+            },
+            snack2: {
+              name: 'Apple with Almond Butter',
+              foods: [
+                { name: 'Apple', quantity: 1, unit: 'medium', calories: 95 },
+                { name: 'Almond Butter', quantity: 1, unit: 'tbsp', calories: 95 }
+              ],
+              totalCalories: 190,
+              protein: 4,
+              carbs: 20,
+              fats: 8,
+              instructions: 'Slice apple and serve with almond butter'
+            }
+          },
+          day3: {
+            breakfast: {
+              name: 'Avocado Toast with Egg',
+              foods: [
+                { name: 'Avocado', quantity: 1, unit: 'medium', calories: 160 },
+                { name: 'Egg Whites', quantity: 2, unit: 'scoop', calories: 100 },
+                { name: 'Whole Wheat Bread', quantity: 1, unit: 'slice', calories: 60 },
+                { name: 'Spinach', quantity: 1, unit: 'cup', calories: 10 }
+              ],
+              totalCalories: 330,
+              protein: 25,
+              carbs: 25,
+              fats: 15,
+              instructions: 'Toast bread, spread avocado, top with egg whites and spinach.'
+            },
+            lunch: {
+              name: 'Quinoa Chickpea Salad',
+              foods: [
+                { name: 'Quinoa', quantity: 1, unit: 'cup', calories: 222 },
+                { name: 'Chickpeas', quantity: 1, unit: 'cup', calories: 150 },
+                { name: 'Tomatoes', quantity: 1, unit: 'cup', calories: 30 },
+                { name: 'Olive Oil', quantity: 1, unit: 'tbsp', calories: 120 }
+              ],
+              totalCalories: 402,
+              protein: 20,
+              carbs: 40,
+              fats: 10,
+              instructions: 'Cook quinoa, mix with chickpeas, tomatoes, and olive oil.'
+            },
+            dinner: {
+              name: 'Beef and Broccoli Stir Fry',
+              foods: [
+                { name: 'Beef Sirloin', quantity: 150, unit: 'g', calories: 250 },
+                { name: 'Broccoli', quantity: 1, unit: 'cup', calories: 55 },
+                { name: 'Carrots', quantity: 1, unit: 'cup', calories: 45 },
+                { name: 'Soy Sauce', quantity: 1, unit: 'tbsp', calories: 10 }
+              ],
+              totalCalories: 460,
+              protein: 30,
+              carbs: 20,
+              fats: 15,
+              instructions: 'Stir fry beef, broccoli, and carrots with soy sauce.'
+            },
+            snack1: {
+              name: 'Greek Yogurt with Honey',
+              foods: [
+                { name: 'Greek Yogurt', quantity: 1, unit: 'cup', calories: 130 },
+                { name: 'Honey', quantity: 1, unit: 'tbsp', calories: 60 }
+              ],
+              totalCalories: 190,
+              protein: 15,
+              carbs: 20,
+              fats: 2,
+              instructions: 'Mix Greek yogurt with honey.'
+            },
+            snack2: {
+              name: 'Apple with Cinnamon',
+              foods: [
+                { name: 'Apple', quantity: 1, unit: 'medium', calories: 95 },
+                { name: 'Cinnamon', quantity: 1, unit: 'tbsp', calories: 10 }
+              ],
+              totalCalories: 105,
+              protein: 0,
+              carbs: 25,
+              fats: 0,
+              instructions: 'Slice apple and sprinkle cinnamon.'
+            }
+          }
+        }
+      }
+    }
+
+    console.log('✅ AI nutrition plan generated successfully');
+    console.log('📊 Final recommendation structure:', {
+      goal: recommendation.goal,
+      targetCalories: recommendation.targetCalories,
+      dailyPlansCount: Object.keys(recommendation.dailyPlans || {}).length,
+      days: Object.keys(recommendation.dailyPlans || {})
+    });
+
+    // Ensure we have the correct number of days
+    if (!recommendation.dailyPlans || Object.keys(recommendation.dailyPlans).length < selectedDays) {
+      console.log(`⚠️ AI only generated ${Object.keys(recommendation.dailyPlans || {}).length} days, but we need ${selectedDays}. Using fallback...`);
+      
+      // Use our comprehensive fallback with all days
+      recommendation = {
+        goal: goal,
+        targetCalories: targetCalories,
+        macroSplit: {
+          protein: 30,
+          carbohydrates: 40,
+          fats: 30
         },
-        {
-          type: 'lunch',
+        dailyPlans: {
+          day1: {
+            breakfast: {
+              name: 'Protein Oatmeal Bowl',
+              foods: [
+                { name: 'Oatmeal', quantity: 1, unit: 'cup', calories: 150 },
+                { name: 'Banana', quantity: 1, unit: 'piece', calories: 105 },
+                { name: 'Almonds', quantity: 10, unit: 'pieces', calories: 70 },
+                { name: 'Protein Powder', quantity: 1, unit: 'scoop', calories: 120 }
+              ],
+              totalCalories: 445,
+              protein: 25,
+              carbs: 45,
+              fats: 12,
+              instructions: 'Cook oatmeal with water, add protein powder, top with sliced banana and almonds'
+            },
+            lunch: {
+              name: 'Grilled Chicken Quinoa Bowl',
           foods: [
-            { name: 'Grilled Chicken Breast', quantity: 150, unit: 'g', calories: 250 },
-            { name: 'Brown Rice', quantity: 1, unit: 'cup', calories: 215 },
-            { name: 'Broccoli', quantity: 1, unit: 'cup', calories: 55 }
-          ],
-          totalCalories: 520
-        },
-        {
-          type: 'dinner',
+                { name: 'Chicken Breast', quantity: 150, unit: 'g', calories: 250 },
+                { name: 'Quinoa', quantity: 1, unit: 'cup', calories: 222 },
+                { name: 'Broccoli', quantity: 1, unit: 'cup', calories: 55 },
+                { name: 'Olive Oil', quantity: 1, unit: 'tbsp', calories: 120 }
+              ],
+              totalCalories: 647,
+              protein: 35,
+              carbs: 45,
+              fats: 18,
+              instructions: 'Grill chicken, cook quinoa, steam broccoli, combine with olive oil'
+            },
+            dinner: {
+              name: 'Salmon with Sweet Potato',
           foods: [
             { name: 'Salmon', quantity: 150, unit: 'g', calories: 280 },
             { name: 'Sweet Potato', quantity: 1, unit: 'medium', calories: 103 },
-            { name: 'Spinach', quantity: 2, unit: 'cups', calories: 14 }
-          ],
-          totalCalories: 397
+                { name: 'Spinach', quantity: 2, unit: 'cups', calories: 14 },
+                { name: 'Lemon', quantity: 1, unit: 'slice', calories: 2 }
+              ],
+              totalCalories: 399,
+              protein: 30,
+              carbs: 25,
+              fats: 15,
+              instructions: 'Bake salmon with lemon, roast sweet potato, sauté spinach'
+            },
+            snack1: {
+              name: 'Greek Yogurt with Berries',
+              foods: [
+                { name: 'Greek Yogurt', quantity: 1, unit: 'cup', calories: 130 },
+                { name: 'Mixed Berries', quantity: 0.5, unit: 'cup', calories: 40 }
+              ],
+              totalCalories: 170,
+              protein: 15,
+              carbs: 12,
+              fats: 2,
+              instructions: 'Mix Greek yogurt with fresh berries'
+            },
+            snack2: {
+              name: 'Apple with Peanut Butter',
+              foods: [
+                { name: 'Apple', quantity: 1, unit: 'medium', calories: 95 },
+                { name: 'Peanut Butter', quantity: 1, unit: 'tbsp', calories: 95 }
+              ],
+              totalCalories: 190,
+              protein: 4,
+              carbs: 20,
+              fats: 8,
+              instructions: 'Slice apple and serve with peanut butter'
+            }
+          },
+          day2: {
+            breakfast: {
+              name: 'Protein Pancakes',
+              foods: [
+                { name: 'Egg Whites', quantity: 2, unit: 'scoop', calories: 100 },
+                { name: 'Flour', quantity: 1, unit: 'cup', calories: 150 },
+                { name: 'Banana', quantity: 1, unit: 'medium', calories: 105 },
+                { name: 'Chia Seeds', quantity: 1, unit: 'tbsp', calories: 10 }
+              ],
+              totalCalories: 365,
+              protein: 25,
+              carbs: 40,
+              fats: 10,
+              instructions: 'Mix egg whites, flour, banana, and chia seeds. Cook pancakes on a non-stick pan.'
+            },
+            lunch: {
+              name: 'Grilled Tofu Stir Fry',
+              foods: [
+                { name: 'Tofu', quantity: 150, unit: 'g', calories: 120 },
+                { name: 'Broccoli', quantity: 1, unit: 'cup', calories: 55 },
+                { name: 'Carrots', quantity: 1, unit: 'cup', calories: 45 },
+                { name: 'Soy Sauce', quantity: 1, unit: 'tbsp', calories: 10 }
+              ],
+              totalCalories: 330,
+              protein: 20,
+              carbs: 30,
+              fats: 10,
+              instructions: 'Grill tofu, stir fry broccoli and carrots with soy sauce.'
+            },
+            dinner: {
+              name: 'Chicken Caesar Salad',
+              foods: [
+                { name: 'Chicken Breast', quantity: 150, unit: 'g', calories: 250 },
+                { name: 'Romaine Lettuce', quantity: 1, unit: 'cup', calories: 10 },
+                { name: 'Caesar Dressing', quantity: 1, unit: 'tbsp', calories: 50 },
+                { name: 'Parmesan Cheese', quantity: 1, unit: 'tbsp', calories: 100 }
+              ],
+              totalCalories: 410,
+              protein: 30,
+              carbs: 20,
+              fats: 15,
+              instructions: 'Grill chicken, toss with romaine lettuce, Caesar dressing, and parmesan.'
+            },
+            snack1: {
+              name: 'Hummus with Veggies',
+              foods: [
+                { name: 'Hummus', quantity: 1, unit: 'cup', calories: 150 },
+                { name: 'Carrots', quantity: 1, unit: 'cup', calories: 45 },
+                { name: 'Celery', quantity: 1, unit: 'cup', calories: 10 }
+              ],
+              totalCalories: 205,
+              protein: 10,
+              carbs: 15,
+              fats: 10,
+              instructions: 'Mix hummus with carrots and celery.'
+            },
+            snack2: {
+              name: 'Apple with Almond Butter',
+              foods: [
+                { name: 'Apple', quantity: 1, unit: 'medium', calories: 95 },
+                { name: 'Almond Butter', quantity: 1, unit: 'tbsp', calories: 95 }
+              ],
+              totalCalories: 190,
+              protein: 4,
+              carbs: 20,
+              fats: 8,
+              instructions: 'Slice apple and serve with almond butter'
+            }
+          },
+          day3: {
+            breakfast: {
+              name: 'Avocado Toast with Egg',
+              foods: [
+                { name: 'Avocado', quantity: 1, unit: 'medium', calories: 160 },
+                { name: 'Egg Whites', quantity: 2, unit: 'scoop', calories: 100 },
+                { name: 'Whole Wheat Bread', quantity: 1, unit: 'slice', calories: 60 },
+                { name: 'Spinach', quantity: 1, unit: 'cup', calories: 10 }
+              ],
+              totalCalories: 330,
+              protein: 25,
+              carbs: 25,
+              fats: 15,
+              instructions: 'Toast bread, spread avocado, top with egg whites and spinach.'
+            },
+            lunch: {
+              name: 'Quinoa Chickpea Salad',
+              foods: [
+                { name: 'Quinoa', quantity: 1, unit: 'cup', calories: 222 },
+                { name: 'Chickpeas', quantity: 1, unit: 'cup', calories: 150 },
+                { name: 'Tomatoes', quantity: 1, unit: 'cup', calories: 30 },
+                { name: 'Olive Oil', quantity: 1, unit: 'tbsp', calories: 120 }
+              ],
+              totalCalories: 402,
+              protein: 20,
+              carbs: 40,
+              fats: 10,
+              instructions: 'Cook quinoa, mix with chickpeas, tomatoes, and olive oil.'
+            },
+            dinner: {
+              name: 'Beef and Broccoli Stir Fry',
+              foods: [
+                { name: 'Beef Sirloin', quantity: 150, unit: 'g', calories: 250 },
+                { name: 'Broccoli', quantity: 1, unit: 'cup', calories: 55 },
+                { name: 'Carrots', quantity: 1, unit: 'cup', calories: 45 },
+                { name: 'Soy Sauce', quantity: 1, unit: 'tbsp', calories: 10 }
+              ],
+              totalCalories: 460,
+              protein: 30,
+              carbs: 20,
+              fats: 15,
+              instructions: 'Stir fry beef, broccoli, and carrots with soy sauce.'
+            },
+            snack1: {
+              name: 'Greek Yogurt with Honey',
+              foods: [
+                { name: 'Greek Yogurt', quantity: 1, unit: 'cup', calories: 130 },
+                { name: 'Honey', quantity: 1, unit: 'tbsp', calories: 60 }
+              ],
+              totalCalories: 190,
+              protein: 15,
+              carbs: 20,
+              fats: 2,
+              instructions: 'Mix Greek yogurt with honey.'
+            },
+            snack2: {
+              name: 'Apple with Cinnamon',
+              foods: [
+                { name: 'Apple', quantity: 1, unit: 'medium', calories: 95 },
+                { name: 'Cinnamon', quantity: 1, unit: 'tbsp', calories: 10 }
+              ],
+              totalCalories: 105,
+              protein: 0,
+              carbs: 25,
+              fats: 0,
+              instructions: 'Slice apple and sprinkle cinnamon.'
+            }
+          }
         }
-      ],
-      notes: 'This meal plan provides a balanced mix of protein, carbohydrates, and healthy fats.'
-    };
+      }
+    }
+
+    console.log('✅ AI nutrition plan generated successfully');
+    console.log('📊 Final recommendation structure:', {
+      goal: recommendation.goal,
+      targetCalories: recommendation.targetCalories,
+      dailyPlansCount: Object.keys(recommendation.dailyPlans || {}).length,
+      days: Object.keys(recommendation.dailyPlans || {})
+    });
 
     // AUTOMATIC: Create and save individual meals to meals collection
     const createdMeals = [];
     console.log('🍽️ Starting meal creation process...');
     
-    for (const mealData of recommendation.meals) {
-      try {
-        console.log(`Creating meal: ${mealData.type}`);
+    // Process each day's meals
+    for (const [dayKey, dayPlan] of Object.entries(recommendation.dailyPlans)) {
+      console.log(`Processing ${dayKey}...`);
+      
+      for (const [mealType, mealData] of Object.entries(dayPlan)) {
+        try {
+          console.log(`Creating meal: ${mealData.name} (${mealType})`);
         
         // Create or find food items for this meal
         const mealFoods = [];
@@ -285,32 +829,33 @@ export const saveNutritionRecommendation = async (req, res, next) => {
         // Calculate total nutrients for the meal
         const totalNutrients = {
           calories: mealData.totalCalories || mealData.foods.reduce((sum, food) => sum + (food.calories || 0), 0),
-          protein: 0, // Will be calculated from food items
-          carbohydrates: 0, // Will be calculated from food items
-          fats: 0 // Will be calculated from food items
+            protein: mealData.protein || 0,
+            carbohydrates: mealData.carbs || 0,
+            fats: mealData.fats || 0
         };
 
         console.log(`Creating meal with ${mealFoods.length} foods`);
         
         // Create the meal
         const meal = await Meal.create({
-          name: `${mealData.type.charAt(0).toUpperCase() + mealData.type.slice(1)} - ${goal}`,
-          type: mealData.type,
+            name: mealData.name,
+            type: mealType,
           foods: mealFoods,
           totalNutrients: totalNutrients,
-          notes: `AI-generated ${mealData.type} for ${goal} goal`,
+            notes: `AI-generated ${mealType} for ${goal} goal - ${dayKey}`,
           preparationTime: 15, // Default preparation time
           cookingTime: 20, // Default cooking time
           difficulty: 'easy',
-          tags: [goal, mealData.type, 'ai-generated']
+            tags: [goal, mealType, 'ai-generated', dayKey]
         });
 
         console.log(`Meal created successfully: ${meal._id}`);
         createdMeals.push(meal);
       } catch (mealError) {
-        console.error(`❌ Error creating meal ${mealData.type}:`, mealError);
+          console.error(`❌ Error creating meal ${mealData.name}:`, mealError);
         console.error('Error details:', mealError.message);
         // Continue with other meals even if one fails
+        }
       }
     }
     
@@ -319,15 +864,15 @@ export const saveNutritionRecommendation = async (req, res, next) => {
     // AUTOMATIC: Save AI-generated nutrition plan to database with meal references
     const nutritionPlan = await NutritionPlan.create({
       title: `AI Nutrition Plan - ${goal}`,
-      description: `AI-generated nutrition plan for ${goal} goal with ${targetCalories} calories. Meals: ${recommendation.meals.map(m => m.type).join(', ')}`,
+      description: `AI-generated nutrition plan for ${goal} goal with ${targetCalories} calories. ${selectedDays} days with diverse meals.`,
       goal: goal,
       targetCalories: targetCalories,
       macroSplit: recommendation.macroSplit,
-      meals: [{
-        day: 1,
-        meals: createdMeals.map(meal => meal._id)
-      }],
-      restrictions: validatedRestrictions, // Use validated restrictions
+      meals: Object.keys(recommendation.dailyPlans).map((dayKey, index) => ({
+        day: index + 1,
+        meals: createdMeals.filter(meal => meal.tags.includes(dayKey)).map(meal => meal._id)
+      })),
+      restrictions: validatedRestrictions,
       createdBy: req.user.id,
       isPublic: false,
       isTemplate: false
@@ -335,7 +880,7 @@ export const saveNutritionRecommendation = async (req, res, next) => {
 
     res.status(201).json({
       success: true,
-      message: 'Nutrition recommendation saved successfully',
+      message: 'Dynamic nutrition recommendation saved successfully',
       data: {
         recommendation,
         userProfile: {
@@ -350,10 +895,13 @@ export const saveNutritionRecommendation = async (req, res, next) => {
           type: meal.type,
           totalCalories: meal.totalNutrients.calories
         })),
-        mealsCount: createdMeals.length
+        mealsCount: createdMeals.length,
+        daysCount: selectedDays
       }
     });
   } catch (error) {
+    console.error('❌ Error in saveNutritionRecommendation:', error);
+    console.error('Error stack:', error.stack);
     next(error);
   }
 };

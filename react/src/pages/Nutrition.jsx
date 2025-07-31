@@ -45,6 +45,28 @@ const Nutrition = () => {
   const [aiMealPlan, setAiMealPlan] = useState(null);
   const [loadingMealPlan, setLoadingMealPlan] = useState(false);
 
+  // Place this at the top level inside Nutrition component, after useState declarations:
+  const fetchAiMealPlan = async () => {
+    setLoadingMealPlan(true);
+    try {
+      const token = localStorage.getItem('fitlife_token');
+      if (!token) return;
+      const response = await fetch('http://127.0.0.1:5001/api/v1/nutrition/latest-ai-plan', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (response.ok) {
+        const data = await response.json();
+        if (data.success && data.data) {
+          setAiMealPlan(data.data);
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching AI meal plan:', error);
+    } finally {
+      setLoadingMealPlan(false);
+    }
+  };
+
   React.useEffect(() => {
     const fetchUserData = async () => {
       setLoading(true);
@@ -106,30 +128,6 @@ const Nutrition = () => {
 
   // Add useEffect to fetch AI meal plan from database
   React.useEffect(() => {
-    const fetchAiMealPlan = async () => {
-      setLoadingMealPlan(true);
-      try {
-        const token = localStorage.getItem('fitlife_token');
-        if (!token) {
-          return;
-        }
-        const response = await fetch('http://127.0.0.1:5001/api/v1/nutrition/latest-ai-plan', {
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
-        });
-        if (response.ok) {
-          const data = await response.json();
-          if (data.success && data.data) {
-            setAiMealPlan(data.data);
-          }
-        }
-      } catch (error) {
-        console.error('Error fetching AI meal plan:', error);
-      } finally {
-        setLoadingMealPlan(false);
-      }
-    };
     fetchAiMealPlan();
   }, []);
 
@@ -331,7 +329,8 @@ const Nutrition = () => {
           restrictionMapping[restriction] || 'vegetarian'
         ).filter(Boolean), // Filter out any undefined values
         targetCalories: targetCalories, // Dynamic calories based on user preferences
-        mealCount: 5 // breakfast, lunch, dinner, 2 snacks
+        mealCount: 5, // breakfast, lunch, dinner, 2 snacks
+        selectedDays: selectedDays // Number of days to generate
       };
 
       // Use the backend API that automatically saves to database
@@ -350,13 +349,17 @@ const Nutrition = () => {
 
       const result = await response.json();
       
+      console.log('🔍 Backend response:', result);
+      console.log('📊 Daily plans received:', result.data?.recommendation?.dailyPlans);
+      
       if (result.success) {
-        // Create a plan object for display (similar to the old format)
+        // Create a plan object for display using the new AI-generated structure
         const proteinTarget = calculateProteinTarget(selectedTags.goal, targetCalories);
         
+        // Use the AI-generated daily plans directly
         const plan = {
           summary: {
-            totalDays: selectedDays,
+            totalDays: result.data.daysCount || selectedDays,
             dailyCalories: result.data.recommendation.targetCalories,
             macroBreakdown: {
               protein: proteinTarget,
@@ -364,97 +367,351 @@ const Nutrition = () => {
               fats: Math.round((result.data.recommendation.macroSplit.fats / 100) * result.data.recommendation.targetCalories / 9)
             }
           },
-          mealPlan: {
+          mealPlan: result.data.recommendation.dailyPlans || {
             day1: {
-              breakfast: result.data.recommendation.meals[0] || {
-                name: 'Breakfast',
+              breakfast: {
+                name: 'Protein Oatmeal Bowl',
                 calories: result.data.recommendation.targetCalories * 0.25,
                 protein: Math.round((result.data.recommendation.macroSplit.protein / 100) * result.data.recommendation.targetCalories * 0.25 / 4) + 15,
                 carbs: Math.round((result.data.recommendation.macroSplit.carbohydrates / 100) * result.data.recommendation.targetCalories * 0.25 / 4),
                 fats: Math.round((result.data.recommendation.macroSplit.fats / 100) * result.data.recommendation.targetCalories * 0.25 / 9),
-                ingredients: ['Oatmeal', 'Banana', 'Almonds'],
-                instructions: 'Prepare oatmeal with fruits and nuts'
+                ingredients: ['Oatmeal', 'Banana', 'Almonds', 'Protein Powder'],
+                instructions: 'Cook oatmeal with water, add protein powder, top with sliced banana and almonds'
               },
-              lunch: result.data.recommendation.meals[1] || {
-                name: 'Lunch',
+              lunch: {
+                name: 'Grilled Chicken Quinoa Bowl',
                 calories: result.data.recommendation.targetCalories * 0.35,
                 protein: Math.round((result.data.recommendation.macroSplit.protein / 100) * result.data.recommendation.targetCalories * 0.35 / 4) + 25,
                 carbs: Math.round((result.data.recommendation.macroSplit.carbohydrates / 100) * result.data.recommendation.targetCalories * 0.35 / 4),
                 fats: Math.round((result.data.recommendation.macroSplit.fats / 100) * result.data.recommendation.targetCalories * 0.35 / 9),
-                ingredients: ['Chicken', 'Rice', 'Vegetables'],
-                instructions: 'Grill chicken and serve with rice and vegetables'
+                ingredients: ['Chicken Breast', 'Quinoa', 'Broccoli', 'Olive Oil'],
+                instructions: 'Grill chicken, cook quinoa, steam broccoli, combine with olive oil'
               },
-              dinner: result.data.recommendation.meals[2] || {
-                name: 'Dinner',
+              dinner: {
+                name: 'Salmon with Sweet Potato',
                 calories: result.data.recommendation.targetCalories * 0.30,
                 protein: Math.round((result.data.recommendation.macroSplit.protein / 100) * result.data.recommendation.targetCalories * 0.30 / 4) + 20,
                 carbs: Math.round((result.data.recommendation.macroSplit.carbohydrates / 100) * result.data.recommendation.targetCalories * 0.30 / 4),
                 fats: Math.round((result.data.recommendation.macroSplit.fats / 100) * result.data.recommendation.targetCalories * 0.30 / 9),
-                ingredients: ['Salmon', 'Quinoa', 'Broccoli'],
-                instructions: 'Bake salmon and serve with quinoa and broccoli'
+                ingredients: ['Salmon', 'Sweet Potato', 'Spinach', 'Lemon'],
+                instructions: 'Bake salmon with lemon, roast sweet potato, sauté spinach'
               },
               snack1: {
-                name: 'Morning Snack',
+                name: 'Greek Yogurt with Berries',
                 calories: result.data.recommendation.targetCalories * 0.05,
                 protein: Math.round((result.data.recommendation.macroSplit.protein / 100) * result.data.recommendation.targetCalories * 0.05 / 4) + 8,
                 carbs: Math.round((result.data.recommendation.macroSplit.carbohydrates / 100) * result.data.recommendation.targetCalories * 0.05 / 4),
                 fats: Math.round((result.data.recommendation.macroSplit.fats / 100) * result.data.recommendation.targetCalories * 0.05 / 9),
-                ingredients: ['Apple', 'Nuts'],
-                instructions: 'Have an apple with a handful of nuts'
+                ingredients: ['Greek Yogurt', 'Mixed Berries'],
+                instructions: 'Mix Greek yogurt with fresh berries'
               },
               snack2: {
-                name: 'Evening Snack',
+                name: 'Apple with Peanut Butter',
                 calories: result.data.recommendation.targetCalories * 0.05,
                 protein: Math.round((result.data.recommendation.macroSplit.protein / 100) * result.data.recommendation.targetCalories * 0.05 / 4) + 8,
                 carbs: Math.round((result.data.recommendation.macroSplit.carbohydrates / 100) * result.data.recommendation.targetCalories * 0.05 / 4),
                 fats: Math.round((result.data.recommendation.macroSplit.fats / 100) * result.data.recommendation.targetCalories * 0.05 / 9),
-                ingredients: ['Greek Yogurt', 'Berries'],
-                instructions: 'Greek yogurt with fresh berries'
+                ingredients: ['Apple', 'Peanut Butter'],
+                instructions: 'Slice apple and serve with peanut butter'
+              }
+            },
+            day2: {
+              breakfast: {
+                name: 'Protein Pancakes',
+                calories: result.data.recommendation.targetCalories * 0.25,
+                protein: Math.round((result.data.recommendation.macroSplit.protein / 100) * result.data.recommendation.targetCalories * 0.25 / 4) + 15,
+                carbs: Math.round((result.data.recommendation.macroSplit.carbohydrates / 100) * result.data.recommendation.targetCalories * 0.25 / 4),
+                fats: Math.round((result.data.recommendation.macroSplit.fats / 100) * result.data.recommendation.targetCalories * 0.25 / 9),
+                ingredients: ['Egg Whites', 'Flour', 'Banana', 'Chia Seeds'],
+                instructions: 'Mix egg whites, flour, banana, and chia seeds. Cook pancakes on a non-stick pan.'
+              },
+              lunch: {
+                name: 'Grilled Tofu Stir Fry',
+                calories: result.data.recommendation.targetCalories * 0.35,
+                protein: Math.round((result.data.recommendation.macroSplit.protein / 100) * result.data.recommendation.targetCalories * 0.35 / 4) + 25,
+                carbs: Math.round((result.data.recommendation.macroSplit.carbohydrates / 100) * result.data.recommendation.targetCalories * 0.35 / 4),
+                fats: Math.round((result.data.recommendation.macroSplit.fats / 100) * result.data.recommendation.targetCalories * 0.35 / 9),
+                ingredients: ['Tofu', 'Broccoli', 'Carrots', 'Soy Sauce'],
+                instructions: 'Grill tofu, stir fry broccoli and carrots with soy sauce.'
+              },
+              dinner: {
+                name: 'Chicken Caesar Salad',
+                calories: result.data.recommendation.targetCalories * 0.30,
+                protein: Math.round((result.data.recommendation.macroSplit.protein / 100) * result.data.recommendation.targetCalories * 0.30 / 4) + 20,
+                carbs: Math.round((result.data.recommendation.macroSplit.carbohydrates / 100) * result.data.recommendation.targetCalories * 0.30 / 4),
+                fats: Math.round((result.data.recommendation.macroSplit.fats / 100) * result.data.recommendation.targetCalories * 0.30 / 9),
+                ingredients: ['Chicken Breast', 'Romaine Lettuce', 'Caesar Dressing', 'Parmesan Cheese'],
+                instructions: 'Grill chicken, toss with romaine lettuce, Caesar dressing, and parmesan.'
+              },
+              snack1: {
+                name: 'Hummus with Veggies',
+                calories: result.data.recommendation.targetCalories * 0.05,
+                protein: Math.round((result.data.recommendation.macroSplit.protein / 100) * result.data.recommendation.targetCalories * 0.05 / 4) + 8,
+                carbs: Math.round((result.data.recommendation.macroSplit.carbohydrates / 100) * result.data.recommendation.targetCalories * 0.05 / 4),
+                fats: Math.round((result.data.recommendation.macroSplit.fats / 100) * result.data.recommendation.targetCalories * 0.05 / 9),
+                ingredients: ['Hummus', 'Carrots', 'Celery'],
+                instructions: 'Mix hummus with carrots and celery.'
+              },
+              snack2: {
+                name: 'Apple with Almond Butter',
+                calories: result.data.recommendation.targetCalories * 0.05,
+                protein: Math.round((result.data.recommendation.macroSplit.protein / 100) * result.data.recommendation.targetCalories * 0.05 / 4) + 8,
+                carbs: Math.round((result.data.recommendation.macroSplit.carbohydrates / 100) * result.data.recommendation.targetCalories * 0.05 / 4),
+                fats: Math.round((result.data.recommendation.macroSplit.fats / 100) * result.data.recommendation.targetCalories * 0.05 / 9),
+                ingredients: ['Apple', 'Almond Butter'],
+                instructions: 'Slice apple and serve with almond butter'
+              }
+            },
+            day3: {
+              breakfast: {
+                name: 'Avocado Toast with Egg',
+                calories: result.data.recommendation.targetCalories * 0.25,
+                protein: Math.round((result.data.recommendation.macroSplit.protein / 100) * result.data.recommendation.targetCalories * 0.25 / 4) + 15,
+                carbs: Math.round((result.data.recommendation.macroSplit.carbohydrates / 100) * result.data.recommendation.targetCalories * 0.25 / 4),
+                fats: Math.round((result.data.recommendation.macroSplit.fats / 100) * result.data.recommendation.targetCalories * 0.25 / 9),
+                ingredients: ['Avocado', 'Egg Whites', 'Whole Wheat Bread', 'Spinach'],
+                instructions: 'Toast bread, spread avocado, top with egg whites and spinach.'
+              },
+              lunch: {
+                name: 'Quinoa Chickpea Salad',
+                calories: result.data.recommendation.targetCalories * 0.35,
+                protein: Math.round((result.data.recommendation.macroSplit.protein / 100) * result.data.recommendation.targetCalories * 0.35 / 4) + 25,
+                carbs: Math.round((result.data.recommendation.macroSplit.carbohydrates / 100) * result.data.recommendation.targetCalories * 0.35 / 4),
+                fats: Math.round((result.data.recommendation.macroSplit.fats / 100) * result.data.recommendation.targetCalories * 0.35 / 9),
+                ingredients: ['Quinoa', 'Chickpeas', 'Tomatoes', 'Olive Oil'],
+                instructions: 'Cook quinoa, mix with chickpeas, tomatoes, and olive oil.'
+              },
+              dinner: {
+                name: 'Beef and Broccoli Stir Fry',
+                calories: result.data.recommendation.targetCalories * 0.30,
+                protein: Math.round((result.data.recommendation.macroSplit.protein / 100) * result.data.recommendation.targetCalories * 0.30 / 4) + 20,
+                carbs: Math.round((result.data.recommendation.macroSplit.carbohydrates / 100) * result.data.recommendation.targetCalories * 0.30 / 4),
+                fats: Math.round((result.data.recommendation.macroSplit.fats / 100) * result.data.recommendation.targetCalories * 0.30 / 9),
+                ingredients: ['Beef Sirloin', 'Broccoli', 'Carrots', 'Soy Sauce'],
+                instructions: 'Stir fry beef, broccoli, and carrots with soy sauce.'
+              },
+              snack1: {
+                name: 'Greek Yogurt with Honey',
+                calories: result.data.recommendation.targetCalories * 0.05,
+                protein: Math.round((result.data.recommendation.macroSplit.protein / 100) * result.data.recommendation.targetCalories * 0.05 / 4) + 8,
+                carbs: Math.round((result.data.recommendation.macroSplit.carbohydrates / 100) * result.data.recommendation.targetCalories * 0.05 / 4),
+                fats: Math.round((result.data.recommendation.macroSplit.fats / 100) * result.data.recommendation.targetCalories * 0.05 / 9),
+                ingredients: ['Greek Yogurt', 'Honey'],
+                instructions: 'Mix Greek yogurt with honey.'
+              },
+              snack2: {
+                name: 'Apple with Cinnamon',
+                calories: result.data.recommendation.targetCalories * 0.05,
+                protein: Math.round((result.data.recommendation.macroSplit.protein / 100) * result.data.recommendation.targetCalories * 0.05 / 4) + 8,
+                carbs: Math.round((result.data.recommendation.macroSplit.carbohydrates / 100) * result.data.recommendation.targetCalories * 0.05 / 4),
+                fats: Math.round((result.data.recommendation.macroSplit.fats / 100) * result.data.recommendation.targetCalories * 0.05 / 9),
+                ingredients: ['Apple', 'Cinnamon'],
+                instructions: 'Slice apple and sprinkle cinnamon.'
+              }
+            },
+            day4: {
+              breakfast: {
+                name: 'Greek Yogurt Parfait',
+                calories: result.data.recommendation.targetCalories * 0.25,
+                protein: Math.round((result.data.recommendation.macroSplit.protein / 100) * result.data.recommendation.targetCalories * 0.25 / 4) + 15,
+                carbs: Math.round((result.data.recommendation.macroSplit.carbohydrates / 100) * result.data.recommendation.targetCalories * 0.25 / 4),
+                fats: Math.round((result.data.recommendation.macroSplit.fats / 100) * result.data.recommendation.targetCalories * 0.25 / 9),
+                ingredients: ['Greek Yogurt', 'Granola', 'Strawberries', 'Honey'],
+                instructions: 'Layer Greek yogurt, granola, strawberries, and honey in a glass.'
+              },
+              lunch: {
+                name: 'Mediterranean Quinoa Bowl',
+                calories: result.data.recommendation.targetCalories * 0.35,
+                protein: Math.round((result.data.recommendation.macroSplit.protein / 100) * result.data.recommendation.targetCalories * 0.35 / 4) + 25,
+                carbs: Math.round((result.data.recommendation.macroSplit.carbohydrates / 100) * result.data.recommendation.targetCalories * 0.35 / 4),
+                fats: Math.round((result.data.recommendation.macroSplit.fats / 100) * result.data.recommendation.targetCalories * 0.35 / 9),
+                ingredients: ['Quinoa', 'Cucumber', 'Tomatoes', 'Feta Cheese'],
+                instructions: 'Cook quinoa, mix with cucumber, tomatoes, and feta cheese.'
+              },
+              dinner: {
+                name: 'Grilled Salmon with Asparagus',
+                calories: result.data.recommendation.targetCalories * 0.30,
+                protein: Math.round((result.data.recommendation.macroSplit.protein / 100) * result.data.recommendation.targetCalories * 0.30 / 4) + 20,
+                carbs: Math.round((result.data.recommendation.macroSplit.carbohydrates / 100) * result.data.recommendation.targetCalories * 0.30 / 4),
+                fats: Math.round((result.data.recommendation.macroSplit.fats / 100) * result.data.recommendation.targetCalories * 0.30 / 9),
+                ingredients: ['Salmon', 'Asparagus', 'Lemon', 'Olive Oil'],
+                instructions: 'Grill salmon with lemon, roast asparagus with olive oil.'
+              },
+              snack1: {
+                name: 'Trail Mix',
+                calories: result.data.recommendation.targetCalories * 0.05,
+                protein: Math.round((result.data.recommendation.macroSplit.protein / 100) * result.data.recommendation.targetCalories * 0.05 / 4) + 8,
+                carbs: Math.round((result.data.recommendation.macroSplit.carbohydrates / 100) * result.data.recommendation.targetCalories * 0.05 / 4),
+                fats: Math.round((result.data.recommendation.macroSplit.fats / 100) * result.data.recommendation.targetCalories * 0.05 / 9),
+                ingredients: ['Almonds', 'Raisins', 'Dark Chocolate'],
+                instructions: 'Mix almonds, raisins, and dark chocolate pieces.'
+              },
+              snack2: {
+                name: 'Cottage Cheese with Pineapple',
+                calories: result.data.recommendation.targetCalories * 0.05,
+                protein: Math.round((result.data.recommendation.macroSplit.protein / 100) * result.data.recommendation.targetCalories * 0.05 / 4) + 8,
+                carbs: Math.round((result.data.recommendation.macroSplit.carbohydrates / 100) * result.data.recommendation.targetCalories * 0.05 / 4),
+                fats: Math.round((result.data.recommendation.macroSplit.fats / 100) * result.data.recommendation.targetCalories * 0.05 / 9),
+                ingredients: ['Cottage Cheese', 'Pineapple'],
+                instructions: 'Mix cottage cheese with fresh pineapple chunks.'
+              }
+            },
+            day5: {
+              breakfast: {
+                name: 'Scrambled Eggs with Spinach',
+                calories: result.data.recommendation.targetCalories * 0.25,
+                protein: Math.round((result.data.recommendation.macroSplit.protein / 100) * result.data.recommendation.targetCalories * 0.25 / 4) + 15,
+                carbs: Math.round((result.data.recommendation.macroSplit.carbohydrates / 100) * result.data.recommendation.targetCalories * 0.25 / 4),
+                fats: Math.round((result.data.recommendation.macroSplit.fats / 100) * result.data.recommendation.targetCalories * 0.25 / 9),
+                ingredients: ['Eggs', 'Spinach', 'Whole Wheat Toast', 'Butter'],
+                instructions: 'Scramble eggs with spinach, serve with buttered toast.'
+              },
+              lunch: {
+                name: 'Turkey and Avocado Wrap',
+                calories: result.data.recommendation.targetCalories * 0.35,
+                protein: Math.round((result.data.recommendation.macroSplit.protein / 100) * result.data.recommendation.targetCalories * 0.35 / 4) + 25,
+                carbs: Math.round((result.data.recommendation.macroSplit.carbohydrates / 100) * result.data.recommendation.targetCalories * 0.35 / 4),
+                fats: Math.round((result.data.recommendation.macroSplit.fats / 100) * result.data.recommendation.targetCalories * 0.35 / 9),
+                ingredients: ['Turkey Breast', 'Avocado', 'Tortilla', 'Lettuce'],
+                instructions: 'Wrap turkey, avocado, and lettuce in tortilla.'
+              },
+              dinner: {
+                name: 'Baked Chicken with Sweet Potato',
+                calories: result.data.recommendation.targetCalories * 0.30,
+                protein: Math.round((result.data.recommendation.macroSplit.protein / 100) * result.data.recommendation.targetCalories * 0.30 / 4) + 20,
+                carbs: Math.round((result.data.recommendation.macroSplit.carbohydrates / 100) * result.data.recommendation.targetCalories * 0.30 / 4),
+                fats: Math.round((result.data.recommendation.macroSplit.fats / 100) * result.data.recommendation.targetCalories * 0.30 / 9),
+                ingredients: ['Chicken Breast', 'Sweet Potato', 'Green Beans', 'Olive Oil'],
+                instructions: 'Bake chicken, roast sweet potato and green beans with olive oil.'
+              },
+              snack1: {
+                name: 'Protein Shake',
+                calories: result.data.recommendation.targetCalories * 0.05,
+                protein: Math.round((result.data.recommendation.macroSplit.protein / 100) * result.data.recommendation.targetCalories * 0.05 / 4) + 8,
+                carbs: Math.round((result.data.recommendation.macroSplit.carbohydrates / 100) * result.data.recommendation.targetCalories * 0.05 / 4),
+                fats: Math.round((result.data.recommendation.macroSplit.fats / 100) * result.data.recommendation.targetCalories * 0.05 / 9),
+                ingredients: ['Protein Powder', 'Almond Milk', 'Banana'],
+                instructions: 'Blend protein powder with almond milk and banana.'
+              },
+              snack2: {
+                name: 'Celery with Peanut Butter',
+                calories: result.data.recommendation.targetCalories * 0.05,
+                protein: Math.round((result.data.recommendation.macroSplit.protein / 100) * result.data.recommendation.targetCalories * 0.05 / 4) + 8,
+                carbs: Math.round((result.data.recommendation.macroSplit.carbohydrates / 100) * result.data.recommendation.targetCalories * 0.05 / 4),
+                fats: Math.round((result.data.recommendation.macroSplit.fats / 100) * result.data.recommendation.targetCalories * 0.05 / 9),
+                ingredients: ['Celery', 'Peanut Butter'],
+                instructions: 'Spread peanut butter on celery stalks.'
+              }
+            },
+            day6: {
+              breakfast: {
+                name: 'Smoothie Bowl',
+                calories: result.data.recommendation.targetCalories * 0.25,
+                protein: Math.round((result.data.recommendation.macroSplit.protein / 100) * result.data.recommendation.targetCalories * 0.25 / 4) + 15,
+                carbs: Math.round((result.data.recommendation.macroSplit.carbohydrates / 100) * result.data.recommendation.targetCalories * 0.25 / 4),
+                fats: Math.round((result.data.recommendation.macroSplit.fats / 100) * result.data.recommendation.targetCalories * 0.25 / 9),
+                ingredients: ['Frozen Berries', 'Banana', 'Almond Milk', 'Chia Seeds'],
+                instructions: 'Blend frozen berries, banana, and almond milk, top with chia seeds.'
+              },
+              lunch: {
+                name: 'Grilled Shrimp Salad',
+                calories: result.data.recommendation.targetCalories * 0.35,
+                protein: Math.round((result.data.recommendation.macroSplit.protein / 100) * result.data.recommendation.targetCalories * 0.35 / 4) + 25,
+                carbs: Math.round((result.data.recommendation.macroSplit.carbohydrates / 100) * result.data.recommendation.targetCalories * 0.35 / 4),
+                fats: Math.round((result.data.recommendation.macroSplit.fats / 100) * result.data.recommendation.targetCalories * 0.35 / 9),
+                ingredients: ['Shrimp', 'Mixed Greens', 'Cherry Tomatoes', 'Balsamic Vinaigrette'],
+                instructions: 'Grill shrimp, toss with mixed greens, tomatoes, and vinaigrette.'
+              },
+              dinner: {
+                name: 'Beef Stir Fry with Rice',
+                calories: result.data.recommendation.targetCalories * 0.30,
+                protein: Math.round((result.data.recommendation.macroSplit.protein / 100) * result.data.recommendation.targetCalories * 0.30 / 4) + 20,
+                carbs: Math.round((result.data.recommendation.macroSplit.carbohydrates / 100) * result.data.recommendation.targetCalories * 0.30 / 4),
+                fats: Math.round((result.data.recommendation.macroSplit.fats / 100) * result.data.recommendation.targetCalories * 0.30 / 9),
+                ingredients: ['Beef Strips', 'Brown Rice', 'Bell Peppers', 'Soy Sauce'],
+                instructions: 'Stir fry beef with bell peppers, serve over brown rice with soy sauce.'
+              },
+              snack1: {
+                name: 'Apple with Almond Butter',
+                calories: result.data.recommendation.targetCalories * 0.05,
+                protein: Math.round((result.data.recommendation.macroSplit.protein / 100) * result.data.recommendation.targetCalories * 0.05 / 4) + 8,
+                carbs: Math.round((result.data.recommendation.macroSplit.carbohydrates / 100) * result.data.recommendation.targetCalories * 0.05 / 4),
+                fats: Math.round((result.data.recommendation.macroSplit.fats / 100) * result.data.recommendation.targetCalories * 0.05 / 9),
+                ingredients: ['Apple', 'Almond Butter'],
+                instructions: 'Slice apple and serve with almond butter.'
+              },
+              snack2: {
+                name: 'Greek Yogurt with Berries',
+                calories: result.data.recommendation.targetCalories * 0.05,
+                protein: Math.round((result.data.recommendation.macroSplit.protein / 100) * result.data.recommendation.targetCalories * 0.05 / 4) + 8,
+                carbs: Math.round((result.data.recommendation.macroSplit.carbohydrates / 100) * result.data.recommendation.targetCalories * 0.05 / 4),
+                fats: Math.round((result.data.recommendation.macroSplit.fats / 100) * result.data.recommendation.targetCalories * 0.05 / 9),
+                ingredients: ['Greek Yogurt', 'Mixed Berries'],
+                instructions: 'Mix Greek yogurt with fresh berries.'
+              }
+            },
+            day7: {
+              breakfast: {
+                name: 'Breakfast Burrito',
+                calories: result.data.recommendation.targetCalories * 0.25,
+                protein: Math.round((result.data.recommendation.macroSplit.protein / 100) * result.data.recommendation.targetCalories * 0.25 / 4) + 15,
+                carbs: Math.round((result.data.recommendation.macroSplit.carbohydrates / 100) * result.data.recommendation.targetCalories * 0.25 / 4),
+                fats: Math.round((result.data.recommendation.macroSplit.fats / 100) * result.data.recommendation.targetCalories * 0.25 / 9),
+                ingredients: ['Eggs', 'Tortilla', 'Black Beans', 'Salsa'],
+                instructions: 'Scramble eggs, wrap with black beans and salsa in tortilla.'
+              },
+              lunch: {
+                name: 'Mediterranean Pasta Salad',
+                calories: result.data.recommendation.targetCalories * 0.35,
+                protein: Math.round((result.data.recommendation.macroSplit.protein / 100) * result.data.recommendation.targetCalories * 0.35 / 4) + 25,
+                carbs: Math.round((result.data.recommendation.macroSplit.carbohydrates / 100) * result.data.recommendation.targetCalories * 0.35 / 4),
+                fats: Math.round((result.data.recommendation.macroSplit.fats / 100) * result.data.recommendation.targetCalories * 0.35 / 9),
+                ingredients: ['Whole Wheat Pasta', 'Cherry Tomatoes', 'Cucumber', 'Olive Oil'],
+                instructions: 'Cook pasta, mix with tomatoes, cucumber, and olive oil.'
+              },
+              dinner: {
+                name: 'Grilled Tuna with Vegetables',
+                calories: result.data.recommendation.targetCalories * 0.30,
+                protein: Math.round((result.data.recommendation.macroSplit.protein / 100) * result.data.recommendation.targetCalories * 0.30 / 4) + 20,
+                carbs: Math.round((result.data.recommendation.macroSplit.carbohydrates / 100) * result.data.recommendation.targetCalories * 0.30 / 4),
+                fats: Math.round((result.data.recommendation.macroSplit.fats / 100) * result.data.recommendation.targetCalories * 0.30 / 9),
+                ingredients: ['Tuna Steak', 'Zucchini', 'Carrots', 'Lemon'],
+                instructions: 'Grill tuna with lemon, roast zucchini and carrots.'
+              },
+              snack1: {
+                name: 'Hummus with Carrots',
+                calories: result.data.recommendation.targetCalories * 0.05,
+                protein: Math.round((result.data.recommendation.macroSplit.protein / 100) * result.data.recommendation.targetCalories * 0.05 / 4) + 8,
+                carbs: Math.round((result.data.recommendation.macroSplit.carbohydrates / 100) * result.data.recommendation.targetCalories * 0.05 / 4),
+                fats: Math.round((result.data.recommendation.macroSplit.fats / 100) * result.data.recommendation.targetCalories * 0.05 / 9),
+                ingredients: ['Hummus', 'Carrots'],
+                instructions: 'Serve hummus with carrot sticks.'
+              },
+              snack2: {
+                name: 'Mixed Nuts',
+                calories: result.data.recommendation.targetCalories * 0.05,
+                protein: Math.round((result.data.recommendation.macroSplit.protein / 100) * result.data.recommendation.targetCalories * 0.05 / 4) + 8,
+                carbs: Math.round((result.data.recommendation.macroSplit.carbohydrates / 100) * result.data.recommendation.targetCalories * 0.05 / 4),
+                fats: Math.round((result.data.recommendation.macroSplit.fats / 100) * result.data.recommendation.targetCalories * 0.05 / 9),
+                ingredients: ['Almonds', 'Walnuts', 'Cashews'],
+                instructions: 'Mix almonds, walnuts, and cashews.'
               }
             }
           },
           shoppingList: {
-            proteins: ['Chicken breast', 'Salmon', 'Greek yogurt'],
-            vegetables: ['Broccoli', 'Spinach', 'Carrots'],
-            fruits: ['Banana', 'Apple', 'Berries'],
-            grains: ['Oatmeal', 'Brown rice', 'Quinoa'],
-            dairy: ['Greek yogurt', 'Milk'],
-            pantry: ['Almonds', 'Olive oil', 'Honey']
+            proteins: ['Chicken breast', 'Salmon', 'Greek yogurt', 'Protein powder'],
+            vegetables: ['Broccoli', 'Spinach', 'Sweet potato'],
+            fruits: ['Banana', 'Apple', 'Mixed berries'],
+            grains: ['Oatmeal', 'Quinoa'],
+            dairy: ['Greek yogurt'],
+            pantry: ['Almonds', 'Olive oil', 'Peanut butter', 'Lemon']
           }
         };
 
         setDietPlan(plan);
         setCurrentDay(1); // Reset to day 1 when showing new plan
         setShowResultsModal(true);
-        
-        // Refresh the AI meal plan from database after generating new plan
-        const fetchAiMealPlan = async () => {
-          setLoadingMealPlan(true);
-          try {
-            const token = localStorage.getItem('fitlife_token');
-            if (!token) {
-              return;
-            }
-            const response = await fetch('http://127.0.0.1:5001/api/v1/nutrition/latest-ai-plan', {
-              headers: {
-                'Authorization': `Bearer ${token}`
-              }
-            });
-            if (response.ok) {
-              const data = await response.json();
-              if (data.success && data.data) {
-                setAiMealPlan(data.data);
-              }
-            }
-          } catch (error) {
-            console.error('Error fetching AI meal plan:', error);
-          } finally {
-            setLoadingMealPlan(false);
-          }
-        };
-        fetchAiMealPlan();
-
-
+        await fetchAiMealPlan();
       } else {
         throw new Error(result.error || 'Plan generation failed');
       }
@@ -1278,11 +1535,16 @@ const Nutrition = () => {
                     <h4 className="font-bold text-[#62E0A1] mb-2">Breakfast</h4>
                     {dietPlan && dietPlan.mealPlan && dietPlan.mealPlan[`day${currentDay}`] ? (
                       <>
-                        <p className="text-sm text-gray-300">{dietPlan.mealPlan[`day${currentDay}`].breakfast?.name || 'Oatmeal with berries and nuts'}</p>
+                        <p className="text-sm text-gray-300 font-medium">{dietPlan.mealPlan[`day${currentDay}`].breakfast?.name || 'Oatmeal with berries and nuts'}</p>
                         <p className="mt-1 text-xs text-gray-400">{dietPlan.mealPlan[`day${currentDay}`].breakfast?.calories || 320} calories</p>
                         {dietPlan.mealPlan[`day${currentDay}`].breakfast?.ingredients && (
                           <p className="mt-1 text-xs text-gray-500">
                             {dietPlan.mealPlan[`day${currentDay}`].breakfast.ingredients.slice(0, 3).join(', ')}
+                          </p>
+                        )}
+                        {dietPlan.mealPlan[`day${currentDay}`].breakfast?.instructions && (
+                          <p className="mt-2 text-xs text-gray-400 italic">
+                            {dietPlan.mealPlan[`day${currentDay}`].breakfast.instructions}
                           </p>
                         )}
                       </>
@@ -1299,11 +1561,16 @@ const Nutrition = () => {
                     <h4 className="font-bold text-[#36CFFF] mb-2">Lunch</h4>
                     {dietPlan && dietPlan.mealPlan && dietPlan.mealPlan[`day${currentDay}`] ? (
                       <>
-                        <p className="text-sm text-gray-300">{dietPlan.mealPlan[`day${currentDay}`].lunch?.name || 'Grilled chicken salad'}</p>
+                        <p className="text-sm text-gray-300 font-medium">{dietPlan.mealPlan[`day${currentDay}`].lunch?.name || 'Grilled chicken salad'}</p>
                         <p className="mt-1 text-xs text-gray-400">{dietPlan.mealPlan[`day${currentDay}`].lunch?.calories || 450} calories</p>
                         {dietPlan.mealPlan[`day${currentDay}`].lunch?.ingredients && (
                           <p className="mt-1 text-xs text-gray-500">
                             {dietPlan.mealPlan[`day${currentDay}`].lunch.ingredients.slice(0, 3).join(', ')}
+                          </p>
+                        )}
+                        {dietPlan.mealPlan[`day${currentDay}`].lunch?.instructions && (
+                          <p className="mt-2 text-xs text-gray-400 italic">
+                            {dietPlan.mealPlan[`day${currentDay}`].lunch.instructions}
                           </p>
                         )}
                       </>
@@ -1320,11 +1587,16 @@ const Nutrition = () => {
                     <h4 className="font-bold text-[#F2B33D] mb-2">Dinner</h4>
                     {dietPlan && dietPlan.mealPlan && dietPlan.mealPlan[`day${currentDay}`] ? (
                       <>
-                        <p className="text-sm text-gray-300">{dietPlan.mealPlan[`day${currentDay}`].dinner?.name || 'Salmon with quinoa'}</p>
+                        <p className="text-sm text-gray-300 font-medium">{dietPlan.mealPlan[`day${currentDay}`].dinner?.name || 'Salmon with quinoa'}</p>
                         <p className="mt-1 text-xs text-gray-400">{dietPlan.mealPlan[`day${currentDay}`].dinner?.calories || 380} calories</p>
                         {dietPlan.mealPlan[`day${currentDay}`].dinner?.ingredients && (
                           <p className="mt-1 text-xs text-gray-500">
                             {dietPlan.mealPlan[`day${currentDay}`].dinner.ingredients.slice(0, 3).join(', ')}
+                          </p>
+                        )}
+                        {dietPlan.mealPlan[`day${currentDay}`].dinner?.instructions && (
+                          <p className="mt-2 text-xs text-gray-400 italic">
+                            {dietPlan.mealPlan[`day${currentDay}`].dinner.instructions}
                           </p>
                         )}
                       </>
@@ -1344,8 +1616,18 @@ const Nutrition = () => {
                     {dietPlan.mealPlan[`day${currentDay}`].snack1 && (
                       <div className="bg-[#121212] p-4 rounded-xl">
                         <h4 className="font-bold text-[#62E0A1] mb-2">Morning Snack</h4>
-                        <p className="text-sm text-gray-300">{dietPlan.mealPlan[`day${currentDay}`].snack1.name}</p>
+                        <p className="text-sm text-gray-300 font-medium">{dietPlan.mealPlan[`day${currentDay}`].snack1.name}</p>
                         <p className="mt-1 text-xs text-gray-400">{dietPlan.mealPlan[`day${currentDay}`].snack1.calories} calories</p>
+                        {dietPlan.mealPlan[`day${currentDay}`].snack1.ingredients && (
+                          <p className="mt-1 text-xs text-gray-500">
+                            {dietPlan.mealPlan[`day${currentDay}`].snack1.ingredients.slice(0, 3).join(', ')}
+                          </p>
+                        )}
+                        {dietPlan.mealPlan[`day${currentDay}`].snack1.instructions && (
+                          <p className="mt-2 text-xs text-gray-400 italic">
+                            {dietPlan.mealPlan[`day${currentDay}`].snack1.instructions}
+                          </p>
+                        )}
                       </div>
                     )}
                     
@@ -1353,8 +1635,18 @@ const Nutrition = () => {
                     {dietPlan.mealPlan[`day${currentDay}`].snack2 && (
                       <div className="bg-[#121212] p-4 rounded-xl">
                         <h4 className="font-bold text-[#36CFFF] mb-2">Evening Snack</h4>
-                        <p className="text-sm text-gray-300">{dietPlan.mealPlan[`day${currentDay}`].snack2.name}</p>
+                        <p className="text-sm text-gray-300 font-medium">{dietPlan.mealPlan[`day${currentDay}`].snack2.name}</p>
                         <p className="mt-1 text-xs text-gray-400">{dietPlan.mealPlan[`day${currentDay}`].snack2.calories} calories</p>
+                        {dietPlan.mealPlan[`day${currentDay}`].snack2.ingredients && (
+                          <p className="mt-1 text-xs text-gray-500">
+                            {dietPlan.mealPlan[`day${currentDay}`].snack2.ingredients.slice(0, 3).join(', ')}
+                          </p>
+                        )}
+                        {dietPlan.mealPlan[`day${currentDay}`].snack2.instructions && (
+                          <p className="mt-2 text-xs text-gray-400 italic">
+                            {dietPlan.mealPlan[`day${currentDay}`].snack2.instructions}
+                          </p>
+                        )}
                       </div>
                     )}
                   </div>
