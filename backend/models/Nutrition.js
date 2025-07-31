@@ -237,6 +237,12 @@ const nutritionPlanSchema = new mongoose.Schema({
       min: [0, 'Rating count cannot be negative'],
       default: 0
     }
+  },
+  daysCount: {
+    type: Number,
+    min: [1, 'Days count must be at least 1'],
+    max: [30, 'Days count cannot exceed 30'],
+    default: 7
   }
 }, {
   timestamps: true,
