@@ -43,7 +43,7 @@ services:
         source: '/*'
         destination: '/index.html'
     envVars:
-      - key: REACT_APP_API_URL
+      - key: https://fitlife01.netlify.app/
         fromService:
           name: fitlife-backend
           type: web
