@@ -8,7 +8,9 @@ services:
     env: node
     region: singapore  # Change to your preferred region
     plan: starter  # Using starter plan for Hobby workspace
-    buildCommand: npm install && npm run build
+    buildCommand: |
+      npm install --production
+      npm run build
     startCommand: node server.js
     envVars:
       - key: NODE_ENV
