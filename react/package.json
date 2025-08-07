@@ -4,11 +4,11 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "start": "vite --host",
-    "dev": "vite",
-    "build": "vite build",
+    "start": "vite --config vite.config.mjs --host",
+    "dev": "vite --config vite.config.mjs",
+    "build": "vite build --config vite.config.mjs",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview --config vite.config.mjs"
   },
   "dependencies": {
     "@fortawesome/fontawesome-free": "^6.7.2",
