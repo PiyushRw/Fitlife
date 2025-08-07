@@ -7,7 +7,7 @@ services:
     name: fitlife-backend
     env: node
     region: singapore  # Change to your preferred region
-    plan: free  # Start with free tier, upgrade as needed
+    plan: starter  # Using starter plan for Hobby workspace
     buildCommand: npm install && npm run build
     startCommand: node server.js
     envVars:
@@ -32,7 +32,7 @@ services:
   - type: web
     name: fitlife-frontend
     env: static
-    plan: free  # Start with free tier, upgrade as needed
+    plan: starter  # Using starter plan for Hobby workspace
     buildCommand: |
       npm install
       npm run build
@@ -53,7 +53,7 @@ services:
 
 databases:
   - name: fitlife-db
-    plan: free  # Start with free tier, upgrade as needed
+    plan: starter  # Using starter plan for Hobby workspace
     region: singapore  # Should match services region
     databaseName: fitlife
     user: fitlife_user
@@ -70,7 +70,3 @@ envVarGroups:
       - key: LOG_LEVEL
         value: info
 
-# Preview Environments Configuration
-previews:
-  generation: automatic  # Automatically create preview environments for PRs
-  expireAfterDays: 7     # Automatically clean up preview environments after 7 days of inactivity
