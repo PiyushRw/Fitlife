@@ -1,0 +1,77 @@
+# Render Blueprint for Fitlife Application
+# Defines the infrastructure for the Fitlife MERN stack application
+
+services:
+  # Backend Service (Node.js/Express)
+  - type: web
+    name: fitlife-backend
+    env: node
+    region: singapore  # Change to your preferred region
+    plan: free  # Start with free tier, upgrade as needed
+    buildCommand: npm install && npm run build
+    startCommand: node server.js
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      - key: MONGODB_URI
+        fromDatabase:
+          name: fitlife-db
+          property: connectionString
+      - key: JWT_SECRET
+        generateValue: true
+      - key: JWT_EXPIRE
+        value: 30d
+      - key: COOKIE_EXPIRE
+        value: 30
+    healthCheckPath: /api/v1/health
+    autoDeploy: true
+
+  # Frontend Service (React)
+  - type: web
+    name: fitlife-frontend
+    env: static
+    region: singapore  # Should match backend region
+    plan: free  # Start with free tier, upgrade as needed
+    buildCommand: |
+      npm install
+      npm run build
+    staticPublishPath: ./build
+    routes:
+      - type: rewrite
+        source: '/*'
+        destination: '/index.html'
+    envVars:
+      - key: REACT_APP_API_URL
+        fromService:
+          name: fitlife-backend
+          type: web
+          property: hostport
+      - key: NODE_VERSION
+        value: 18.x
+    autoDeploy: true
+
+databases:
+  - name: fitlife-db
+    plan: free  # Start with free tier, upgrade as needed
+    region: singapore  # Should match services region
+    databaseName: fitlife
+    user: fitlife_user
+    ipAllowList:
+      - source: 0.0.0.0/0
+        description: Allow all IPs (restrict in production)
+
+# Environment Groups (shared across services)
+envVarGroups:
+  - name: production-env
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: LOG_LEVEL
+        value: info
+
+# Preview Environments Configuration
+previews:
+  generation: automatic  # Automatically create preview environments for PRs
+  expireAfterDays: 7     # Automatically clean up preview environments after 7 days of inactivity
