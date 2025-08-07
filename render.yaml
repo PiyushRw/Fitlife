@@ -32,7 +32,6 @@ services:
   - type: web
     name: fitlife-frontend
     env: static
-    region: singapore  # Should match backend region
     plan: free  # Start with free tier, upgrade as needed
     buildCommand: |
       npm install
@@ -43,7 +42,7 @@ services:
         source: '/*'
         destination: '/index.html'
     envVars:
-      - key: https://fitlife01.netlify.app/
+      - key: REACT_APP_API_URL
         fromService:
           name: fitlife-backend
           type: web
