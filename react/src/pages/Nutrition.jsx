@@ -1500,7 +1500,7 @@ const Nutrition = () => {
                           key={goal}
                           type="button"
                           onClick={() => toggleTag('goal', goal)}
-                          className={`plan-btn ${selectedTags.goal.includes(goal) ? 'selected' : ''}`}
+                          className={`px-4 py-2 rounded-md border border-gray-600 hover:border-[#62E0A1] transition-colors ${selectedTags.goal.includes(goal) ? 'bg-[#62E0A1] text-black' : 'bg-[#1E1E1E] text-white'}`}
                         >
                           {goal}
                         </button>
@@ -1517,7 +1517,7 @@ const Nutrition = () => {
                           key={condition}
                           type="button"
                           onClick={() => toggleTag('condition', condition)}
-                          className={`plan-btn ${selectedTags.condition.includes(condition) ? 'selected' : ''}`}
+                          className={`px-4 py-2 rounded-md border border-gray-600 hover:border-[#62E0A1] transition-colors ${selectedTags.condition.includes(condition) ? 'bg-[#62E0A1] text-black' : 'bg-[#1E1E1E] text-white'}`}
                         >
                           {condition}
                         </button>
@@ -1534,7 +1534,7 @@ const Nutrition = () => {
                           key={lifestyle}
                           type="button"
                           onClick={() => toggleTag('lifestyle', lifestyle)}
-                          className={`plan-btn ${selectedTags.lifestyle.includes(lifestyle) ? 'selected' : ''}`}
+                          className={`px-4 py-2 rounded-md border border-gray-600 hover:border-[#62E0A1] transition-colors ${selectedTags.lifestyle.includes(lifestyle) ? 'bg-[#62E0A1] text-black' : 'bg-[#1E1E1E] text-white'}`}
                         >
                           {lifestyle}
                         </button>
@@ -1550,7 +1550,7 @@ const Nutrition = () => {
                           key={days}
                           type="button"
                           onClick={() => setSelectedDays(days)}
-                          className={`plan-btn ${selectedDays === days ? 'selected' : ''}`}
+                          className={`px-4 py-2 rounded-md border ${selectedDays === days ? 'bg-[#62E0A1] text-black border-[#62E0A1]' : 'bg-[#1E1E1E] text-white border-gray-600 hover:border-[#62E0A1]'} transition-colors`}
                         >
                           {days} Day{days > 1 ? 's' : ''}
                         </button>
@@ -1600,7 +1600,7 @@ const Nutrition = () => {
                     <button 
                       type="button" 
                       onClick={clearAllTags}
-                      className="bg-[#F2B33D] text-black rounded-full px-3 py-1 hover:bg-yellow-400 font-semibold w-full" 
+                      className="bg-[#F2B33D] text-black rounded-md px-4 py-2 hover:bg-yellow-400 font-semibold w-full transition-colors" 
                       title="Clear"
                     >
                       Clear
@@ -1609,8 +1609,8 @@ const Nutrition = () => {
                       type="button" 
                       onClick={generateNutritionPlan}
                       disabled={isGenerating}
-                      className="relative overflow-hidden group bg-gradient-to-br from-[#1a2a3a] to-[#0f1724] text-[#e2e8f0] px-6 py-2.5 rounded-lg font-semibold flex items-center justify-center gap-2 w-full disabled:opacity-60 disabled:cursor-not-allowed
-                        border border-[#2d3748] hover:border-[#4299e1] transition-all duration-300 ease-out
+                      className="relative overflow-hidden group bg-gradient-to-br from-[#1a2a3a] to-[#0f1724] text-[#e2e8f0] px-6 py-2.5 rounded-md font-semibold flex items-center justify-center gap-2 w-full disabled:opacity-60 disabled:cursor-not-allowed
+                        border border-[#2d3748] hover:border-[#62E0A1] transition-all duration-300 ease-out
                         hover:shadow-[0_0_15px_rgba(66,153,225,0.2)]"
                       title="Generate Nutrition Plan"
                     >
