@@ -123,6 +123,7 @@ app.use(cors({
     'http://127.0.0.1:5174',
     'https://fitlife.vercel.app',
     'https://fitlife-frontend.vercel.app',
+    'https://fitlife-frontend-git-main-piyushrws-projects.vercel.app',
     'https://fitlife-backend.vercel.app'
   ],
   credentials: true

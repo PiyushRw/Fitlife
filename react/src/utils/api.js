@@ -1,5 +1,5 @@
 // API Service for handling authentication and user management
-const API_BASE_URL = 'https://fitlife-backend.vercel.app/api/v1';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api/v1';
 
 class ApiService {
   // Get the stored token
@@ -41,14 +41,27 @@ class ApiService {
       config.headers.Authorization = `Bearer ${token}`;
     }
 
-    const response = await fetch(url, config);
-    
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
-    }
+    try {
+      const response = await fetch(url, config);
+      
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ message: 'Network error' }));
+        throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+      }
 
-    return response.json();
+      return response.json();
+    } catch (error) {
+      console.error('API request failed:', error);
+      
+      // Handle network errors specifically
+      if (error.message.includes('Failed to fetch') || 
+          error.message.includes('NetworkError') || 
+          error.message.includes('ECONNREFUSED')) {
+        throw new Error('Unable to connect to server. Please check if the backend server is running on port 5000.');
+      }
+      
+      throw error;
+    }
   }
 
   // Login user

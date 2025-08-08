@@ -60,8 +60,22 @@ export const AuthProvider = ({ children }) => {
       return data;
     } catch (err) {
       console.error('❌ Login error:', err);
-      setError(err.message);
-      throw err;
+      
+      let errorMessage = 'Login failed. Please try again.';
+      
+      // Handle specific error cases
+      if (err.message.includes('Unable to connect')) {
+        errorMessage = 'Unable to connect to server. Please check if the backend server is running on port 5000.';
+      } else if (err.message.includes('401') || err.message.includes('Invalid credentials')) {
+        errorMessage = 'Invalid email or password.';
+      } else if (err.message.includes('Network')) {
+        errorMessage = 'Network error. Please check your connection.';
+      } else {
+        errorMessage = err.message || 'Login failed. Please try again.';
+      }
+      
+      setError(errorMessage);
+      throw new Error(errorMessage);
     } finally {
       setLoading(false);
       console.log('🏁 Login process completed');
