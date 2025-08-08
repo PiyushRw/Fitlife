@@ -57,20 +57,14 @@ process.on('SIGINT', async () => {
 // Connect to MongoDB with retry logic
 export const connectDB = async (retryCount = 0) => {
   try {
-    // Determine which connection string to use
-    let connectionString;
+    // Use the same connection string for all environments
+    const connectionString = process.env.MONGODB_URI;
     
-    if (process.env.NODE_ENV === 'production') {
-      connectionString = process.env.MONGODB_URI_PROD || process.env.MONGODB_URI;
-      console.log('Using production database...');
-    } else {
-      connectionString = process.env.MONGODB_URI || 'mongodb://localhost:27017/fitlife';
-      console.log('Using development database...');
-    }
-
     if (!connectionString) {
       throw new Error('MongoDB connection string is not defined in environment variables');
     }
+    
+    console.log('Using MongoDB connection string...');
 
     console.log(`Connecting to MongoDB (attempt ${retryCount + 1}/${MAX_RETRIES})...`);
     
