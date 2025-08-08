@@ -241,7 +241,9 @@ const Onboarding = () => {
 
     // Send preferences to backend
     const token = localStorage.getItem('fitlife_token');
-    fetch('http://127.0.0.1:5001/api/v1/users/preferences', {
+    const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000/api/v1';
+    
+    fetch(`${apiUrl}/users/preferences`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -252,7 +254,7 @@ const Onboarding = () => {
     })
       .then(async (res) => {
         if (!res.ok) {
-          const error = await res.json();
+          const error = await res.json().catch(() => ({ error: 'Unknown error' }));
           console.error('Failed to save preferences:', error.error || 'Unknown error');
           return;
         }
