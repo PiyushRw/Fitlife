@@ -60,7 +60,7 @@ const Nutrition = () => {
         return;
       }
       console.log('🔍 Fetching AI meal plan...');
-      const response = await fetch('http://127.0.0.1:5001/api/v1/nutrition/latest-ai-plan', {
+      const response = await fetch('/api/v1/nutrition/latest-ai-plan', {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       console.log('📡 AI meal plan response status:', response.status);
@@ -94,7 +94,7 @@ const Nutrition = () => {
       }
       
       console.log('🔍 Fetching real plan history...');
-      const response = await fetch('http://127.0.0.1:5001/api/v1/nutrition/plan-history', {
+      const response = await fetch('/api/v1/nutrition/plan-history', {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       
@@ -139,7 +139,7 @@ const Nutrition = () => {
           window.location.href = '/login';
           return;
         }
-        const response = await fetch('http://127.0.0.1:5001/api/v1/auth/me', {
+        const response = await fetch('/api/v1/auth/me', {
           headers: {
             'Authorization': `Bearer ${token}`
           }
@@ -170,7 +170,7 @@ const Nutrition = () => {
         if (!token) {
           return;
         }
-        const response = await fetch('http://127.0.0.1:5001/api/v1/nutrition/daily-intake/today', {
+        const response = await fetch('/api/v1/nutrition/daily-intake/today', {
           headers: {
             'Authorization': `Bearer ${token}`
           }
@@ -401,7 +401,7 @@ const Nutrition = () => {
       };
 
       // Use the backend API that automatically saves to database
-      const response = await fetch('http://127.0.0.1:5001/api/v1/ai-assistant/nutrition-recommendation', {
+      const response = await fetch('/api/v1/ai-assistant/nutrition-recommendation', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -509,7 +509,7 @@ const Nutrition = () => {
       const base64Data = uploadedImage.split(',')[1]; // Remove data:image/jpeg;base64, prefix
       
       // Use the new backend API that automatically saves to database
-      const response = await fetch('http://127.0.0.1:5001/api/v1/nutrition/analyze-food', {
+      const response = await fetch('/api/v1/nutrition/analyze-food', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -570,7 +570,7 @@ const Nutrition = () => {
         return;
       }
 
-      const response = await fetch('http://127.0.0.1:5001/api/v1/nutrition/daily-intake/add-food', {
+      const response = await fetch('/api/v1/nutrition/daily-intake/add-food', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

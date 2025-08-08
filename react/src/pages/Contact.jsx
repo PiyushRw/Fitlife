@@ -24,7 +24,7 @@ const Contact = () => {
   const handleSubmit = (e) => {
     e.preventDefault();
     // Send contact form data to backend
-    fetch('http://127.0.0.1:5001/api/v1/contact', {
+    fetch('/api/v1/contact', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

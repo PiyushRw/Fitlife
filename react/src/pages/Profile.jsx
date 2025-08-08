@@ -27,7 +27,7 @@ const Profile = () => {
           navigate('/login');
           return;
         }
-        const response = await fetch('http://127.0.0.1:5001/api/v1/auth/me', {
+        const response = await fetch('/api/v1/auth/me', {
           headers: {
             'Authorization': `Bearer ${token}`
           }
@@ -352,7 +352,7 @@ const Profile = () => {
                             alert('You must be logged in to update profile.');
                             return;
                           }
-                          const response = await fetch('http://127.0.0.1:5001/api/v1/users/profile', {
+                          const response = await fetch('/api/v1/users/profile', {
                             method: 'PUT',
                             headers: {
                               'Content-Type': 'application/json',
