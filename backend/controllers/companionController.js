@@ -3,6 +3,76 @@ import Chat from '../models/Chat.js';
 import { NutritionPlan, Meal, FoodItem } from '../models/Nutrition.js';
 import fetch from 'node-fetch';
 
+// Unit conversion and validation
+const unitMap = {
+  // Volume units
+  'tablespoon': 'tbsp',
+  'tablespoons': 'tbsp',
+  'tbsp': 'tbsp',
+  'teaspoon': 'tsp',
+  'teaspoons': 'tsp',
+  'tsp': 'tsp',
+  'cup': 'cup',
+  'cups': 'cup',
+  'ml': 'ml',
+  'milliliter': 'ml',
+  'milliliters': 'ml',
+  'l': 'ml',
+  'liter': 'ml',
+  'liters': 'ml',
+  
+  // Weight units
+  'g': 'g',
+  'gram': 'g',
+  'grams': 'g',
+  'kg': 'g',
+  'kilogram': 'g',
+  'kilograms': 'g',
+  'oz': 'g',
+  'ounce': 'g',
+  'ounces': 'g',
+  'lb': 'g',
+  'pound': 'g',
+  'pounds': 'g',
+  
+  // Countable units
+  'piece': 'piece',
+  'pieces': 'piece',
+  'slice': 'slice',
+  'slices': 'slice',
+  'medium': 'piece',
+  'large': 'piece',
+  'small': 'piece',
+  'patty': 'piece',
+  'patties': 'piece',
+  'scoop': 'tbsp',
+  'handful': 'piece'
+};
+
+// Convert any unit to a valid unit
+const getValidUnit = (unit) => {
+  if (!unit) return 'g'; // Default to grams
+  const normalizedUnit = unit.toLowerCase().trim();
+  return unitMap[normalizedUnit] || 'g'; // Default to grams if no match
+};
+
+// Map meal types to valid types
+const getValidMealType = (type) => {
+  const typeMap = {
+    'breakfast': 'breakfast',
+    'lunch': 'lunch',
+    'dinner': 'dinner',
+    'snack': 'snack',
+    'snack1': 'snack',
+    'snack2': 'snack',
+    'morning snack': 'snack',
+    'afternoon snack': 'snack',
+    'evening snack': 'snack'
+  };
+  const normalizedType = type ? type.toLowerCase().trim() : 'snack';
+  return typeMap[normalizedType] || 'snack';
+};
+
 const GEMINI_API_KEY = 'AIzaSyAkJm9kDRHoDwlv39Eyvm4Se1IubxtZOto';
 const GEMINI_API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent';
 
@@ -809,7 +879,7 @@ CRITICAL: You MUST generate ${selectedDays} days with different meals. Each day 
               },
               servingSize: {
                 amount: foodData.quantity || 100,
-                unit: foodData.unit || 'g'
+                unit: getValidUnit(foodData.unit)
               },
               isCustom: true,
               createdBy: req.user.id
@@ -822,7 +892,7 @@ CRITICAL: You MUST generate ${selectedDays} days with different meals. Each day 
           mealFoods.push({
             food: foodItem._id,
             quantity: foodData.quantity || 100,
-            unit: foodData.unit || 'g'
+            unit: getValidUnit(foodData.unit)
           });
         }
 
@@ -839,7 +909,7 @@ CRITICAL: You MUST generate ${selectedDays} days with different meals. Each day 
         // Create the meal
         const meal = await Meal.create({
             name: mealData.name,
-            type: mealType,
+            type: getValidMealType(mealType),
           foods: mealFoods,
           totalNutrients: totalNutrients,
             notes: `AI-generated ${mealType} for ${goal} goal - ${dayKey}`,
