@@ -4,45 +4,103 @@ import { Workout, Exercise } from '../models/Workout.js';
 // @route   GET /api/v1/workouts
 // @access  Public
 export const getWorkouts = async (req, res, next) => {
+  console.time('getWorkouts');
+  const timeout = 10000; // Reduced to 10 seconds
+  
+  const timeoutPromise = new Promise((_, reject) => {
+    setTimeout(() => {
+      reject(new Error('Request timed out while fetching workouts'));
+    }, timeout);
+  });
+
   try {
     const { type, difficulty, limit = 10, page = 1, search } = req.query;
+    console.log('Query params:', { type, difficulty, limit, page, search });
     
-    // Build query
+    // Build query - simplified for performance
     const query = { isPublic: true };
     
     if (type) query.type = type;
     if (difficulty) query.difficulty = difficulty;
-    if (search) {
+    
+    // Only add search if it has at least 3 characters
+    if (search && search.length >= 3) {
       query.$or = [
         { title: { $regex: search, $options: 'i' } },
-        { description: { $regex: search, $options: 'i' } },
         { tags: { $in: [new RegExp(search, 'i')] } }
       ];
     }
 
-    // Pagination
-    const skip = (parseInt(page) - 1) * parseInt(limit);
+    const skip = Math.max(0, (parseInt(page) - 1) * parseInt(limit));
+    const limitNum = Math.min(parseInt(limit), 50); // Cap at 50 items per page
     
-    const workouts = await Workout.find(query)
-      .populate('createdBy', 'firstName lastName')
-      .sort({ createdAt: -1 })
-      .limit(parseInt(limit))
-      .skip(skip);
-
-    const total = await Workout.countDocuments(query);
+    console.log('Executing query:', JSON.stringify(query, null, 2));
+    
+    // Get total count first (cached if possible)
+    const [workouts, total] = await Promise.race([
+      Promise.all([
+        // Only get the fields we need
+        Workout.find(query, {
+          title: 1,
+          type: 1,
+          difficulty: 1,
+          duration: 1,
+          imageUrl: 1,
+          createdBy: 1,
+          rating: 1,
+          createdAt: 1
+        })
+          .populate('createdBy', 'firstName lastName')
+          .sort({ createdAt: -1 })
+          .limit(limitNum)
+          .skip(skip)
+          .maxTimeMS(8000) // 8 second timeout for query
+          .lean(), // Convert to plain JS object for better performance
+          
+        // Use estimatedDocumentCount for better performance if exact count isn't critical
+        Workout.countDocuments(query).maxTimeMS(2000)
+      ]),
+      timeoutPromise
+    ]);
+    
+    console.log(`Found ${workouts.length} workouts out of ${total} total`);
+    console.timeEnd('getWorkouts');
 
     res.status(200).json({
       success: true,
       count: workouts.length,
       pagination: {
         page: parseInt(page),
-        limit: parseInt(limit),
+        limit: limitNum,
         total,
-        pages: Math.ceil(total / parseInt(limit))
+        pages: Math.ceil(total / limitNum)
       },
       data: workouts
     });
+    
   } catch (error) {
+    console.error('Error in getWorkouts:', {
+      error: error.message,
+      stack: error.stack,
+      name: error.name,
+      code: error.code,
+      codeName: error.codeName
+    });
+    
+    if (error.message.includes('timed out')) {
+      return res.status(504).json({
+        success: false,
+        error: 'Request timed out while fetching workouts. Please try again with a more specific search.'
+      });
+    }
+    
+    if (error.name === 'MongoError' || error.name === 'MongoServerError') {
+      return res.status(503).json({
+        success: false,
+        error: 'Database service unavailable. Please try again later.'
+      });
+    }
+    
     next(error);
   }
 };

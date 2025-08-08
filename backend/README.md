@@ -2,6 +2,14 @@
 
 A comprehensive fitness application backend built with Node.js, Express, and MongoDB using MVC architecture.
 
+## 🚀 Latest Updates
+
+- **Enhanced Database Connection Handling**: Improved MongoDB connection pooling and retry logic
+- **Health Check Endpoints**: Added comprehensive health monitoring endpoints
+- **Performance Optimizations**: Implemented query timeouts and indexing
+- **Error Handling**: Better error messages and logging
+- **Security**: Enhanced security headers and rate limiting
+
 ## 🚀 Features
 
 - **User Authentication & Authorization** - JWT-based authentication with role-based access
@@ -11,6 +19,8 @@ A comprehensive fitness application backend built with Node.js, Express, and Mon
 - **User Profiles** - Comprehensive user profiles with fitness goals and preferences
 - **RESTful API** - Clean, well-documented REST API endpoints
 - **MongoDB Integration** - Robust data persistence with Mongoose ODM
+- **Health Monitoring** - Comprehensive health check endpoints
+- **Performance** - Optimized queries with timeouts and indexes
 - **Security** - Helmet, CORS, rate limiting, and input validation
 
 ## 📁 Project Structure
@@ -56,18 +66,28 @@ backend/
 
 3. **Set up environment variables**
    ```bash
-   cp env.example .env
+   cp .env.example .env
    # Edit .env with your configuration
    ```
 
 4. **Set up MongoDB**
    - Install MongoDB locally or use MongoDB Atlas
    - Update the `MONGODB_URI` in your `.env` file
+   - For production, set `MONGODB_URI_PROD`
 
-5. **Start the development server**
+5. **Create MongoDB indexes** (for optimal performance)
+   ```bash
+   node scripts/createWorkoutIndexes.js
+   ```
+
+6. **Start the development server**
    ```bash
    npm run dev
    ```
+
+7. **Verify the installation**
+   - Visit `http://localhost:5000/api/health` in your browser
+   - Check database status at `http://localhost:5000/api/health/db`
 
 ## 🔧 Configuration
 
@@ -83,6 +103,7 @@ NODE_ENV=development
 # MongoDB Configuration
 MONGODB_URI=mongodb://localhost:27017/fitlife
 MONGODB_URI_PROD=mongodb+srv://your_username:your_password@your_cluster.mongodb.net/fitlife
+MONGODB_CA_CERTIFICATE=/path/to/ca-certificate.crt  # For SSL in production
 
 # JWT Configuration
 JWT_SECRET=your_jwt_secret_key_here
@@ -93,12 +114,27 @@ API_VERSION=v1
 CORS_ORIGIN=http://localhost:3000
 
 # File Upload Configuration
-MAX_FILE_SIZE=5242880
+MAX_FILE_SIZE=5242880  # 5MB
 UPLOAD_PATH=./uploads
 
 # Rate Limiting
-RATE_LIMIT_WINDOW_MS=900000
-RATE_LIMIT_MAX_REQUESTS=100
+RATE_LIMIT_WINDOW_MS=900000  # 15 minutes
+RATE_LIMIT_MAX_REQUESTS=100  # 100 requests per window
+
+# Logging
+LOG_LEVEL=info  # error, warn, info, debug, silly
+
+# Health Check
+HEALTH_CHECK_TIMEOUT=5000  # 5 seconds
+
+# Connection Pooling
+MONGODB_POOL_SIZE=10
+MONGODB_RETRY_ATTEMPTS=3
+MONGODB_RETRY_DELAY=5000  # 5 seconds
+
+# Timeouts
+MONGODB_CONNECT_TIMEOUT=10000  # 10 seconds
+MONGODB_SOCKET_TIMEOUT=45000   # 45 seconds
 ```
 
 ## 📚 API Documentation
@@ -159,6 +195,47 @@ http://localhost:5000/api/v1
 | POST | `/ai-assistant/workout-recommendation` | Get AI workout recommendation | Private |
 | POST | `/ai-assistant/nutrition-recommendation` | Get AI nutrition recommendation | Private |
 | POST | `/ai-assistant/fitness-advice` | Get AI fitness advice | Private |
+
+### Health Check Endpoints
+
+| Method | Endpoint | Description | Authentication |
+|--------|----------|-------------|----------------|
+| `GET` | `/api/v1/health` | Comprehensive API health status including memory usage and uptime | Public |
+| `GET` | `/api/v1/health/db` | Detailed database connection status including collections and ping | Public |
+
+**Example Health Response**
+```json
+{
+  "success": true,
+  "status": "healthy",
+  "message": "FitLife API is running",
+  "timestamp": "2023-11-15T12:00:00.000Z",
+  "environment": "development",
+  "database": {
+    "status": "connected",
+    "state": 1,
+    "dbName": "fitlife",
+    "host": "cluster0.abc123.mongodb.net"
+  },
+  "system": {
+    "node": "v16.14.0",
+    "platform": "linux",
+    "memory": {
+      "rss": "120.45 MB",
+      "heapTotal": "85.23 MB",
+      "heapUsed": "45.67 MB",
+      "external": "12.34 MB"
+    },
+    "uptime": "2.50 minutes"
+  },
+  "endpoints": {
+    "api": "/api/v1",
+    "docs": "/api/v1/docs",
+    "health": "/api/health",
+    "dbHealth": "/api/health/db"
+  }
+}
+```
 
 ## 🔐 Authentication
 
@@ -297,4 +374,4 @@ This project is licensed under the MIT License.
 
 ## 🆘 Support
 
-For support and questions, please open an issue in the repository or contact the development team. 
+For support and questions, please open an issue in the repository or contact the development team.
