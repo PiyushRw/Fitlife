@@ -27,7 +27,8 @@ const Profile = () => {
           navigate('/login');
           return;
         }
-        const response = await fetch('/api/v1/auth/me', {
+        const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000/api/v1';
+        const response = await fetch(`${apiUrl}/auth/me`, {
           headers: {
             'Authorization': `Bearer ${token}`
           }
