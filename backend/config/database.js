@@ -4,10 +4,8 @@ import mongoose from 'mongoose';
 const MAX_RETRIES = 3;
 const RETRY_DELAY = 5000; // 5 seconds
 
-// Connection options
+// Connection options - updated for newer MongoDB driver compatibility
 const getConnectionOptions = () => ({
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
   serverSelectionTimeoutMS: 10000, // 10 seconds
   socketTimeoutMS: 45000, // 45 seconds
   maxPoolSize: 10, // Maximum number of connections in the connection pool
@@ -16,17 +14,8 @@ const getConnectionOptions = () => ({
   retryWrites: true,
   w: 'majority',
   appName: 'fitlife-backend',
-  // Force server to use SCRAM-SHA-256
-  authMechanism: 'SCRAM-SHA-256',
-  // Enable connection pooling
-  maxConnecting: 10,
-  // Enable keepAlive to prevent connections from closing due to inactivity
-  keepAlive: true,
-  keepAliveInitialDelay: 300000, // 5 minutes
-  // SSL options
+  // SSL options - simplified for newer MongoDB driver
   ssl: process.env.NODE_ENV === 'production',
-  sslValidate: true,
-  sslCA: process.env.MONGODB_CA_CERTIFICATE || undefined,
   authSource: 'admin',
   // Compression
   compressors: ['zlib'],
@@ -131,4 +120,4 @@ export const connectDB = async (retryCount = 0) => {
     // If we've exhausted all retries, throw the error
     throw new Error(`Failed to connect to MongoDB after ${MAX_RETRIES} attempts: ${error.message}`);
   }
-}; 
+};
