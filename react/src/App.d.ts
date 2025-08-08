@@ -1,5 +1,3 @@
-declare module '*.jsx' {
-  import { ComponentType } from 'react';
-  const component: ComponentType;
-  export default component;
-}
+import { ComponentType } from 'react';
+declare const App: ComponentType;
+export default App;
