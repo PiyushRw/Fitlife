@@ -27,7 +27,10 @@ class ApiService {
   // Make authenticated API requests
   static async makeRequest(endpoint, options = {}) {
     const token = this.getToken();
-    const url = `${API_BASE_URL}${endpoint}`;
+    // Ensure proper URL construction by removing any double slashes
+    const baseUrl = API_BASE_URL.endsWith('/') ? API_BASE_URL.slice(0, -1) : API_BASE_URL;
+    const normalizedEndpoint = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
+    const url = `${baseUrl}${normalizedEndpoint}`;
     
     const config = {
       headers: {
