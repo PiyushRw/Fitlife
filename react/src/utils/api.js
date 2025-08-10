@@ -1,6 +1,5 @@
 // API Service for handling authentication and user management
-// Force using local backend for development
-const API_BASE_URL = 'http://localhost:5000/api/v1';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://fitlife-backend-drkanv6hf-piyushrws-projects.vercel.app/api/v1';
 
 class ApiService {
   // Get the stored token

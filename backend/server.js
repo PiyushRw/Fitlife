@@ -114,23 +114,24 @@ app.set('trust proxy', 1);
 app.use(helmet());
 
 // CORS configuration
-app.use(cors({
+const corsOptions = {
   origin: [
-    'http://localhost:3000',
-    'http://localhost:5173',
-    'http://localhost:5174',
-    'http://127.0.0.1:5173',
-    'http://127.0.0.1:5174',
-    'https://fitlife.vercel.app',
     'https://fitlife-frontend.vercel.app',
-    'https://fitlife-backend.vercel.app',
-    'https://fitlife-*.vercel.app', // Wildcard for any Vercel deployment
-    process.env.FRONTEND_URL // Allow dynamic frontend URL from env
-  ].filter(Boolean),
+    'http://localhost:5173',
+    'http://localhost:3000',
+    'https://fitlife-backend-drkanv6hf-piyushrws-projects.vercel.app',
+    /^\.vercel\.app$/,
+    /^https?:\/\/(.+\\.)?vercel\.app$/
+  ],
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Origin']
-}));
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Origin'],
+  preflightContinue: false,
+  optionsSuccessStatus: 204
+};
+
+app.use(cors(corsOptions));
+app.options('*', cors(corsOptions)); // Enable preflight for all routes
 
 // Rate limiting configuration
 const rateLimitConfig = {
@@ -148,10 +149,9 @@ const rateLimitConfig = {
   }
 };
 
-// Apply middleware
-app.use(express.json({ limit: '10mb' }));
-app.use(express.urlencoded({ extended: true, limit: '10mb' }));
-app.use(compression());
+// Apply rate limiting to all API routes
+const apiLimiter = rateLimit(rateLimitConfig);
+app.use('/api/', apiLimiter);
 
 // Logging middleware
 if (process.env.NODE_ENV === 'development') {
@@ -179,10 +179,6 @@ app.use('/api/', (req, res, next) => {
   }
   return ensureDatabaseConnection(req, res, next);
 });
-
-// Apply rate limiting to all API routes
-const apiLimiter = rateLimit(rateLimitConfig);
-app.use('/api/', apiLimiter);
 
 // API Routes with versioning
 const apiVersion = process.env.API_VERSION || 'v1';
