@@ -218,40 +218,120 @@ app.use('/api/', (req, res, next) => {
 const apiVersion = process.env.API_VERSION || 'v1';
 console.log(`🔄 Mounting API routes with version: ${apiVersion}`);
 
-// Add request logging middleware
+// Add detailed request logging middleware
 app.use((req, res, next) => {
   console.log(`📥 ${new Date().toISOString()} - ${req.method} ${req.originalUrl}`);
+  console.log('Request Headers:', req.headers);
+  if (req.method === 'POST' || req.method === 'PUT') {
+    console.log('Request Body:', req.body);
+  }
   next();
 });
 
-// Mount routes with versioning
-try {
-  // Mount auth routes first
-  console.log('🔌 Mounting auth routes...');
-  app.use('/api/v1/auth', authRoutes);
+// Mount API routes with versioning
+console.log('🔌 Initializing API routes...');
+
+// Create a new router for API v1
+const apiV1Router = express.Router();
+
+// Mount all routes under /api/v1
+console.log('🔌 Mounting API v1 routes...');
+
+// Mount auth routes
+console.log('🔌 Mounting auth routes...');
+apiV1Router.use('/auth', authRoutes);
+
+// Mount other API routes
+console.log('🔌 Mounting user routes...');
+apiV1Router.use('/users', userRoutes);
+
+// Mount workout routes
+apiV1Router.use('/workouts', workoutRoutes);
+
+// Mount nutrition routes
+apiV1Router.use('/nutrition', nutritionRoutes);
+
+// Mount AI assistant routes
+apiV1Router.use('/ai-assistant', aiAssistantRoutes);
+
+// Mount fitness advice routes
+apiV1Router.use('/fitness-advice', fitnessAdviceRouter);
+
+// Mount contact routes
+apiV1Router.use('/contact', contactRoutes);
+
+// Mount testimonial routes
+apiV1Router.use('/testimonials', testimonialRoutes);
+
+// Mount the API v1 router
+app.use('/api/v1', apiV1Router);
+
+// Add a test route to verify the server is running
+app.get('/test', (req, res) => {
+  res.json({ 
+    success: true,
+    message: 'Test route is working!',
+    timestamp: new Date().toISOString(),
+    environment: process.env.NODE_ENV || 'development'
+  });
+});
+
+// Log all registered routes
+const printRoutes = () => {
+  console.log('\n✅ Registered Routes:');
+  console.log('====================');
   
-  // Mount other routes
-  console.log('🔌 Mounting user routes...');
-  app.use('/api/v1/users', userRoutes);
+  // Print test route
+  console.log('GET    /test');
   
-  console.log('✅ Successfully mounted routes:', [
-    'POST /api/v1/auth/register',
-    'POST /api/v1/auth/login',
-    'GET  /api/v1/auth/me',
-    'PUT  /api/v1/auth/profile',
-    'PUT  /api/v1/auth/change-password',
-    'POST /api/v1/auth/logout'
-  ]);
-} catch (error) {
-  console.error('❌ Failed to mount routes:', error);
-  process.exit(1);
-}
-app.use('/api/v1/workouts', workoutRoutes);
-app.use('/api/v1/nutrition', nutritionRoutes);
-app.use('/api/v1/ai-assistant', aiAssistantRoutes);
-app.use('/api/v1/fitness-advice', fitnessAdviceRouter);
-app.use('/api/v1/contact', contactRoutes);
-app.use('/api/v1/testimonials', testimonialRoutes);
+  // Print API v1 routes
+  const apiRoutes = [
+    'POST   /api/v1/auth/register',
+    'POST   /api/v1/auth/login',
+    'GET    /api/v1/auth/me',
+    'PUT    /api/v1/auth/profile',
+    'PUT    /api/v1/auth/change-password',
+    'POST   /api/v1/auth/logout',
+    'GET    /api/v1/users',
+    'GET    /api/v1/users/:id',
+    'PUT    /api/v1/users/:id',
+    'DELETE /api/v1/users/:id',
+    'GET    /api/v1/workouts',
+    'POST   /api/v1/workouts',
+    'GET    /api/v1/nutrition',
+    'POST   /api/v1/nutrition',
+    'POST   /api/v1/ai-assistant',
+    'GET    /api/v1/fitness-advice',
+    'POST   /api/v1/contact',
+    'GET    /api/v1/testimonials',
+    'POST   /api/v1/testimonials'
+  ];
+  
+  apiRoutes.forEach(route => console.log(route));
+  console.log('====================\n');
+};
+
+// Print routes after a short delay to ensure all routes are registered
+setTimeout(printRoutes, 100);
+
+// Error handling middleware
+app.use((err, req, res, next) => {
+  console.error('❌ Error:', {
+    message: err.message,
+    stack: process.env.NODE_ENV === 'development' ? err.stack : undefined,
+    path: req.path,
+    method: req.method,
+    timestamp: new Date().toISOString()
+  });
+
+  res.status(err.status || 500).json({
+    success: false,
+    error: process.env.NODE_ENV === 'development' 
+      ? err.message 
+      : 'Internal Server Error',
+    ...(process.env.NODE_ENV === 'development' && { stack: err.stack })
+  });
+});
 
 // Main health check endpoint
 app.get('/api/health', (req, res) => {
