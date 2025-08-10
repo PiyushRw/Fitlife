@@ -1,5 +1,5 @@
 // API Service for handling authentication and user management
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://fitlife-backend-drkanv6hf-piyushrws-projects.vercel.app/api/v1';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://fitlife-backend.vercel.app';
 
 class ApiService {
   // Get the stored token
@@ -190,7 +190,7 @@ class ApiService {
     });
     
     try {
-      const data = await this.makeRequest('/api/v1/auth/login', {
+      const data = await this.makeRequest('/auth/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -223,7 +223,7 @@ class ApiService {
 
   // Register user
   static async register(userData) {
-    const data = await this.makeRequest('/api/v1/auth/register', {
+    const data = await this.makeRequest('/auth/register', {
       method: 'POST',
       body: JSON.stringify(userData),
     });
@@ -238,14 +238,14 @@ class ApiService {
 
   // Get user profile
   static async getProfile() {
-    const data = await this.makeRequest('/api/v1/auth/me');
+    const data = await this.makeRequest('/auth/me');
     return data.data?.user || data.user || data;
   }
 
   // Get user preferences from onboarding
   static async getPreferences() {
     try {
-      const data = await this.makeRequest('/api/v1/users/preferences');
+      const data = await this.makeRequest('/users/preferences');
       // Backend returns: { success: true, data: { preferences: {...} } }
       const preferences = data.data?.preferences || data.preferences || data;
       return preferences;
@@ -259,7 +259,7 @@ class ApiService {
 
   // Save user preferences
   static async savePreferences(preferencesData) {
-    const data = await this.makeRequest('/api/v1/users/preferences', {
+    const data = await this.makeRequest('/users/preferences', {
       method: 'POST',
       body: JSON.stringify(preferencesData),
     });
@@ -268,7 +268,7 @@ class ApiService {
 
   // Update user profile
   static async updateProfile(profileData) {
-    const data = await this.makeRequest('/api/v1/auth/profile', {
+    const data = await this.makeRequest('/auth/profile', {
       method: 'PUT',
       body: JSON.stringify(profileData),
     });
@@ -277,7 +277,7 @@ class ApiService {
 
   // Change password
   static async changePassword(passwordData) {
-    const data = await this.makeRequest('/api/v1/auth/change-password', {
+    const data = await this.makeRequest('/auth/change-password', {
       method: 'PUT',
       body: JSON.stringify(passwordData),
     });
@@ -288,7 +288,7 @@ class ApiService {
   static async logout() {
     try {
       // Call the server to invalidate the session
-      await this.makeRequest('/api/v1/auth/logout', {
+      await this.makeRequest('/auth/logout', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${this.getToken()}`,
