@@ -113,6 +113,10 @@ app.set('trust proxy', 1);
 // Security middleware
 app.use(helmet());
 
+// Body parser middleware
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
 // CORS configuration
 const allowedOrigins = [
   'https://fitlife-frontend.vercel.app',
@@ -248,9 +252,6 @@ apiV1Router.use('/contact', contactRoutes);
 // Mount testimonial routes
 apiV1Router.use('/testimonials', testimonialRoutes);
 
-// Mount the API v1 router
-app.use('/api/v1', apiV1Router);
-
 // Add a test route to verify the server is running
 app.get('/test', (req, res) => {
   res.json({ 
@@ -260,6 +261,15 @@ app.get('/test', (req, res) => {
     environment: process.env.NODE_ENV || 'development'
   });
 });
+
+// Add a specific route for login to ensure it's handled
+app.post('/api/v1/auth/login', (req, res, next) => {
+  console.log('Login request received:', req.body);
+  next();
+});
+
+// Mount the API v1 router under /api/v1
+app.use('/api/v1', apiV1Router);
 
 // Log all registered routes
 const printRoutes = () => {
