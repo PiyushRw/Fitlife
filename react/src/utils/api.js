@@ -190,7 +190,7 @@ class ApiService {
     });
     
     try {
-      const data = await this.makeRequest('/api/v1/auth/login', {
+      const data = await this.makeRequest('/auth/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
