@@ -27,7 +27,19 @@ const Profile = () => {
           navigate('/login');
           return;
         }
-        const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000/api/v1';
+        // Fix potential encoding issues with the API URL
+        let apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000/api/v1';
+        // Clean up any encoding or whitespace issues
+        apiUrl = apiUrl.trim().replace(/\s+/g, '');
+        
+        // Ensure the URL is properly formatted
+        if (!apiUrl.startsWith('http')) {
+          apiUrl = `https://${apiUrl}`;
+        }
+        
+        // Ensure the URL doesn't end with a slash before adding the endpoint
+        apiUrl = apiUrl.endsWith('/') ? apiUrl.slice(0, -1) : apiUrl;
+        
         const response = await fetch(`${apiUrl}/auth/me`, {
           headers: {
             'Authorization': `Bearer ${token}`

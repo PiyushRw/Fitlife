@@ -25,16 +25,18 @@ class ApiService {
 
   // Make authenticated API requests
   static async makeRequest(endpoint, options = {}) {
-    // Ensure base URL ends with a slash
-    const baseUrl = API_BASE_URL.endsWith('/') ? API_BASE_URL : `${API_BASE_URL}/`;
+    // Ensure we have a valid base URL
+    const baseUrl = API_BASE_URL ? 
+      (API_BASE_URL.trim().replace(/\s+/g, '')) : 
+      'https://fitlife-backend.vercel.app';
     
     // Remove leading slash from endpoint if present to prevent double slashes
     const cleanEndpoint = endpoint.startsWith('/') ? endpoint.substring(1) : endpoint;
     
-    // Construct the full URL - FIX HERE
+    // Construct the full URL
     const url = endpoint.startsWith('http') ? endpoint : 
-              (baseUrl.startsWith('http') ? `${baseUrl}${cleanEndpoint}` : 
-              `https://${baseUrl}${cleanEndpoint}`);
+              (baseUrl.startsWith('http') ? `${baseUrl}/${cleanEndpoint}` : 
+              `https://${baseUrl}/${cleanEndpoint}`);
     
     // Log the full request URL (without credentials)
     console.log('🌐 Making request to:', url.replace(/\/api\/v1\/auth\/login.*$/, '/api/v1/auth/login'));
