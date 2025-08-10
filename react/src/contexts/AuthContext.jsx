@@ -16,6 +16,7 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [authLoading, setAuthLoading] = useState(false);
 
   // Check if user is authenticated on app load
   useEffect(() => {
@@ -44,30 +45,87 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (credentials) => {
     try {
-      console.log('🚀 Starting login process...', credentials);
+      console.log('🚀 Starting login process...', { 
+        email: credentials.email,
+        hasPassword: !!credentials.password 
+      });
+      
       setError(null);
-      setLoading(true);
+      setAuthLoading(true);
       
-      const data = await ApiService.login(credentials);
-      console.log('✅ Login API response:', data);
+      // Validate credentials before making the request
+      if (!credentials.email || !credentials.password) {
+        const error = new Error('Email and password are required');
+        error.status = 400;
+        throw error;
+      }
       
-      // Handle the correct response structure
-      const userData = data.data?.user || data.user || data;
-      console.log('👤 Setting user data:', userData);
-      setUser(userData);
+      try {
+        const data = await ApiService.login(credentials);
+        console.log('✅ Login API response:', data);
+        
+        // Handle the correct response structure
+        const userData = data.data?.user || data.user || data;
+        if (!userData) {
+          const error = new Error('No user data received from server');
+          error.status = 500;
+          throw error;
+        }
+        
+        console.log('👤 Setting user data:', userData);
+        setUser(userData);
+        
+        // Store user data in localStorage for persistence
+        localStorage.setItem('fitlife_user', JSON.stringify(userData));
+        
+        // Emit login event for other components
+        eventBus.emit('auth:login', userData);
+        
+        console.log('✅ Login successful, user set');
+        return { success: true, data: userData };
+        
+      } catch (apiError) {
+        console.error('❌ API Error during login:', {
+          message: apiError.message,
+          status: apiError.status,
+          details: apiError.details || 'No additional details',
+          stack: apiError.stack
+        });
+        
+        // Set error state
+        setError(apiError.message);
+        
+        // Re-throw the error to be caught by the outer catch
+        throw apiError;
+      } finally {
+        setAuthLoading(false);
+      }
       
-      console.log('✅ Login successful, user set');
-      return data;
     } catch (err) {
-      console.error('❌ Login error:', err);
+      console.error('❌ Login error:', {
+        message: err.message,
+        name: err.name,
+        status: err.status,
+        cause: err.cause
+      });
       
       let errorMessage = 'Login failed. Please try again.';
       
-      // Handle specific error cases
-      if (err.message.includes('Unable to connect')) {
-        errorMessage = 'Unable to connect to server. Please check if the backend server is running on port 5000.';
-      } else if (err.message.includes('401') || err.message.includes('Invalid credentials')) {
-        errorMessage = 'Invalid email or password.';
+      // Handle specific error cases with more detailed messages
+      if (err.message.includes('NetworkError') || err.message.includes('Failed to fetch')) {
+        errorMessage = 'Unable to connect to the server. Please check your internet connection and try again.';
+      } else if (err.message.includes('ECONNREFUSED')) {
+        errorMessage = 'The server is not responding. Please try again later or contact support.';
+      } else if (err.status === 401 || err.message.includes('Invalid credentials')) {
+        errorMessage = 'Invalid email or password. Please try again.';
+      } else if (err.status === 405) {
+        errorMessage = 'Login method not allowed. Please contact support if this issue persists.';
+      } else if (err.status === 500) {
+        errorMessage = 'Server error. Please try again later or contact support.';
+      } else if (err.message.includes('No user data received')) {
+        errorMessage = 'Invalid server response. Please try again or contact support.';
+      } else if (err.message.includes('Email and password are required')) {
+        errorMessage = 'Please enter both email and password.';
       } else if (err.message.includes('Network')) {
         errorMessage = 'Network error. Please check your connection.';
       } else {
@@ -175,22 +233,32 @@ export const AuthProvider = ({ children }) => {
     });
   }, [user, isAuthenticated, loading]);
 
-  const value = {
+  // Create the context value object
+  const contextValue = {
     user,
     loading,
     error,
+    authLoading,
+    isAuthenticated: !!user,
+    // Auth methods
     login,
     register,
-    logout,
+    logout: ApiService.logout,
+    // User methods
+    updateUser: setUser,
     updateProfile,
     changePassword,
     refreshUser,
-    isAuthenticated
+    // Error handling
+    clearError: () => setError(null),
+    setError,
+    // Token
+    token: ApiService.getToken()
   };
 
   return (
-    <AuthContext.Provider value={value}>
-      {children}
+    <AuthContext.Provider value={contextValue}>
+      {!loading && children}
     </AuthContext.Provider>
   );
 };

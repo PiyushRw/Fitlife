@@ -25,14 +25,27 @@ class ApiService {
 
   // Make authenticated API requests
   static async makeRequest(endpoint, options = {}) {
-    const baseUrl = API_BASE_URL.endsWith('/') ? API_BASE_URL.slice(0, -1) : API_BASE_URL;
-    const url = endpoint.startsWith('http') ? endpoint : `${baseUrl}${endpoint.startsWith('/') ? '' : '/'}${endpoint}`;
+    // Ensure base URL ends with a slash
+    const baseUrl = API_BASE_URL.endsWith('/') ? API_BASE_URL : `${API_BASE_URL}/`;
     
+    // Remove leading slash from endpoint if present to prevent double slashes
+    const cleanEndpoint = endpoint.startsWith('/') ? endpoint.substring(1) : endpoint;
+    
+    // Construct the full URL
+    const url = endpoint.startsWith('http') ? endpoint : `${baseUrl}${cleanEndpoint}`;
+    
+    // Set default headers
     const headers = {
       'Content-Type': 'application/json',
       'Accept': 'application/json',
       ...(options.headers || {})
     };
+    
+    // Log the request details
+    console.log(`🌐 ${options.method || 'GET'} ${url}`, {
+      headers: { ...headers, ...(headers.Authorization ? { Authorization: 'Bearer [REDACTED]' } : {}) },
+      hasBody: !!options.body
+    });
 
     // Add authorization header if token exists and endpoint is not login or register
     const token = this.getToken();
@@ -55,16 +68,27 @@ class ApiService {
     }
 
     try {
-      console.log(`🚀 Making ${requestOptions.method || 'GET'} request to:`, url);
-      console.log('📤 Request options:', {
-        method: requestOptions.method,
-        headers: requestOptions.headers,
-        body: requestOptions.body ? '[...]' : null,
-        credentials: requestOptions.credentials
-      });
-
       const response = await fetch(url, requestOptions);
-      console.log('🔄 Response status:', response.status);
+      
+      // Log response details
+      console.log(`🔄 Response for ${requestOptions.method || 'GET'} ${url}`, {
+        status: response.status,
+        statusText: response.statusText,
+        headers: Object.fromEntries([...response.headers.entries()])
+      });
+      
+      // Clone the response for logging
+      const responseClone = response.clone();
+      let responseBody = '';
+      try {
+        responseBody = await responseClone.text();
+        console.log('📥 Response body:', responseBody);
+        if (responseBody) {
+          console.log('📝 Parsed JSON:', JSON.parse(responseBody));
+        }
+      } catch (e) {
+        console.log('📥 Non-JSON response:', responseBody);
+      }
       
       // Handle 204 No Content responses
       if (response.status === 204) {
@@ -104,44 +128,97 @@ class ApiService {
 
       return data;
     } catch (error) {
-      console.error('❌ API request failed:', {
+      const errorDetails = {
         message: error.message,
+        name: error.name,
         status: error.status,
         url,
         method: requestOptions.method,
-        error: error.data || error
-      });
+        requestHeaders: { ...requestOptions.headers },
+        errorData: error.data || error.response?.data
+      };
+      
+      console.error('❌ API request failed:', errorDetails);
       
       // Handle network errors
-      if (error instanceof TypeError && 
-          (error.message.includes('Failed to fetch') || 
-           error.message.includes('NetworkError') || 
-           error.message.includes('ECONNREFUSED'))) {
-        throw new Error(`Cannot connect to the server. Please check your internet connection and try again.`);
+      if (error instanceof TypeError) {
+        if (error.message.includes('Failed to fetch')) {
+          throw new Error('Network error: Could not connect to the server. Please check your internet connection.');
+        } else if (error.message.includes('NetworkError')) {
+          throw new Error('Network error: Please check your internet connection and try again.');
+        } else if (error.message.includes('ECONNREFUSED')) {
+          throw new Error('Server is not responding. Please try again later or contact support if the problem persists.');
+        }
       }
       
-      // Re-throw the error with more context if available
-      if (error.response) {
-        error.message = error.response.data?.message || error.message;
+      // Handle HTTP errors
+      if (error.status) {
+        const statusMessages = {
+          400: 'Bad request. Please check your input and try again.',
+          401: 'Session expired. Please log in again.',
+          403: 'You do not have permission to perform this action.',
+          404: 'The requested resource was not found.',
+          405: 'Method not allowed. The server does not support this operation.',
+          409: 'Conflict. The resource already exists.',
+          429: 'Too many requests. Please wait before trying again.',
+          500: 'Server error. Please try again later.',
+          502: 'Bad gateway. The server is currently unavailable.',
+          503: 'Service unavailable. Please try again later.'
+        };
+        
+        const friendlyMessage = statusMessages[error.status] || 
+          `Request failed with status ${error.status}.`;
+        
+        const apiError = new Error(friendlyMessage);
+        apiError.status = error.status;
+        apiError.details = error.details || error.data;
+        throw apiError;
       }
       
-      throw error;
+      // For other types of errors, include the original error as cause
+      const genericError = new Error('An unexpected error occurred. Please try again.');
+      genericError.cause = error;
+      throw genericError;
     }
   }
 
   // Login user
   static async login(credentials) {
-    const data = await this.makeRequest('/auth/login', {
-      method: 'POST',
-      body: JSON.stringify(credentials),
+    console.log('🔑 Attempting login with credentials:', { 
+      email: credentials.email, 
+      hasPassword: !!credentials.password 
     });
+    
+    try {
+      const data = await this.makeRequest('/api/v1/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        body: JSON.stringify(credentials),
+      });
 
-    // Store the token if login is successful
-    if (data.data?.token) {
-      this.setToken(data.data.token);
+      console.log('✅ Login response:', { 
+        hasToken: !!data.data?.token,
+        user: data.data?.user ? 'User data received' : 'No user data'
+      });
+
+      // Store the token if login is successful
+      if (data.data?.token) {
+        this.setToken(data.data.token);
+        console.log('🔐 Token stored in localStorage');
+      }
+
+      return data;
+    } catch (error) {
+      console.error('❌ Login failed:', {
+        message: error.message,
+        status: error.status,
+        response: error.data
+      });
+      throw error;
     }
-
-    return data;
   }
 
   // Register user

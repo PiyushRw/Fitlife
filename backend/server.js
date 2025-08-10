@@ -216,14 +216,23 @@ app.use('/api/', (req, res, next) => {
 
 // API Routes with versioning
 const apiVersion = process.env.API_VERSION || 'v1';
-app.use(`/api/${apiVersion}/auth`, authRoutes);
-app.use(`/api/${apiVersion}/users`, userRoutes);
-app.use(`/api/${apiVersion}/workouts`, workoutRoutes);
-app.use(`/api/${apiVersion}/nutrition`, nutritionRoutes);
-app.use(`/api/${apiVersion}/ai-assistant`, aiAssistantRoutes);
-app.use(`/api/${apiVersion}/fitness-advice`, fitnessAdviceRouter);
-app.use(`/api/${apiVersion}/contact`, contactRoutes);
-app.use(`/api/${apiVersion}/testimonials`, testimonialRoutes);
+console.log(`🔄 Mounting API routes with version: ${apiVersion}`);
+
+// Mount routes with versioning
+app.use(`/api/v1/auth`, authRoutes);  // Hardcode to v1 for now to match frontend
+try {
+  app.use(`/api/v1/users`, userRoutes);
+  console.log('✅ Successfully mounted routes:', ['/api/v1/auth', '/api/v1/users']);
+} catch (error) {
+  console.error('❌ Failed to mount routes:', error);
+  process.exit(1);
+}
+app.use('/api/v1/workouts', workoutRoutes);
+app.use('/api/v1/nutrition', nutritionRoutes);
+app.use('/api/v1/ai-assistant', aiAssistantRoutes);
+app.use('/api/v1/fitness-advice', fitnessAdviceRouter);
+app.use('/api/v1/contact', contactRoutes);
+app.use('/api/v1/testimonials', testimonialRoutes);
 
 // Main health check endpoint
 app.get('/api/health', (req, res) => {
