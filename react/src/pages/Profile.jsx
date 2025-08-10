@@ -33,20 +33,29 @@ const Profile = () => {
         apiUrl = apiUrl.trim().replace(/\s+/g, '');
         
         // Ensure the URL is properly formatted
-        if (!apiUrl.startsWith('http')) {
+        if (!apiUrl.startsWith('http://') && !apiUrl.startsWith('https://')) {
           apiUrl = `https://${apiUrl}`;
         }
         
         // Ensure the URL doesn't end with a slash before adding the endpoint
         apiUrl = apiUrl.endsWith('/') ? apiUrl.slice(0, -1) : apiUrl;
         
-        const response = await fetch(`${apiUrl}/auth/me`, {
+        console.log('Using API URL:', apiUrl); // Add logging to debug
+        
+        const response = await fetch(`${apiUrl}/api/v1/auth/me`, {
           headers: {
-            'Authorization': `Bearer ${token}`
+            'Authorization': `Bearer ${token}`,
+            'Accept': 'application/json'
           }
         });
         if (!response.ok) {
-          throw new Error('Failed to fetch user data');
+          const errorText = await response.text();
+          console.error('API Error:', {
+            status: response.status,
+            statusText: response.statusText,
+            body: errorText
+          });
+          throw new Error(`Failed to fetch user data: ${response.status} ${response.statusText}`);
         }
         const data = await response.json();
         if (data && data.success && data.data && data.data.user) {
@@ -969,3 +978,15 @@ function StatsTabContent({ profileData }) {
 }
 
 export default Profile;
+
+        try {
+          const userData = await ApiService.getProfile();
+          if (userData) {
+            setProfileData(userData);
+          } else {
+            throw new Error('Invalid user data received');
+          }
+        } catch (err) {
+          console.error('Profile fetch error:', err);
+          setError(err.message);
+        }

@@ -1,5 +1,9 @@
 // API Service for handling authentication and user management
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://fitlife-backend.vercel.app';
+const API_BASE_URL = (() => {
+  const url = import.meta.env.VITE_API_URL || 'https://fitlife-backend.vercel.app';
+  // Clean up any encoding or whitespace issues
+  return url.trim().replace(/\s+/g, '');
+})();
 
 class ApiService {
   // Get the stored token
@@ -295,27 +299,37 @@ class ApiService {
   static async logout() {
     try {
       // Call the server to invalidate the session
-      await this.makeRequest('/api/v1/auth/logout', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${this.getToken()}`,
-          'Content-Type': 'application/json'
+      const token = ApiService.getToken();
+      if (token) {
+        try {
+          await ApiService.makeRequest('/api/v1/auth/logout', {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${token}`,
+              'Content-Type': 'application/json'
+            }
+          });
+        } catch (error) {
+          console.warn('Logout API call failed, proceeding with client-side cleanup', error);
+          // Continue with client-side cleanup even if the server call fails
         }
-      });
+      }
     } catch (error) {
       console.warn('Logout API call failed, proceeding with client-side cleanup', error);
       // Continue with client-side cleanup even if the server call fails
     } finally {
       // Remove token
-      this.removeToken();
-      // Remove any user-related data from localStorage
-      localStorage.removeItem('fitlife_user');
-      localStorage.removeItem('fitlife_preferences');
-      localStorage.removeItem('fitlife_chat_history');
-      // Remove all sessionStorage data as well (if any)
-      sessionStorage.clear();
-      // Optionally clear all localStorage (uncomment if you want a full wipe)
-      // localStorage.clear();
+      try {
+        ApiService.removeToken();
+        // Remove any user-related data from localStorage
+        localStorage.removeItem('fitlife_user');
+        localStorage.removeItem('fitlife_preferences');
+        localStorage.removeItem('fitlife_chat_history');
+        // Remove all sessionStorage data as well (if any)
+        sessionStorage.clear();
+      } catch (error) {
+        console.error('Error during client-side cleanup:', error);
+      }
     }
   }
 
