@@ -34,6 +34,9 @@ class ApiService {
     // Construct the full URL
     const url = endpoint.startsWith('http') ? endpoint : `${baseUrl}${cleanEndpoint}`;
     
+    // Log the full request URL (without credentials)
+    console.log('🌐 Making request to:', url.replace(/\/api\/v1\/auth\/login.*$/, '/api/v1/auth/login'));
+    
     // Set default headers
     const headers = {
       'Content-Type': 'application/json',

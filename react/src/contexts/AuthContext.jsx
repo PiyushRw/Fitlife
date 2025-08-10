@@ -47,7 +47,8 @@ export const AuthProvider = ({ children }) => {
     try {
       console.log('🚀 Starting login process...', { 
         email: credentials.email,
-        hasPassword: !!credentials.password 
+        hasPassword: !!credentials.password,
+        timestamp: new Date().toISOString()
       });
       
       setError(null);
@@ -61,8 +62,13 @@ export const AuthProvider = ({ children }) => {
       }
       
       try {
+        console.log('🔑 Calling ApiService.login with credentials');
         const data = await ApiService.login(credentials);
-        console.log('✅ Login API response:', data);
+        console.log('✅ Login API response:', {
+          status: 'success',
+          response: data,
+          timestamp: new Date().toISOString()
+        });
         
         // Handle the correct response structure
         const userData = data.data?.user || data.user || data;
@@ -72,7 +78,12 @@ export const AuthProvider = ({ children }) => {
           throw error;
         }
         
-        console.log('👤 Setting user data:', userData);
+        console.log('👤 Setting user data:', {
+          userId: userData._id || userData.id,
+          email: userData.email,
+          name: userData.name || `${userData.firstName} ${userData.lastName}`.trim()
+        });
+        
         setUser(userData);
         
         // Store user data in localStorage for persistence
@@ -81,22 +92,33 @@ export const AuthProvider = ({ children }) => {
         // Emit login event for other components
         eventBus.emit('auth:login', userData);
         
-        console.log('✅ Login successful, user set');
+        console.log('✅ Login successful, user authenticated:', {
+          userId: userData._id || userData.id,
+          timestamp: new Date().toISOString()
+        });
+        
         return { success: true, data: userData };
         
       } catch (apiError) {
-        console.error('❌ API Error during login:', {
+        const errorDetails = {
           message: apiError.message,
           status: apiError.status,
+          timestamp: new Date().toISOString(),
           details: apiError.details || 'No additional details',
           stack: apiError.stack
-        });
+        };
         
-        // Set error state
-        setError(apiError.message);
+        console.error('❌ API Error during login:', errorDetails);
+        
+        // Set error state with user-friendly message
+        const userFriendlyMessage = apiError.status === 401 
+          ? 'Invalid email or password. Please try again.'
+          : apiError.message || 'Login failed. Please try again.';
+          
+        setError(userFriendlyMessage);
         
         // Re-throw the error to be caught by the outer catch
-        throw apiError;
+        throw new Error(userFriendlyMessage);
       } finally {
         setAuthLoading(false);
       }
