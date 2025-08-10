@@ -114,24 +114,58 @@ app.set('trust proxy', 1);
 app.use(helmet());
 
 // CORS configuration
-const corsOptions = {
-  origin: [
-    'https://fitlife-frontend.vercel.app',
-    'http://localhost:5173',
-    'http://localhost:3000',
-    'https://fitlife-backend-drkanv6hf-piyushrws-projects.vercel.app',
-    /^\.vercel\.app$/,
-    /^https?:\/\/(.+\\.)?vercel\.app$/
-  ],
-  credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Origin'],
-  preflightContinue: false,
-  optionsSuccessStatus: 204
-};
+const allowedOrigins = [
+  'https://fitlife-frontend.vercel.app',
+  'http://localhost:5173',
+  'http://localhost:3000',
+  'https://fitlife-backend-drkanv6hf-piyushrws-projects.vercel.app',
+  /^\.vercel\.app$/,
+  /^https?:\/\/(.+\\.)?vercel\.app$/
+];
 
-app.use(cors(corsOptions));
-app.options('*', cors(corsOptions)); // Enable preflight for all routes
+// Enable CORS pre-flight
+app.options('*', cors({
+  origin: allowedOrigins,
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Origin']
+}));
+
+// Apply CORS middleware
+app.use(cors({
+  origin: function(origin, callback) {
+    // Allow requests with no origin (like mobile apps or curl requests)
+    if (!origin) return callback(null, true);
+    
+    // Check if the origin is in the allowed list
+    if (allowedOrigins.some(regex => {
+      if (typeof regex === 'string') {
+        return origin === regex;
+      }
+      return regex.test(origin);
+    })) {
+      return callback(null, true);
+    }
+    
+    console.warn(`CORS blocked request from origin: ${origin}`);
+    return callback(new Error('Not allowed by CORS'));
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Origin'],
+  optionsSuccessStatus: 200
+}));
+
+// Handle preflight requests
+app.use((req, res, next) => {
+  if (req.method === 'OPTIONS') {
+    res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+    res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+    res.header('Access-Control-Allow-Credentials', true);
+    return res.status(200).json({});
+  }
+  next();
+});
 
 // Rate limiting configuration
 const rateLimitConfig = {

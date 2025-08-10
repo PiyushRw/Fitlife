@@ -25,61 +25,104 @@ class ApiService {
 
   // Make authenticated API requests
   static async makeRequest(endpoint, options = {}) {
-    const token = this.getToken();
-    // Ensure proper URL construction by removing any double slashes
     const baseUrl = API_BASE_URL.endsWith('/') ? API_BASE_URL.slice(0, -1) : API_BASE_URL;
-    const normalizedEndpoint = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
-    const url = `${baseUrl}${normalizedEndpoint}`;
+    const url = endpoint.startsWith('http') ? endpoint : `${baseUrl}${endpoint.startsWith('/') ? '' : '/'}${endpoint}`;
     
-    console.log(`🌐 Making request to: ${url}`);  // Debug log
-    
-    const config = {
-      method: options.method || 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        ...options.headers,
-      },
-      ...options,
+    const headers = {
+      'Content-Type': 'application/json',
+      'Accept': 'application/json',
+      ...(options.headers || {})
     };
 
-    // Add authorization header if token exists
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-      console.log('🔑 Using auth token');
+    // Add authorization header if token exists and endpoint is not login or register
+    const token = this.getToken();
+    if (token && !endpoint.includes('/auth/login') && !endpoint.includes('/auth/register')) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+
+    const requestOptions = {
+      ...options,
+      headers,
+      credentials: 'include', // Important for cookies, authorization headers with HTTPS
+      mode: 'cors', // Ensure CORS mode is enabled
+    };
+
+    // Remove Content-Type for FormData (browser will set it with boundary)
+    if (requestOptions.body instanceof FormData) {
+      delete headers['Content-Type'];
+    } else if (typeof requestOptions.body === 'object' && requestOptions.body !== null) {
+      requestOptions.body = JSON.stringify(requestOptions.body);
     }
 
     try {
-      const response = await fetch(url, config);
-      console.log(`🔄 Response status: ${response.status} ${response.statusText}`);
+      console.log(`🚀 Making ${requestOptions.method || 'GET'} request to:`, url);
+      console.log('📤 Request options:', {
+        method: requestOptions.method,
+        headers: requestOptions.headers,
+        body: requestOptions.body ? '[...]' : null,
+        credentials: requestOptions.credentials
+      });
+
+      const response = await fetch(url, requestOptions);
+      console.log('🔄 Response status:', response.status);
       
-      if (!response.ok) {
-        let errorMessage = `HTTP error! status: ${response.status}`;
-        try {
-          const errorData = await response.json();
-          errorMessage = errorData.message || errorMessage;
-          console.error('❌ API Error:', errorData);
-        } catch (e) {
-          console.error('❌ Failed to parse error response:', e);
-        }
-        throw new Error(errorMessage);
+      // Handle 204 No Content responses
+      if (response.status === 204) {
+        return {};
       }
 
-      const data = await response.json().catch(() => ({}));
+      // Handle 401 Unauthorized
+      if (response.status === 401) {
+        // Remove invalid token
+        this.removeToken();
+        // Redirect to login or handle as needed
+        window.location.href = '/login';
+        throw new Error('Session expired. Please log in again.');
+      }
+
+      // Try to parse response as JSON, but handle non-JSON responses
+      let data;
+      const contentType = response.headers.get('content-type');
+      if (contentType && contentType.includes('application/json')) {
+        data = await response.json();
+      } else {
+        const text = await response.text();
+        try {
+          data = text ? JSON.parse(text) : {};
+        } catch (e) {
+          console.warn('Response is not valid JSON, returning as text');
+          data = { message: text };
+        }
+      }
+
+      if (!response.ok) {
+        const error = new Error(data.message || `HTTP error! status: ${response.status}`);
+        error.status = response.status;
+        error.data = data;
+        throw error;
+      }
+
       return data;
-      
     } catch (error) {
       console.error('❌ API request failed:', {
+        message: error.message,
+        status: error.status,
         url,
-        method: config.method,
-        error: error.message,
-        stack: error.stack
+        method: requestOptions.method,
+        error: error.data || error
       });
       
-      // Handle network errors specifically
-      if (error.message.includes('Failed to fetch') || 
-          error.message.includes('NetworkError') || 
-          error.message.includes('ECONNREFUSED')) {
-        throw new Error(`Cannot connect to the server. Please ensure the backend is running at ${baseUrl}`);
+      // Handle network errors
+      if (error instanceof TypeError && 
+          (error.message.includes('Failed to fetch') || 
+           error.message.includes('NetworkError') || 
+           error.message.includes('ECONNREFUSED'))) {
+        throw new Error(`Cannot connect to the server. Please check your internet connection and try again.`);
+      }
+      
+      // Re-throw the error with more context if available
+      if (error.response) {
+        error.message = error.response.data?.message || error.message;
       }
       
       throw error;
