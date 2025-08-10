@@ -31,8 +31,10 @@ class ApiService {
     // Remove leading slash from endpoint if present to prevent double slashes
     const cleanEndpoint = endpoint.startsWith('/') ? endpoint.substring(1) : endpoint;
     
-    // Construct the full URL
-    const url = endpoint.startsWith('http') ? endpoint : `${baseUrl}${cleanEndpoint}`;
+    // Construct the full URL - FIX HERE
+    const url = endpoint.startsWith('http') ? endpoint : 
+              (baseUrl.startsWith('http') ? `${baseUrl}${cleanEndpoint}` : 
+              `https://${baseUrl}${cleanEndpoint}`);
     
     // Log the full request URL (without credentials)
     console.log('🌐 Making request to:', url.replace(/\/api\/v1\/auth\/login.*$/, '/api/v1/auth/login'));
