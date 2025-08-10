@@ -117,33 +117,26 @@ app.use(helmet());
 const allowedOrigins = [
   'https://fitlife-frontend.vercel.app',
   'http://localhost:5173',
-  'http://localhost:3000',
-  'https://fitlife-backend-drkanv6hf-piyushrws-projects.vercel.app',
-  /^\.vercel\.app$/,
-  /^https?:\/\/(.+\\.)?vercel\.app$/
+  'http://localhost:3000'
 ];
 
-// Enable CORS pre-flight
-app.options('*', cors({
-  origin: allowedOrigins,
-  credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Origin']
-}));
+// Log all requests for debugging
+app.use((req, res, next) => {
+  console.log(`[${new Date().toISOString()}] ${req.method} ${req.originalUrl}`, {
+    headers: req.headers,
+    body: req.body
+  });
+  next();
+});
 
-// Apply CORS middleware
+// Enable CORS for all routes
 app.use(cors({
   origin: function(origin, callback) {
     // Allow requests with no origin (like mobile apps or curl requests)
     if (!origin) return callback(null, true);
     
     // Check if the origin is in the allowed list
-    if (allowedOrigins.some(regex => {
-      if (typeof regex === 'string') {
-        return origin === regex;
-      }
-      return regex.test(origin);
-    })) {
+    if (allowedOrigins.includes(origin)) {
       return callback(null, true);
     }
     
@@ -151,21 +144,13 @@ app.use(cors({
     return callback(new Error('Not allowed by CORS'));
   },
   credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Origin'],
-  optionsSuccessStatus: 200
+  optionsSuccessStatus: 204
 }));
 
 // Handle preflight requests
-app.use((req, res, next) => {
-  if (req.method === 'OPTIONS') {
-    res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-    res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-    res.header('Access-Control-Allow-Credentials', true);
-    return res.status(200).json({});
-  }
-  next();
-});
+app.options('*', cors());
 
 // Rate limiting configuration
 const rateLimitConfig = {
