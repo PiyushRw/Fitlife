@@ -7,6 +7,7 @@ import CustomDropdown from '../components/CustomDropdown';
 import Spinner from '../components/Spinner';
 import { useAuth } from '../contexts/AuthContext';
 import { getAvatarInitials } from '../utils/avatarUtils';
+import ApiService from '../utils/api';
 
 const Profile = () => {
   const { user } = useAuth();
@@ -26,42 +27,18 @@ const Profile = () => {
         if (!token) {
           navigate('/login');
           return;
-        }
-        // Fix potential encoding issues with the API URL
-        let apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000/api/v1';
-        // Clean up any encoding or whitespace issues
-        apiUrl = apiUrl.trim().replace(/\s+/g, '');
+gis        }
         
-        // Ensure the URL is properly formatted
-        if (!apiUrl.startsWith('http://') && !apiUrl.startsWith('https://')) {
-          apiUrl = `https://${apiUrl}`;
-        }
-        
-        // Ensure the URL doesn't end with a slash before adding the endpoint
-        apiUrl = apiUrl.endsWith('/') ? apiUrl.slice(0, -1) : apiUrl;
-        
-        console.log('Using API URL:', apiUrl); // Add logging to debug
-        
-        const response = await fetch(`${apiUrl}/api/v1/auth/me`, {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Accept': 'application/json'
+        try {
+          const userData = await ApiService.getProfile();
+          if (userData) {
+            setProfileData(userData);
+          } else {
+            throw new Error('Invalid user data received');
           }
-        });
-        if (!response.ok) {
-          const errorText = await response.text();
-          console.error('API Error:', {
-            status: response.status,
-            statusText: response.statusText,
-            body: errorText
-          });
-          throw new Error(`Failed to fetch user data: ${response.status} ${response.statusText}`);
-        }
-        const data = await response.json();
-        if (data && data.success && data.data && data.data.user) {
-          setProfileData(data.data.user);
-        } else {
-          throw new Error('Invalid user data received');
+        } catch (err) {
+          console.error('Profile fetch error:', err);
+          setError(err.message);
         }
       } catch (err) {
         setError(err.message);
@@ -978,15 +955,3 @@ function StatsTabContent({ profileData }) {
 }
 
 export default Profile;
-
-        try {
-          const userData = await ApiService.getProfile();
-          if (userData) {
-            setProfileData(userData);
-          } else {
-            throw new Error('Invalid user data received');
-          }
-        } catch (err) {
-          console.error('Profile fetch error:', err);
-          setError(err.message);
-        }
