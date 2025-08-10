@@ -190,7 +190,7 @@ class ApiService {
     });
     
     try {
-      const data = await this.makeRequest('/auth/login', {
+      const data = await this.makeRequest('/api/v1/auth/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -223,7 +223,7 @@ class ApiService {
 
   // Register user
   static async register(userData) {
-    const data = await this.makeRequest('/auth/register', {
+    const data = await this.makeRequest('/api/v1/auth/register', {
       method: 'POST',
       body: JSON.stringify(userData),
     });
@@ -238,14 +238,14 @@ class ApiService {
 
   // Get user profile
   static async getProfile() {
-    const data = await this.makeRequest('/auth/me');
+    const data = await this.makeRequest('/api/v1/auth/me');
     return data.data?.user || data.user || data;
   }
 
   // Get user preferences from onboarding
   static async getPreferences() {
     try {
-      const data = await this.makeRequest('/users/preferences');
+      const data = await this.makeRequest('/api/v1/users/preferences');
       // Backend returns: { success: true, data: { preferences: {...} } }
       const preferences = data.data?.preferences || data.preferences || data;
       return preferences;
@@ -259,7 +259,7 @@ class ApiService {
 
   // Save user preferences
   static async savePreferences(preferencesData) {
-    const data = await this.makeRequest('/users/preferences', {
+    const data = await this.makeRequest('/api/v1/users/preferences', {
       method: 'POST',
       body: JSON.stringify(preferencesData),
     });
@@ -268,7 +268,7 @@ class ApiService {
 
   // Update user profile
   static async updateProfile(profileData) {
-    const data = await this.makeRequest('/auth/profile', {
+    const data = await this.makeRequest('/api/v1/auth/profile', {
       method: 'PUT',
       body: JSON.stringify(profileData),
     });
@@ -277,7 +277,7 @@ class ApiService {
 
   // Change password
   static async changePassword(passwordData) {
-    const data = await this.makeRequest('/auth/change-password', {
+    const data = await this.makeRequest('/api/v1/auth/change-password', {
       method: 'PUT',
       body: JSON.stringify(passwordData),
     });
@@ -285,17 +285,31 @@ class ApiService {
   }
 
   // Logout user
-  static logout() {
-    // Remove token
-    this.removeToken();
-    // Remove any user-related data from localStorage
-    localStorage.removeItem('fitlife_user');
-    localStorage.removeItem('fitlife_preferences');
-    localStorage.removeItem('fitlife_chat_history');
-    // Remove all sessionStorage data as well (if any)
-    sessionStorage.clear();
-    // Optionally clear all localStorage (uncomment if you want a full wipe)
-    // localStorage.clear();
+  static async logout() {
+    try {
+      // Call the server to invalidate the session
+      await this.makeRequest('/api/v1/auth/logout', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${this.getToken()}`,
+          'Content-Type': 'application/json'
+        }
+      });
+    } catch (error) {
+      console.warn('Logout API call failed, proceeding with client-side cleanup', error);
+      // Continue with client-side cleanup even if the server call fails
+    } finally {
+      // Remove token
+      this.removeToken();
+      // Remove any user-related data from localStorage
+      localStorage.removeItem('fitlife_user');
+      localStorage.removeItem('fitlife_preferences');
+      localStorage.removeItem('fitlife_chat_history');
+      // Remove all sessionStorage data as well (if any)
+      sessionStorage.clear();
+      // Optionally clear all localStorage (uncomment if you want a full wipe)
+      // localStorage.clear();
+    }
   }
 
   // Fetch chat history for the logged-in user
