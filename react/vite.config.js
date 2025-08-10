@@ -7,8 +7,10 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url)),
-      'framer-motion': 'framer-motion/dist/framer-motion',
     },
+  },
+  optimizeDeps: {
+    include: ['framer-motion'],
   },
   server: {
     port: 3000,
