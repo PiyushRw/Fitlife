@@ -218,11 +218,30 @@ app.use('/api/', (req, res, next) => {
 const apiVersion = process.env.API_VERSION || 'v1';
 console.log(`🔄 Mounting API routes with version: ${apiVersion}`);
 
+// Add request logging middleware
+app.use((req, res, next) => {
+  console.log(`📥 ${new Date().toISOString()} - ${req.method} ${req.originalUrl}`);
+  next();
+});
+
 // Mount routes with versioning
-app.use(`/api/v1/auth`, authRoutes);  // Hardcode to v1 for now to match frontend
 try {
-  app.use(`/api/v1/users`, userRoutes);
-  console.log('✅ Successfully mounted routes:', ['/api/v1/auth', '/api/v1/users']);
+  // Mount auth routes first
+  console.log('🔌 Mounting auth routes...');
+  app.use('/api/v1/auth', authRoutes);
+  
+  // Mount other routes
+  console.log('🔌 Mounting user routes...');
+  app.use('/api/v1/users', userRoutes);
+  
+  console.log('✅ Successfully mounted routes:', [
+    'POST /api/v1/auth/register',
+    'POST /api/v1/auth/login',
+    'GET  /api/v1/auth/me',
+    'PUT  /api/v1/auth/profile',
+    'PUT  /api/v1/auth/change-password',
+    'POST /api/v1/auth/logout'
+  ]);
 } catch (error) {
   console.error('❌ Failed to mount routes:', error);
   process.exit(1);
