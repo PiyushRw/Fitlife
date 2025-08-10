@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { motion } from 'framer-motion';
+import motion from 'framer-motion/dist/framer-motion';
 
 const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -104,9 +104,11 @@ const Login = () => {
     }
   };
 
+  const MotionDiv = motion.div;
+
   return (
     <div className="bg-[#121212] text-white flex items-center justify-center min-h-screen p-6 font-sans">
-      <motion.div 
+      <MotionDiv 
         className="w-full max-w-md bg-[#1E1E1E] rounded-xl shadow-xl p-8 space-y-6"
         variants={containerVariants}
         initial="hidden"
@@ -121,7 +123,7 @@ const Login = () => {
         
         {/* Error Message */}
         {(error || authError) && (
-          <motion.div 
+          <MotionDiv 
             className="p-3 bg-red-900/50 border border-red-700 rounded-lg text-sm text-red-200 space-y-1"
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
@@ -129,7 +131,7 @@ const Login = () => {
           >
             {error && <div>{error}</div>}
             {authError && !error && <div>{authError}</div>}
-          </motion.div>
+          </MotionDiv>
         )}
 
         {/* Login Form */}
@@ -240,7 +242,7 @@ const Login = () => {
         <p className="text-sm text-center text-gray-400">
           Don't have an account? <Link to="/register" className="text-[#36CFFF] hover:underline">Register here</Link>
         </p>
-      </motion.div>
+      </MotionDiv>
     </div>
   );
 };

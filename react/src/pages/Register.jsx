@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { motion } from 'framer-motion';
+import motion from 'framer-motion/dist/framer-motion';
 
 const Register = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -96,9 +96,32 @@ const Register = () => {
     }
   };
 
+  const MotionDiv = motion.div;
+
+  // Animation variants for the form container
+  const containerVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: { 
+      opacity: 1, 
+      y: 0,
+      transition: { duration: 0.5 }
+    },
+    exit: { 
+      opacity: 0, 
+      y: -20,
+      transition: { duration: 0.2 }
+    }
+  };
+
   return (
     <div className="bg-[#121212] text-white flex items-center justify-center min-h-screen p-6 font-sans">
-      <div className="w-full max-w-md bg-[#1E1E1E] rounded-xl shadow-xl p-8 space-y-6">
+      <MotionDiv 
+        className="w-full max-w-md bg-[#1E1E1E] rounded-xl shadow-xl p-8 space-y-6"
+        variants={containerVariants}
+        initial="hidden"
+        animate="visible"
+        exit="exit"
+      >
         <div className="space-y-2 text-center">
           <h2 className="text-2xl font-bold text-[#62E0A1]">Create Account</h2>
           <p className="text-sm text-gray-400">Join FitLife to start your wellness journey</p>
@@ -106,7 +129,7 @@ const Register = () => {
         
         {/* Error Message */}
         {(error || authError) && (
-          <motion.div 
+          <MotionDiv 
             className="p-3 bg-red-900/50 border border-red-700 rounded-lg text-sm text-red-200 space-y-1"
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
@@ -114,7 +137,7 @@ const Register = () => {
           >
             {error && <div>{error}</div>}
             {authError && !error && <div>{authError}</div>}
-          </motion.div>
+          </MotionDiv>
         )}
 
         <form className="space-y-5" onSubmit={handleSubmit}>
@@ -232,7 +255,7 @@ const Register = () => {
         <p className="text-sm text-center text-gray-400">
           Already have an account? <Link to="/login" className="text-[#36CFFF] hover:underline">Login here</Link>
         </p>
-      </div>
+      </MotionDiv>
     </div>
   );
 };
