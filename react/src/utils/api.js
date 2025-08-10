@@ -1,6 +1,6 @@
 // API Service for handling authentication and user management
-const API_BASE_URL = import.meta.env.VITE_API_URL || 
-  (window.location.hostname === 'localhost' ? 'http://localhost:5000/api/v1' : 'https://fitlife-backend.vercel.app/api/v1');
+// Force using local backend for development
+const API_BASE_URL = 'http://localhost:5000/api/v1';
 
 class ApiService {
   // Get the stored token
@@ -32,7 +32,10 @@ class ApiService {
     const normalizedEndpoint = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
     const url = `${baseUrl}${normalizedEndpoint}`;
     
+    console.log(`🌐 Making request to: ${url}`);  // Debug log
+    
     const config = {
+      method: options.method || 'GET',
       headers: {
         'Content-Type': 'application/json',
         ...options.headers,
@@ -43,25 +46,41 @@ class ApiService {
     // Add authorization header if token exists
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
+      console.log('🔑 Using auth token');
     }
 
     try {
       const response = await fetch(url, config);
+      console.log(`🔄 Response status: ${response.status} ${response.statusText}`);
       
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({ message: 'Network error' }));
-        throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+        let errorMessage = `HTTP error! status: ${response.status}`;
+        try {
+          const errorData = await response.json();
+          errorMessage = errorData.message || errorMessage;
+          console.error('❌ API Error:', errorData);
+        } catch (e) {
+          console.error('❌ Failed to parse error response:', e);
+        }
+        throw new Error(errorMessage);
       }
 
-      return response.json();
+      const data = await response.json().catch(() => ({}));
+      return data;
+      
     } catch (error) {
-      console.error('API request failed:', error);
+      console.error('❌ API request failed:', {
+        url,
+        method: config.method,
+        error: error.message,
+        stack: error.stack
+      });
       
       // Handle network errors specifically
       if (error.message.includes('Failed to fetch') || 
           error.message.includes('NetworkError') || 
           error.message.includes('ECONNREFUSED')) {
-        throw new Error('Unable to connect to server. Please check if the backend server is running on port 5000.');
+        throw new Error(`Cannot connect to the server. Please ensure the backend is running at ${baseUrl}`);
       }
       
       throw error;
