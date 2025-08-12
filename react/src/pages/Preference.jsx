@@ -39,34 +39,7 @@ const Preference = () => {
   const [saving, setSaving] = useState(false);
   const [currentUserName, setCurrentUserName] = useState('');
 
-  useEffect(() => {
-    const fetchUserData = async () => {
-      try {
-        const token = localStorage.getItem('fitlife_token');
-        if (!token) {
-          window.location.href = '/login';
-          return;
-        }
-        const response = await fetch('http://127.0.0.1:5001/api/v1/auth/me', {
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
-        });
-        if (!response.ok) {
-          throw new Error('Failed to fetch user data');
-        }
-        const data = await response.json();
-        if (data && data.success && data.data && data.data.user) {
-          setProfileData(data.data.user);
-        } else {
-          throw new Error('Invalid user data received');
-        }
-      } catch (err) {
-        console.error('Error fetching user data:', err.message);
-      }
-    };
-    fetchUserData();
-  }, []);
+  // Profile data will be populated via unified API call below
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -126,6 +99,7 @@ const Preference = () => {
           // Normalization helpers for dropdowns
           const normalize = (val, options) => options.find(opt => (val || '').toLowerCase() === opt.toLowerCase()) || '';
           const userName = user.fullName || user.name || (user.firstName ? (user.firstName + (user.lastName ? ' ' + user.lastName : '')) : '');
+          setProfileData(user);
           setFormData({
             ...defaultFormData,
             ...flatten(user),
