@@ -554,7 +554,7 @@ const AICompanion = () => {
         </div>
       </main>
 
-      <style jsx>{`
+      <style>{`
         .scrollbar-hide::-webkit-scrollbar { 
           display: none; 
         }

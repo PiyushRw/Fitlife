@@ -111,11 +111,12 @@ const Nutrition = () => {
           window.location.href = '/login';
           return;
         }
-        const response = await ApiService.getProfile();
-        if (response && response.success && response.data && response.data.user) {
-          setProfileData(response.data.user);
+        const user = await ApiService.getProfile();
+        if (user && (user._id || user.id)) {
+          setProfileData(user);
         } else {
-          throw new Error('Invalid user data received');
+          console.error('Invalid profile data structure:', user);
+          throw new Error('Could not retrieve user profile data');
         }
       } catch (err) {
         setError(err.message);
@@ -1922,7 +1923,7 @@ const Nutrition = () => {
         </div>
       )}
 
-      <style jsx>{`
+      <style>{`
         .plan-btn {
           min-width: 110px;
           min-height: 38px;
