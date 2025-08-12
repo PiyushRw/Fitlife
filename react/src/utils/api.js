@@ -335,7 +335,7 @@ class ApiService {
 
   // Fetch chat history for the logged-in user
   static async getChatHistory() {
-    return this.makeRequest('/ai-assistant/chat-history');
+    return this.makeRequest('/api/v1/ai-assistant/chat-history');
   }
 
   // Save a new chat message (workout, nutrition, advice, etc.)
@@ -344,13 +344,13 @@ class ApiService {
     let endpoint = '';
     switch (type) {
       case 'workout-recommendation':
-        endpoint = '/ai-assistant/workout-recommendation';
+        endpoint = '/api/v1/ai-assistant/workout-recommendation';
         break;
       case 'nutrition-recommendation':
-        endpoint = '/ai-assistant/nutrition-recommendation';
+        endpoint = '/api/v1/ai-assistant/nutrition-recommendation';
         break;
       case 'fitness-advice':
-        endpoint = '/ai-assistant/fitness-advice';
+        endpoint = '/api/v1/ai-assistant/fitness-advice';
         break;
       default:
         throw new Error('Invalid chat type');
@@ -363,7 +363,7 @@ class ApiService {
 
   // Get public fitness advice (no auth, no DB save)
   static async getPublicFitnessAdvice(question, context = null) {
-    return this.makeRequest('/ai-assistant/public/fitness-advice', {
+    return this.makeRequest('/api/v1/ai-assistant/public/fitness-advice', {
       method: 'POST',
       body: JSON.stringify({ question, context }),
       headers: { 'Content-Type': 'application/json' },
@@ -372,14 +372,14 @@ class ApiService {
 
   // Delete all chat history for the authenticated user
   static async deleteChatHistory() {
-    return this.makeRequest('/ai-assistant/chat-history', {
+    return this.makeRequest('/api/v1/ai-assistant/chat-history', {
       method: 'DELETE',
     });
   }
 
   // Create a new exercise
   static async createExercise(exerciseData) {
-    return this.makeRequest('/workouts/exercises', {
+    return this.makeRequest('/api/v1/workouts/exercises', {
       method: 'POST',
       body: JSON.stringify(exerciseData),
     });
@@ -387,7 +387,7 @@ class ApiService {
 
   // Create a new workout
   static async createWorkout(workoutData) {
-    return this.makeRequest('/workouts', {
+    return this.makeRequest('/api/v1/workouts', {
       method: 'POST',
       body: JSON.stringify(workoutData),
     });
@@ -395,7 +395,7 @@ class ApiService {
 
   // Generate AI workout and save to database
   static async generateAIWorkout(userPreferences, aiWorkoutData) {
-    return this.makeRequest('/workouts/ai-generate', {
+    return this.makeRequest('/api/v1/workouts/ai-generate', {
       method: 'POST',
       body: JSON.stringify({ userPreferences, aiWorkoutData }),
     });
@@ -456,7 +456,7 @@ class ApiService {
    */
   static async submitTestimonial(testimonialData) {
     try {
-      const response = await this.makeRequest('/testimonials', {
+      const response = await this.makeRequest('/api/v1/testimonials', {
         method: 'POST',
         body: JSON.stringify(testimonialData),
       });
@@ -474,7 +474,7 @@ class ApiService {
    */
   static async getMyTestimonials() {
     try {
-      const response = await this.makeRequest('/testimonials/my-testimonials');
+      const response = await this.makeRequest('/api/v1/testimonials/my-testimonials');
       return response.data?.testimonials || response.testimonials || [];
     } catch (error) {
       console.error('Error fetching user testimonials:', error);

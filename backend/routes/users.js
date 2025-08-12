@@ -11,7 +11,6 @@ router.post('/preferences', protect, async (req, res, next) => {
   try {
     const userId = req.user.id;
     const preferences = req.body;
-    // Debug logging removed for cleaner output
     
     const user = await User.findById(userId);
     if (!user) {
@@ -80,8 +79,6 @@ router.post('/preferences', protect, async (req, res, next) => {
     
     await user.save();
     
-    console.log('User preferences saved successfully');
-    
     res.status(200).json({ 
       success: true, 
       message: 'Preferences saved successfully',
@@ -106,16 +103,6 @@ router.get('/preferences', protect, async (req, res, next) => {
         error: 'User not found'
       });
     }
-    
-    console.log('DEBUG: User object from database:', {
-      id: user._id,
-      name: user.name,
-      goal: user.goal,
-      workout: user.workout,
-      diet: user.diet,
-      age: user.age,
-      preferences: user.preferences
-    });
     
     // Return user data with all preference fields
     const preferences = {
@@ -235,17 +222,33 @@ router.get('/stats', protect, async (req, res, next) => {
 router.put('/profile', protect, async (req, res, next) => {
   try {
     const userId = req.user.id;
-    const updateData = req.body;
+
+    const ALLOWED_FIELDS = new Set([
+      'firstName','lastName','name','profilePicture','age','weight','height',
+      'goal','workout','workoutType','diet','dietaryPreferences','healthFocus','concerns',
+      'otherDietaryPreferences','otherHealthFocus','activityLevel','experienceLevel','preferredTime',
+      'workoutFrequency','workoutDuration','equipment','fitnessLevel','medicalConditions','allergies',
+      'supplements','sleepGoal','stressLevel','motivation','notifications','privacySettings',
+      'socialSharing','reminders','progressTracking','preferences'
+    ]);
+
+    const updateData = {};
+    Object.keys(req.body || {}).forEach((key) => {
+      if (ALLOWED_FIELDS.has(key)) {
+        updateData[key] = req.body[key];
+      }
+    });
 
     const user = await User.findById(userId);
     if (!user) {
       return res.status(404).json({ success: false, error: 'User not found' });
     }
 
-    // Update user fields with provided data
-    Object.keys(updateData).forEach(key => {
-      user[key] = updateData[key];
-    });
+    // Apply updates
+    Object.assign(user, updateData);
+    if (updateData.preferences && typeof updateData.preferences === 'object') {
+      user.preferences = { ...user.preferences, ...updateData.preferences };
+    }
 
     await user.save();
 
