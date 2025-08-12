@@ -76,12 +76,8 @@ const Register = () => {
     try {
       const result = await register(formData);
       if (result?.success) {
-        // Redirect to login page with success message
-        navigate('/login', { 
-          state: { 
-            message: 'Registration successful! Please log in to continue.' 
-          } 
-        });
+        // Navigate to welcome page instead of login
+        navigate('/welcome');
       }
     } catch (err) {
       // Error is already handled in the AuthContext
