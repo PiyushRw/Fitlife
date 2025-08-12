@@ -44,7 +44,7 @@ const NutritionCarousel = ({ items }) => {
         disableOnInteraction: false,
       }}
       pagination={{
-        clickable: true,
+        clickable: true
       }}
       modules={[EffectCoverflow, Pagination, Autoplay]}
       className="nutrition-carousel"
