@@ -1,11 +1,10 @@
 import React from 'react';
-import { Link, NavLink, useLocation } from 'react-router-dom';
+import { Link, NavLink } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { getAvatarInitials } from '../utils/avatarUtils';
 
 // Accepts optional props for profile image, user name, and active tab highlight
 const Sidebar = ({ profilePhoto = null, userName = "User" }) => {
-  const location = useLocation();
   const { user } = useAuth();
   
   // Use props if provided, otherwise use user data

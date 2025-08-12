@@ -97,7 +97,7 @@ class ApiService {
         if (responseBody) {
           console.log('📝 Parsed JSON:', JSON.parse(responseBody));
         }
-      } catch (e) {
+      } catch {
         console.log('📥 Non-JSON response:', responseBody);
       }
       
@@ -124,7 +124,7 @@ class ApiService {
         const text = await response.text();
         try {
           data = text ? JSON.parse(text) : {};
-        } catch (e) {
+        } catch {
           console.warn('Response is not valid JSON, returning as text');
           data = { message: text };
         }
@@ -309,13 +309,13 @@ class ApiService {
               'Content-Type': 'application/json'
             }
           });
-        } catch (error) {
-          console.warn('Logout API call failed, proceeding with client-side cleanup', error);
+        } catch {
+          console.warn('Logout API call failed, proceeding with client-side cleanup');
           // Continue with client-side cleanup even if the server call fails
         }
       }
-    } catch (error) {
-      console.warn('Logout API call failed, proceeding with client-side cleanup', error);
+    } catch {
+      console.warn('Logout API call failed, proceeding with client-side cleanup');
       // Continue with client-side cleanup even if the server call fails
     } finally {
       // Remove token
@@ -327,8 +327,8 @@ class ApiService {
         localStorage.removeItem('fitlife_chat_history');
         // Remove all sessionStorage data as well (if any)
         sessionStorage.clear();
-      } catch (error) {
-        console.error('Error during client-side cleanup:', error);
+      } catch {
+        console.error('Error during client-side cleanup:');
       }
     }
   }
@@ -478,6 +478,82 @@ class ApiService {
       return response.data?.testimonials || response.testimonials || [];
     } catch (error) {
       console.error('Error fetching user testimonials:', error);
+      throw error;
+    }
+  }
+
+  // Nutrition API methods
+  static async getLatestAiPlan() {
+    try {
+      const response = await this.makeRequest('api/v1/nutrition/latest-ai-plan', {
+        method: 'GET'
+      });
+      return response;
+    } catch (error) {
+      console.error('Error fetching latest AI plan:', error);
+      throw error;
+    }
+  }
+
+  static async getPlanHistory() {
+    try {
+      const response = await this.makeRequest('api/v1/nutrition/plan-history', {
+        method: 'GET'
+      });
+      return response;
+    } catch (error) {
+      console.error('Error fetching plan history:', error);
+      throw error;
+    }
+  }
+
+  static async getDailyIntake() {
+    try {
+      const response = await this.makeRequest('api/v1/nutrition/daily-intake/today', {
+        method: 'GET'
+      });
+      return response;
+    } catch (error) {
+      console.error('Error fetching daily intake:', error);
+      throw error;
+    }
+  }
+
+  static async generateNutritionPlan(planData) {
+    try {
+      const response = await this.makeRequest('api/v1/ai-assistant/nutrition-recommendation', {
+        method: 'POST',
+        body: planData
+      });
+      return response;
+    } catch (error) {
+      console.error('Error generating nutrition plan:', error);
+      throw error;
+    }
+  }
+
+  static async addFoodToIntake(foodData) {
+    try {
+      const response = await this.makeRequest('api/v1/nutrition/add-food', {
+        method: 'POST',
+        body: foodData
+      });
+      return response;
+    } catch (error) {
+      console.error('Error adding food to intake:', error);
+      throw error;
+    }
+  }
+
+  static async analyzeFoodImage(imageData) {
+    try {
+      const response = await this.makeRequest('api/v1/nutrition/analyze-food', {
+        method: 'POST',
+        body: imageData
+      });
+      return response;
+    } catch (error) {
+      console.error('Error analyzing food image:', error);
       throw error;
     }
   }

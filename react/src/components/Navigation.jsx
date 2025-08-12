@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Link, NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { eventBus } from '../utils/eventBus';
+// Remove unused import
+// import { eventBus } from '../utils/eventBus';
 import FitLifeLogo from './FitLifeLogo';
 
 // Error Boundary Component
@@ -11,7 +12,7 @@ class ErrorBoundary extends React.Component {
     this.state = { hasError: false };
   }
 
-  static getDerivedStateFromError(error) {
+  static getDerivedStateFromError() {
     return { hasError: true };
   }
 
@@ -50,11 +51,7 @@ const Navigation = () => {
   const [displayName, setDisplayName] = useState('Get Started');
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const navigate = useNavigate();
-
-  // Force update the component when authentication state changes
-  const forceUpdateComponent = () => {
-    setForceUpdate(prev => prev + 1);
-  };
+  // Remove unused forceUpdateComponent function
 
   // Update display name whenever component mounts or auth state changes
   useEffect(() => {

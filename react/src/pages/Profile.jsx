@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Link, useLocation } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import FitLifeLogo from '../components/FitLifeLogo';
 import Sidebar from '../components/Sidebar';
 import CustomDropdown from '../components/CustomDropdown';
@@ -27,7 +27,7 @@ const Profile = () => {
         if (!token) {
           navigate('/login');
           return;
-gis        }
+        }
         
         try {
           const userData = await ApiService.getProfile();
@@ -66,9 +66,9 @@ gis        }
     setEditableProfileData(profileData);
   }, [profileData]);
 
-  const [mood, setMood] = useState('happy');
+  const [mood] = useState('happy');
   const [workoutStreak] = useState(7);
-  const [healthScore, setHealthScore] = useState(78);
+  const [healthScore] = useState(78);
 
   const updateMoodInsight = () => {
     const moodInsights = {
@@ -79,10 +79,7 @@ gis        }
     return moodInsights[mood];
   };
 
-  const updateHealthScore = () => {
-    const moodScores = { happy: 78, neutral: 72, sad: 65 };
-    setHealthScore(moodScores[mood]);
-  };
+  // Remove the unused updateHealthScore function
 
   const updateMoodCorrelation = () => {
     const correlations = {
@@ -184,7 +181,6 @@ gis        }
     Sun: ['Cardio'],
   });
   const [draggedPart, setDraggedPart] = useState(null);
-  const location = useLocation();
 
   if (loading) {
     return (

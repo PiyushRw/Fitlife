@@ -5,13 +5,14 @@ import Sidebar from '../components/Sidebar';
 import NutritionCarousel from '../components/NutritionCarousel';
 import Spinner from '../components/Spinner';
 import { generateDietPlan, analyzeFoodImage } from '../utils/geminiApi';
+import ApiService from '../utils/api';
 import '../components/NutritionCarousel.css';
 
 const Nutrition = () => {
   const [profileData, setProfileData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const navigate = useLocation();
+  const location = useLocation();
 
   // Add state for daily intake stats
   const [dailyIntake, setDailyIntake] = useState({
@@ -54,27 +55,14 @@ const Nutrition = () => {
   const fetchAiMealPlan = async () => {
     setLoadingMealPlan(true);
     try {
-      const token = localStorage.getItem('fitlife_token');
-      if (!token) {
-        console.log('❌ No token found for AI meal plan');
-        return;
-      }
       console.log('🔍 Fetching AI meal plan...');
-      const response = await fetch('/api/v1/nutrition/latest-ai-plan', {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-      console.log('📡 AI meal plan response status:', response.status);
-      if (response.ok) {
-        const data = await response.json();
-        console.log('📊 AI meal plan data:', data);
-        if (data.success && data.data) {
-          console.log('✅ Setting AI meal plan');
-          setAiMealPlan(data.data);
-        } else {
-          console.log('❌ No AI meal plan data or success is false');
-        }
+      const response = await ApiService.getLatestAiPlan();
+      console.log('📊 AI meal plan data:', response);
+      if (response.success && response.data) {
+        console.log('✅ Setting AI meal plan');
+        setAiMealPlan(response.data);
       } else {
-        console.log('❌ AI meal plan response not ok:', response.status, response.statusText);
+        console.log('❌ No AI meal plan data or success is false');
       }
     } catch (error) {
       console.error('❌ Error fetching AI meal plan:', error);
@@ -87,29 +75,14 @@ const Nutrition = () => {
   const fetchPlanHistory = async () => {
     setLoadingHistory(true);
     try {
-      const token = localStorage.getItem('fitlife_token');
-      if (!token) {
-        console.log('❌ No token found');
-        return;
-      }
-      
       console.log('🔍 Fetching real plan history...');
-      const response = await fetch('/api/v1/nutrition/plan-history', {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-      
-      if (response.ok) {
-        const data = await response.json();
-        console.log('📊 Real plan history data:', data);
-        if (data.success && data.data && Array.isArray(data.data)) {
-          console.log('✅ Setting real plan history:', data.data.length, 'plans found');
-          setPlanHistory(data.data);
-        } else {
-          console.log('❌ No real data in response');
-          setPlanHistory([]);
-        }
+      const response = await ApiService.getPlanHistory();
+      console.log('📊 Real plan history data:', response);
+      if (response.success && response.data && Array.isArray(response.data)) {
+        console.log('✅ Setting real plan history:', response.data.length, 'plans found');
+        setPlanHistory(response.data);
       } else {
-        console.log('❌ Failed to fetch plan history:', response.status);
+        console.log('❌ No real data in response');
         setPlanHistory([]);
       }
     } catch (error) {
@@ -134,22 +107,13 @@ const Nutrition = () => {
       setLoading(true);
       setError(null);
       try {
-        const token = localStorage.getItem('fitlife_token');
-        if (!token) {
+        if (!ApiService.isAuthenticated()) {
           window.location.href = '/login';
           return;
         }
-        const response = await fetch('/api/v1/auth/me', {
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
-        });
-        if (!response.ok) {
-          throw new Error('Failed to fetch user data');
-        }
-        const data = await response.json();
-        if (data && data.success && data.data && data.data.user) {
-          setProfileData(data.data.user);
+        const response = await ApiService.getProfile();
+        if (response && response.success && response.data && response.data.user) {
+          setProfileData(response.data.user);
         } else {
           throw new Error('Invalid user data received');
         }
@@ -166,20 +130,12 @@ const Nutrition = () => {
   React.useEffect(() => {
     const fetchDailyIntake = async () => {
       try {
-        const token = localStorage.getItem('fitlife_token');
-        if (!token) {
+        if (!ApiService.isAuthenticated()) {
           return;
         }
-        const response = await fetch('/api/v1/nutrition/daily-intake/today', {
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
-        });
-        if (response.ok) {
-          const data = await response.json();
-          if (data.success) {
-            setDailyIntake(data.data);
-          }
+        const response = await ApiService.getDailyIntake();
+        if (response.success) {
+          setDailyIntake(response.data);
         }
       } catch (error) {
         console.error('Error fetching daily intake:', error);
@@ -401,20 +357,7 @@ const Nutrition = () => {
       };
 
       // Use the backend API that automatically saves to database
-      const response = await fetch('/api/v1/ai-assistant/nutrition-recommendation', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify(planData)
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to generate nutrition plan');
-      }
-
-      const result = await response.json();
+      const result = await ApiService.generateNutritionPlan(planData);
       
       console.log('🔍 Backend response:', result);
       console.log('📊 Daily plans received:', result.data?.recommendation?.dailyPlans);
@@ -509,20 +452,11 @@ const Nutrition = () => {
       const base64Data = uploadedImage.split(',')[1]; // Remove data:image/jpeg;base64, prefix
       
       // Use the new backend API that automatically saves to database
-      const response = await fetch('/api/v1/nutrition/analyze-food', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({
-          imageBase64: base64Data
-        })
+      const result = await ApiService.analyzeFoodImage({
+        imageBase64: base64Data
       });
-
-      const result = await response.json();
       
-      if (response.ok && result.success) {
+      if (result.success) {
         // Update the food analysis display with the analyzed data
         const analysis = result.data.analysis;
         setFoodAnalysis({

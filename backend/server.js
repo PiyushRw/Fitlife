@@ -119,7 +119,7 @@ app.use(express.urlencoded({ extended: true }));
 
 // CORS configuration
 const allowedOrigins = [
-  'https://fitlife-frontend.vercel.app',
+  process.env.FRONTEND_URL || 'https://fitlife-frontend.vercel.app',
   'http://localhost:5173',
   'http://localhost:3000'
 ];

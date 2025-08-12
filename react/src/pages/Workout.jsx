@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import FitLifeLogo from '../components/FitLifeLogo';
 import { generateWorkoutPlan, getExerciseRecommendations } from '../utils/geminiApi';
 import CustomDropdown from '../components/CustomDropdown';

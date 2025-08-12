@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import ApiService from '../utils/api';
 import { Listbox } from '@headlessui/react';
-import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import FitLifeLogo from '../components/FitLifeLogo';
 import Spinner from '../components/Spinner';
 import { useAuth } from '../contexts/AuthContext';
@@ -30,12 +30,8 @@ const defaultFormData = {
 };
 
 const Preference = () => {
-  const { user, refreshUser } = useAuth();
+  const { refreshUser } = useAuth();
   const [profileData, setProfileData] = useState(null);
-  const [loadingSidebar, setLoadingSidebar] = useState(true);
-  const [errorSidebar, setErrorSidebar] = useState(null);
-  const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState('preferences');
 
   const [formData, setFormData] = useState(defaultFormData);
   const [loading, setLoading] = useState(true);
@@ -45,8 +41,6 @@ const Preference = () => {
 
   useEffect(() => {
     const fetchUserData = async () => {
-      setLoadingSidebar(true);
-      setErrorSidebar(null);
       try {
         const token = localStorage.getItem('fitlife_token');
         if (!token) {
@@ -68,9 +62,7 @@ const Preference = () => {
           throw new Error('Invalid user data received');
         }
       } catch (err) {
-        setErrorSidebar(err.message);
-      } finally {
-        setLoadingSidebar(false);
+        console.error('Error fetching user data:', err.message);
       }
     };
     fetchUserData();
@@ -182,8 +174,6 @@ const Preference = () => {
   });
 
   const [profilePhoto, setProfilePhoto] = useState(profileData?.profilePicture || null);
-
-  const location = useLocation();
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;

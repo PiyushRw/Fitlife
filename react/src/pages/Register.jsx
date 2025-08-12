@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { motion } from 'framer-motion';
 
 const Register = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -258,4 +257,4 @@ const Register = () => {
   );
 };
 
-export default Register; 
+export default Register;

@@ -13,40 +13,40 @@ const Testimonials = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Default testimonials to show when none exist or on error
-  const defaultTestimonials = [
-    {
-      _id: 'default1',
-      content: 'FitLife has completely transformed my fitness journey! The personalized workout plans and nutrition guidance are top-notch.',
-      rating: 5,
-      name: 'Sarah Johnson',
-      role: 'Fitness Enthusiast',
-      status: 'approved',
-      date: '2024-06-15T00:00:00.000Z'
-    },
-    {
-      _id: 'default2',
-      content: 'As a beginner, I was intimidated by the gym. FitLife made it easy to get started with clear instructions and progress tracking.',
-      rating: 5,
-      name: 'Michael Chen',
-      role: 'Beginner',
-      status: 'approved',
-      date: '2024-06-10T00:00:00.000Z'
-    },
-    {
-      _id: 'default3',
-      content: 'The community support and expert advice have kept me motivated throughout my fitness journey. Highly recommended!',
-      rating: 4,
-      name: 'Emma Davis',
-      role: 'Yoga Instructor',
-      status: 'approved',
-      date: '2024-06-05T00:00:00.000Z'
-    }
-  ];
-
   // Fetch testimonials on component mount
   useEffect(() => {
     const fetchTestimonials = async () => {
+      // Default testimonials to show when none exist or on error
+      const defaultTestimonials = [
+        {
+          _id: 'default1',
+          content: 'FitLife has completely transformed my fitness journey! The personalized workout plans and nutrition guidance are top-notch.',
+          rating: 5,
+          name: 'Sarah Johnson',
+          role: 'Fitness Enthusiast',
+          status: 'approved',
+          date: '2024-06-15T00:00:00.000Z'
+        },
+        {
+          _id: 'default2',
+          content: 'As a beginner, I was intimidated by the gym. FitLife made it easy to get started with clear instructions and progress tracking.',
+          rating: 5,
+          name: 'Michael Chen',
+          role: 'Beginner',
+          status: 'approved',
+          date: '2024-06-10T00:00:00.000Z'
+        },
+        {
+          _id: 'default3',
+          content: 'The community support and expert advice have kept me motivated throughout my fitness journey. Highly recommended!',
+          rating: 4,
+          name: 'Emma Davis',
+          role: 'Yoga Instructor',
+          status: 'approved',
+          date: '2024-06-05T00:00:00.000Z'
+        }
+      ];
+
       try {
         setIsLoading(true);
         // Only fetch approved testimonials, sorted by newest first
