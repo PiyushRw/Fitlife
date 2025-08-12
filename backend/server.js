@@ -25,7 +25,7 @@ import testimonialRoutes from './routes/testimonialRoutes.js';
 
 // Load environment variables
 dotenv.config();
-
+const nothing;
 const app = express();
 const PORT = process.env.PORT || 5000;
 
