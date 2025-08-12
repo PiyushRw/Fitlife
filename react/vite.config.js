@@ -20,7 +20,7 @@ export default defineConfig({
     },
     proxy: {
       '/api': {
-        target: import.meta.env.VITE_API_URL || 'https://fitlife-backend.vercel.app',
+        target: process.env.VITE_API_URL || 'https://fitlife-backend.vercel.app',
         changeOrigin: true,
         secure: true,
         rewrite: (path) => path.replace(/^\/api/, '')

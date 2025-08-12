@@ -863,8 +863,6 @@ const Nutrition = () => {
     ...selectedTags.lifestyle
   ];
 
-  const location = useLocation();
-
   if (loading) {
     return (
       <div className="bg-[#121212] min-h-screen flex items-center justify-center">
