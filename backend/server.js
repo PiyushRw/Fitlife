@@ -81,21 +81,32 @@ app.get('/api/health/db', async (req, res) => {
       throw new Error('Database not connected');
     }
     
-    // Test the connection with a simple query
+    // Test the connection with a simple ping
     const adminDb = mongoose.connection.db.admin();
     const pingResult = await adminDb.ping();
-    
-    res.status(200).json({
+
+    const baseResponse = {
       success: true,
       status: 'connected',
       dbState: mongoose.connection.readyState,
       dbName: mongoose.connection.name,
       dbHost: mongoose.connection.host,
-      dbVersion: (await mongoose.connection.db.admin().serverInfo()).version,
       uptime: process.uptime(),
-      collections: await mongoose.connection.db.listCollections().toArray(),
       ping: pingResult
-    });
+    };
+
+    // Only expose detailed DB info in development
+    if (process.env.NODE_ENV === 'development') {
+      const serverInfo = await mongoose.connection.db.admin().serverInfo();
+      const collections = await mongoose.connection.db.listCollections().toArray();
+      return res.status(200).json({
+        ...baseResponse,
+        dbVersion: serverInfo.version,
+        collections
+      });
+    }
+
+    return res.status(200).json(baseResponse);
   } catch (error) {
     res.status(503).json({
       success: false,
@@ -110,8 +121,9 @@ app.get('/api/health/db', async (req, res) => {
 // Trust first proxy (important when behind a proxy like Vercel)
 app.set('trust proxy', 1);
 
-// Security middleware
+// Security and performance middleware
 app.use(helmet());
+app.use(compression());
 
 // Body parser middleware
 app.use(express.json());
@@ -124,14 +136,13 @@ const allowedOrigins = [
   'http://localhost:3000'
 ];
 
-// Log all requests for debugging
-app.use((req, res, next) => {
-  console.log(`[${new Date().toISOString()}] ${req.method} ${req.originalUrl}`, {
-    headers: req.headers,
-    body: req.body
+// Lightweight request logging in development (use morgan for detailed formats)
+if (process.env.NODE_ENV === 'development') {
+  app.use((req, res, next) => {
+    console.log(`[${new Date().toISOString()}] ${req.method} ${req.originalUrl}`);
+    next();
   });
-  next();
-});
+}
 
 // Enable CORS for all routes
 app.use(cors({
@@ -167,8 +178,8 @@ const rateLimitConfig = {
   standardHeaders: true,
   legacyHeaders: false,
   keyGenerator: (req) => {
-    // Use the X-Forwarded-For header if it exists, otherwise use the remote address
-    return req.headers['x-forwarded-for'] || req.connection.remoteAddress;
+    // Use Express' trusted IP, not a spoofable header
+    return req.ip;
   }
 };
 
@@ -184,15 +195,7 @@ if (process.env.NODE_ENV === 'development') {
 }
 
 // Health check endpoint (no database connection required)
-app.get('/api/health', (req, res) => {
-  res.status(200).json({
-    status: 'ok',
-    timestamp: new Date().toISOString(),
-    uptime: process.uptime(),
-    database: isDBConnected ? 'connected' : 'disconnected',
-    environment: process.env.NODE_ENV || 'development'
-  });
-});
+// Removed duplicate /api/health endpoint here; a more detailed one is defined later
 
 // Apply database connection middleware to all API routes except health checks
 app.use('/api/', (req, res, next) => {
@@ -207,15 +210,7 @@ app.use('/api/', (req, res, next) => {
 const apiVersion = process.env.API_VERSION || 'v1';
 console.log(`🔄 Mounting API routes with version: ${apiVersion}`);
 
-// Add detailed request logging middleware
-app.use((req, res, next) => {
-  console.log(`📥 ${new Date().toISOString()} - ${req.method} ${req.originalUrl}`);
-  console.log('Request Headers:', req.headers);
-  if (req.method === 'POST' || req.method === 'PUT') {
-    console.log('Request Body:', req.body);
-  }
-  next();
-});
+// Removed duplicate verbose request logging; relying on morgan
 
 // Mount API routes with versioning
 console.log('🔌 Initializing API routes...');
@@ -264,7 +259,7 @@ app.get('/test', (req, res) => {
 
 // Add a specific route for login to ensure it's handled
 app.post('/api/v1/auth/login', (req, res, next) => {
-  console.log('Login request received:', req.body);
+  console.log('Login request received');
   next();
 });
 

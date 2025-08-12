@@ -291,7 +291,7 @@ const AIAssistant = () => {
         </form>
       </div>
 
-      <style jsx>{`
+      <style>{`
         @keyframes bounce-slow {
           0%, 100% {
             transform: translateY(0);
