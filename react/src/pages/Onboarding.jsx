@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import ApiService from '../utils/api';
 
 const Onboarding = () => {
   const [currentStep, setCurrentStep] = useState(1);
@@ -239,30 +240,8 @@ const Onboarding = () => {
     // Save to localStorage
     localStorage.setItem('fitlife_user', JSON.stringify(userData));
 
-    // Send preferences to backend
-    const token = localStorage.getItem('fitlife_token');
-    const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000/api/v1';
-    
-    fetch(`${apiUrl}/users/preferences`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        ...(token ? { 'Authorization': `Bearer ${token}` } : {})
-      },
-      body: JSON.stringify(userData),
-      credentials: 'include'
-    })
-      .then(async (res) => {
-        if (!res.ok) {
-          const error = await res.json().catch(() => ({ error: 'Unknown error' }));
-          console.error('Failed to save preferences:', error.error || 'Unknown error');
-          return;
-        }
-        return res.json();
-      })
-      .then((data) => {
-        // Optionally handle response
-      })
+    // Send preferences to backend using ApiService
+    ApiService.savePreferences(userData)
       .catch((err) => {
         console.error('Error saving preferences:', err.message);
       });
