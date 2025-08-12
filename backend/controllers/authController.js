@@ -1,5 +1,7 @@
 import jwt from 'jsonwebtoken';
 import User from '../models/User.js';
+import dotenv from 'dotenv';
+dotenv.config();
 
 // Generate JWT Token
 const generateToken = (id) => {
@@ -283,5 +285,91 @@ export const logout = async (req, res, next) => {
     });
   } catch (error) {
     next(error);
+  }
+};
+
+// --- Google OAuth (minimal) ---
+// @route GET /api/v1/auth/google/start
+export const googleStart = async (req, res) => {
+  try {
+    const clientId = process.env.GOOGLE_CLIENT_ID;
+    const redirectUri = process.env.GOOGLE_REDIRECT_URI; // e.g., https://fitlife-backend.vercel.app/api/v1/auth/google/callback
+    const scope = encodeURIComponent('openid email profile');
+    const state = encodeURIComponent(req.query.state || '/profile');
+    const nonce = Math.random().toString(36).slice(2);
+    if (!clientId || !redirectUri) {
+      return res.status(500).json({ success: false, error: 'Google OAuth not configured' });
+    }
+    const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?response_type=code&client_id=${encodeURIComponent(clientId)}&redirect_uri=${encodeURIComponent(redirectUri)}&scope=${scope}&state=${state}&nonce=${nonce}&access_type=online&prompt=consent`;
+    return res.redirect(authUrl);
+  } catch (e) {
+    return res.status(500).json({ success: false, error: 'Failed to start Google OAuth' });
+  }
+};
+
+// @route GET /api/v1/auth/google/callback
+export const googleCallback = async (req, res) => {
+  try {
+    const { code, state } = req.query;
+    const clientId = process.env.GOOGLE_CLIENT_ID;
+    const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
+    const redirectUri = process.env.GOOGLE_REDIRECT_URI;
+    const frontendUrl = process.env.FRONTEND_URL || 'https://fitlife-frontend.vercel.app';
+    if (!code || !clientId || !clientSecret || !redirectUri) {
+      return res.status(400).json({ success: false, error: 'Invalid Google OAuth configuration or missing code' });
+    }
+
+    // Exchange code for tokens
+    const tokenRes = await fetch('https://oauth2.googleapis.com/token', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({
+        code,
+        client_id: clientId,
+        client_secret: clientSecret,
+        redirect_uri: redirectUri,
+        grant_type: 'authorization_code'
+      })
+    });
+    if (!tokenRes.ok) {
+      const errText = await tokenRes.text();
+      return res.status(500).json({ success: false, error: 'Failed to exchange code', details: errText });
+    }
+    const tokens = await tokenRes.json();
+
+    // Fetch user info
+    const userRes = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+      headers: { Authorization: `Bearer ${tokens.access_token}` }
+    });
+    const profile = await userRes.json();
+
+    // Upsert user
+    const email = profile.email?.toLowerCase();
+    if (!email) {
+      return res.status(400).json({ success: false, error: 'Google profile missing email' });
+    }
+    let user = await User.findOne({ email });
+    if (!user) {
+      const names = (profile.name || '').split(' ');
+      user = await User.create({
+        firstName: names[0] || 'User',
+        lastName: names.slice(1).join(' ') || '',
+        email,
+        password: Math.random().toString(36).slice(2) + '!Aa1', // placeholder
+        profilePicture: profile.picture || ''
+      });
+    } else if (!user.profilePicture && profile.picture) {
+      user.profilePicture = profile.picture;
+      await user.save();
+    }
+
+    const jwtToken = generateToken(user._id);
+    // Redirect back to frontend with token (hash to avoid leaking via query logs)
+    const redirectPath = state && typeof state === 'string' ? state : '/profile';
+    const url = new URL(redirectPath, frontendUrl);
+    url.hash = `token=${jwtToken}`;
+    return res.redirect(url.toString());
+  } catch (e) {
+    return res.status(500).json({ success: false, error: 'Google OAuth callback failed' });
   }
 }; 

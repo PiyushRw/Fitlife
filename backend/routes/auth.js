@@ -6,7 +6,9 @@ import {
   getMe,
   updateProfile,
   changePassword,
-  logout
+  logout,
+  googleStart,
+  googleCallback
 } from '../controllers/authController.js';
 
 const router = express.Router();
@@ -14,6 +16,8 @@ const router = express.Router();
 // Public routes
 router.post('/register', register);
 router.post('/login', login);
+router.get('/google/start', googleStart);
+router.get('/google/callback', googleCallback);
 
 // Protected routes
 router.get('/me', protect, getMe);
