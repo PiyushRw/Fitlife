@@ -60,7 +60,7 @@ const ensureDatabaseConnection = async (req, res, next) => {
     // For non-API requests, pass to error handler
     next(error);
   }
-};
+};//done
 
 // Initial connection attempt
 (async () => {
