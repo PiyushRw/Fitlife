@@ -235,93 +235,107 @@ const Workout = () => {
 
   const selectAIExercise = (exercise) => {
     setSelectedExercise(exercise.name);
-    setCurrentVideoUrl(generateVideoUrl(exercise.name));
+    setCurrentVideoUrl(generateVideoUrl(exercise.name, exercise.videoSearchKeywords));
     setExerciseDetails(exercise); // Set details for AI insights section
   };
 
   // AI Workout Helper Functions
-  const generateVideoUrl = (exerciseName = selectedExercise) => {
-    // Exercise-specific YouTube video URLs for demonstrations
-    const exerciseVideos = {
-      // Chest Exercises
-      'Bench Press': 'https://www.youtube.com/embed/rT7DgCr-3pg',
-      'Incline Dumbbell Press': 'https://www.youtube.com/embed/8iPEnn-ltC8',
-      'Incline Barbell Press': 'https://www.youtube.com/embed/IP4oeKh5j20',
-      'Incline Push Ups': 'https://www.youtube.com/embed/cfTFJFwGWU4',
-      'Decline Bench Press': 'https://www.youtube.com/embed/LfyQBUKR8SE',
-      'Decline Push Ups': 'https://www.youtube.com/embed/SKPab2YC8BE',
-      'Close-Grip Push Ups': 'https://www.youtube.com/embed/cfZmpElGrZw',
-      'Pec Deck': 'https://www.youtube.com/embed/Z57CtFmRMxQ',
-      'Wide Grip Bench Press': 'https://www.youtube.com/embed/rxD321l2svE',
-      'Cable Fly': 'https://www.youtube.com/embed/QENKPHhQVi4',
-      
-      // Back Exercises
-      'Face Pull': 'https://www.youtube.com/embed/rep-qVOkqgk',
-      'Reverse Fly': 'https://www.youtube.com/embed/JoCRRZ3zRtI',
-      'Seated Row': 'https://www.youtube.com/embed/xQNrFHEMhI4',
-      'Back Extension': 'https://www.youtube.com/embed/qtdyyRVCZ2E',
-      'Superman': 'https://www.youtube.com/embed/cc6UVRS7PW4',
-      'Good Morning': 'https://www.youtube.com/embed/YuWLAKuBx6E',
-      'Lat Pulldown': 'https://www.youtube.com/embed/CAwf7n6Luuc',
-      'Pull Ups': 'https://www.youtube.com/embed/eGo4IYlbE5g',
-      'Straight-Arm Pulldown': 'https://www.youtube.com/embed/kiuVA0gs3EI',
-      'Barbell Shrug': 'https://www.youtube.com/embed/g6qbq4Lf1FI',
-      'Dumbbell Shrug': 'https://www.youtube.com/embed/g6qbq4Lf1FI',
-      'Upright Row': 'https://www.youtube.com/embed/zD_bEhFUHWA',
-      
-      // Legs Exercises
-      'Barbell Squat': 'https://www.youtube.com/embed/ultWZbUMPL8',
-      'Leg Press': 'https://www.youtube.com/embed/IZxyjW7MPJQ',
-      'Lunges': 'https://www.youtube.com/embed/QOVaHwm-Q6U',
-      'Leg Curl': 'https://www.youtube.com/embed/1Tq3QdYUuHs',
-      'Romanian Deadlift': 'https://www.youtube.com/embed/jEy_czb3RKA',
-      'Glute Ham Raise': 'https://www.youtube.com/embed/tz8HbTRqa0Y',
-      'Standing Calf Raise': 'https://www.youtube.com/embed/gwLzBJYoWlI',
-      'Seated Calf Raise': 'https://www.youtube.com/embed/JbyjNymZOt0',
-      'Donkey Calf Raise': 'https://www.youtube.com/embed/2KEDXrAHzJY',
-      'Hip Thrust': 'https://www.youtube.com/embed/SEdqd1n0cvg',
-      'Glute Bridge': 'https://www.youtube.com/embed/OUgsJ8-Vi0E',
-      'Cable Kickback': 'https://www.youtube.com/embed/umKR5-cQEpc',
-      
-      // Arms Exercises
-      'Bicep Curl': 'https://www.youtube.com/embed/ykJmrZ5v0Oo',
-      'Hammer Curl': 'https://www.youtube.com/embed/zC3nLlEvin4',
-      'Concentration Curl': 'https://www.youtube.com/embed/ebk4rJ5t5eE',
-      'Tricep Dips': 'https://www.youtube.com/embed/0326dy_-CzM',
-      'Tricep Pushdown': 'https://www.youtube.com/embed/2-LAMcpzODU',
-      'Overhead Tricep Extension': 'https://www.youtube.com/embed/YbX7Wd8jQ-Q',
-      'Wrist Curl': 'https://www.youtube.com/embed/0lC1DGhG9zY',
-      'Reverse Curl': 'https://www.youtube.com/embed/nRgxYX2Ve9w',
-      "Farmer's Walk": 'https://www.youtube.com/embed/p3QD2GhCJcw',
-      
-      // Shoulders Exercises
-      'Front Raise': 'https://www.youtube.com/embed/cxY9s0UBnhE',
-      'Overhead Press': 'https://www.youtube.com/embed/2yjwXTZQDDI',
-      'Arnold Press': 'https://www.youtube.com/embed/6Z15_WdXmVw',
-      'Lateral Raise': 'https://www.youtube.com/embed/3VcKaXpzqRo',
-      'Cable Lateral Raise': 'https://www.youtube.com/embed/VgV7dCjxJAc',
-      'Rear Delt Row': 'https://www.youtube.com/embed/MiRAi2KOfRQ',
-      
-      // Core Exercises
-      'Crunches': 'https://www.youtube.com/embed/Xyd_fa5zoEU',
-      'Plank': 'https://www.youtube.com/embed/ASdvN_XEl_c',
-      'Leg Raise': 'https://www.youtube.com/embed/JB2oyawG9KI',
-      'Bicycle Crunch': 'https://www.youtube.com/embed/9FGilxCbdz8',
-      'Side Plank': 'https://www.youtube.com/embed/K2VljzCC16g',
-      'Russian Twist': 'https://www.youtube.com/embed/DJQGX2J4IVw',
-      'Woodchopper': 'https://www.youtube.com/embed/pAplQXk3dkU',
-      'Reverse Crunch': 'https://www.youtube.com/embed/Wp4BlxcFTkE',
-      'Hanging Leg Raise': 'https://www.youtube.com/embed/hdng3Nm1x_E',
-      'Mountain Climbers': 'https://www.youtube.com/embed/nmwgirgXLYM',
-      
-      // Full Body Exercises
-      'Burpees': 'https://www.youtube.com/embed/auBLPXO8Fww',
-      'Jumping Jacks': 'https://www.youtube.com/embed/dmYwZH_BNd0',
-      'Bear Crawl': 'https://www.youtube.com/embed/wKl4IxVMvQ8'
+  const generateVideoUrl = (exerciseName = selectedExercise, keywords) => {
+    const normalize = (s = '') => (s || '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
+    const includesAll = (hay, needles) => needles.every(n => hay.includes(n));
+    const videoMap = {
+      // Core/common
+      'push ups': 'https://www.youtube.com/embed/IODxDxX7oi4',
+      'push ups proper form': 'https://www.youtube.com/embed/IODxDxX7oi4',
+      // Chest
+      'bench press': 'https://www.youtube.com/embed/rT7DgCr-3pg',
+      'incline dumbbell press': 'https://www.youtube.com/embed/8iPEnn-ltC8',
+      'incline barbell press': 'https://www.youtube.com/embed/IP4oeKh5j20',
+      'incline push ups': 'https://www.youtube.com/embed/cfTFJFwGWU4',
+      'decline bench press': 'https://www.youtube.com/embed/LfyQBUKR8SE',
+      'decline push ups': 'https://www.youtube.com/embed/SKPab2YC8BE',
+      'close grip push ups': 'https://www.youtube.com/embed/cfZmpElGrZw',
+      'pec deck': 'https://www.youtube.com/embed/Z57CtFmRMxQ',
+      'wide grip bench press': 'https://www.youtube.com/embed/rxD321l2svE',
+      'cable fly': 'https://www.youtube.com/embed/QENKPHhQVi4',
+      // Back
+      'face pull': 'https://www.youtube.com/embed/rep-qVOkqgk',
+      'reverse fly': 'https://www.youtube.com/embed/JoCRRZ3zRtI',
+      'seated row': 'https://www.youtube.com/embed/xQNrFHEMhI4',
+      'back extension': 'https://www.youtube.com/embed/qtdyyRVCZ2E',
+      'superman': 'https://www.youtube.com/embed/cc6UVRS7PW4',
+      'good morning': 'https://www.youtube.com/embed/YuWLAKuBx6E',
+      'lat pulldown': 'https://www.youtube.com/embed/CAwf7n6Luuc',
+      'pull ups': 'https://www.youtube.com/embed/eGo4IYlbE5g',
+      'straight arm pulldown': 'https://www.youtube.com/embed/kiuVA0gs3EI',
+      'barbell shrug': 'https://www.youtube.com/embed/g6qbq4Lf1FI',
+      'dumbbell shrug': 'https://www.youtube.com/embed/g6qbq4Lf1FI',
+      'upright row': 'https://www.youtube.com/embed/zD_bEhFUHWA',
+      // Legs
+      'barbell squat': 'https://www.youtube.com/embed/ultWZbUMPL8',
+      'leg press': 'https://www.youtube.com/embed/IZxyjW7MPJQ',
+      'lunges': 'https://www.youtube.com/embed/QOVaHwm-Q6U',
+      'leg curl': 'https://www.youtube.com/embed/1Tq3QdYUuHs',
+      'romanian deadlift': 'https://www.youtube.com/embed/jEy_czb3RKA',
+      'glute ham raise': 'https://www.youtube.com/embed/tz8HbTRqa0Y',
+      'standing calf raise': 'https://www.youtube.com/embed/gwLzBJYoWlI',
+      'seated calf raise': 'https://www.youtube.com/embed/JbyjNymZOt0',
+      'donkey calf raise': 'https://www.youtube.com/embed/2KEDXrAHzJY',
+      'hip thrust': 'https://www.youtube.com/embed/SEdqd1n0cvg',
+      'glute bridge': 'https://www.youtube.com/embed/OUgsJ8-Vi0E',
+      'cable kickback': 'https://www.youtube.com/embed/umKR5-cQEpc',
+      // Arms
+      'bicep curl': 'https://www.youtube.com/embed/ykJmrZ5v0Oo',
+      'hammer curl': 'https://www.youtube.com/embed/zC3nLlEvin4',
+      'concentration curl': 'https://www.youtube.com/embed/ebk4rJ5t5eE',
+      'tricep dips': 'https://www.youtube.com/embed/0326dy_-CzM',
+      'tricep pushdown': 'https://www.youtube.com/embed/2-LAMcpzODU',
+      'overhead tricep extension': 'https://www.youtube.com/embed/YbX7Wd8jQ-Q',
+      'wrist curl': 'https://www.youtube.com/embed/0lC1DGhG9zY',
+      'reverse curl': 'https://www.youtube.com/embed/nRgxYX2Ve9w',
+      "farmer s walk": 'https://www.youtube.com/embed/p3QD2GhCJcw',
+      // Shoulders
+      'front raise': 'https://www.youtube.com/embed/cxY9s0UBnhE',
+      'overhead press': 'https://www.youtube.com/embed/2yjwXTZQDDI',
+      'arnold press': 'https://www.youtube.com/embed/6Z15_WdXmVw',
+      'lateral raise': 'https://www.youtube.com/embed/3VcKaXpzqRo',
+      'cable lateral raise': 'https://www.youtube.com/embed/VgV7dCjxJAc',
+      'rear delt row': 'https://www.youtube.com/embed/MiRAi2KOfRQ',
+      // Core
+      'crunches': 'https://www.youtube.com/embed/Xyd_fa5zoEU',
+      'plank': 'https://www.youtube.com/embed/ASdvN_XEl_c',
+      'leg raise': 'https://www.youtube.com/embed/JB2oyawG9KI',
+      'bicycle crunch': 'https://www.youtube.com/embed/9FGilxCbdz8',
+      'side plank': 'https://www.youtube.com/embed/K2VljzCC16g',
+      'russian twist': 'https://www.youtube.com/embed/DJQGX2J4IVw',
+      'woodchopper': 'https://www.youtube.com/embed/pAplQXk3dkU',
+      'reverse crunch': 'https://www.youtube.com/embed/Wp4BlxcFTkE',
+      'hanging leg raise': 'https://www.youtube.com/embed/hdng3Nm1x_E',
+      'mountain climbers': 'https://www.youtube.com/embed/nmwgirgXLYM',
+      // Full Body
+      'burpees': 'https://www.youtube.com/embed/auBLPXO8Fww',
+      'jumping jacks': 'https://www.youtube.com/embed/dmYwZH_BNd0',
+      'bear crawl': 'https://www.youtube.com/embed/wKl4IxVMvQ8'
     };
-    
-    // Return specific video for the exercise, or default if not found
-    return exerciseVideos[exerciseName] || 'https://www.youtube.com/embed/vcBig73ojpE';
+
+    const normName = normalize(exerciseName);
+    if (videoMap[normName]) return videoMap[normName];
+
+    // Try partial fuzzy match
+    const tokens = normName.split(' ').filter(Boolean);
+    const entry = Object.entries(videoMap).find(([key]) => includesAll(key, tokens));
+    if (entry) return entry[1];
+
+    // Try keywords if provided
+    if (keywords) {
+      const normKw = normalize(keywords);
+      const kwTokens = normKw.split(' ').filter(Boolean);
+      const byKw = Object.entries(videoMap).find(([key]) => includesAll(key, kwTokens));
+      if (byKw) return byKw[1];
+    }
+
+    // Default fallback
+    return 'https://www.youtube.com/embed/vcBig73ojpE';
   };
 
   // Helper to get representative exercise for subgroup or muscle group
@@ -361,12 +375,21 @@ const Workout = () => {
         userPreferences.equipment,
         userPreferences.experience.toLowerCase()
       );
-      setAiRecommendations(recommendations.exercises || []);
+      const list = recommendations.exercises || [];
+      setAiRecommendations(list);
 
-      // Update video based on selected muscle group/subgroup/exercise
-      const exerciseForVideo = getRepresentativeExercise();
-      if (exerciseForVideo) {
-        setCurrentVideoUrl(generateVideoUrl(exerciseForVideo));
+      // Show the first AI recommendation as preview with correct video
+      if (list.length > 0) {
+        const first = list[0];
+        setSelectedExercise(first.name);
+        setCurrentVideoUrl(generateVideoUrl(first.name, first.videoSearchKeywords));
+        setExerciseDetails(first);
+      } else {
+        // Fallback to representative selection
+        const exerciseForVideo = getRepresentativeExercise();
+        if (exerciseForVideo) {
+          setCurrentVideoUrl(generateVideoUrl(exerciseForVideo));
+        }
       }
     } catch (error) {
       console.error('Error getting AI recommendations:', error);
@@ -399,6 +422,14 @@ const Workout = () => {
           notes: exercise.tips || ''
         }));
         
+        // Update preview/video with the first generated exercise
+        const firstGen = workoutPlan.workoutPlan.exercises[0];
+        if (firstGen) {
+          setSelectedExercise(firstGen.name);
+          setCurrentVideoUrl(generateVideoUrl(firstGen.name, firstGen.videoKeywords));
+          setExerciseDetails(firstGen);
+        }
+
         // Save AI workout to database
         try {
           const response = await ApiService.generateAIWorkout(userPreferences, { exercises: transformedExercises });
@@ -678,7 +709,7 @@ const Workout = () => {
                   <>
                     {aiRecommendations.map((exercise, index) => (
                       <button
-                        key={`ai-${index}`}
+                        key={`ai-${index}` }
                         onClick={() => selectAIExercise(exercise)}
                         className="text-xs p-2 bg-[#1E1E1E] hover:bg-[#36CFFF] hover:text-black rounded-lg transition font-medium"
                       >
