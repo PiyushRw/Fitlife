@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import FitLifeLogo from '../components/FitLifeLogo';
 import contactImage from '../assets/images/m.png';
+import ApiService from '../utils/api';
 
 const Contact = () => {
   const [formData, setFormData] = useState({
@@ -21,39 +22,23 @@ const Contact = () => {
     }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Send contact form data to backend
-    fetch('/api/v1/contact', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(formData),
-    })
-      .then(async (res) => {
-        if (!res.ok) {
-          const error = await res.json();
-          alert(error.error || 'Failed to send message');
-          return;
-        }
-        return res.json();
-      })
-      .then((data) => {
-        if (data && data.success) {
-          setSubmitted(true);
-          setTimeout(() => setSubmitted(false), 3000);
-          setFormData({
-            name: '',
-            email: '',
-            subject: '',
-            message: ''
-          });
-        }
-      })
-      .catch((err) => {
-        alert('Error: ' + err.message);
+    try {
+      const data = await ApiService.makeRequest('/api/v1/contact', {
+        method: 'POST',
+        body: formData,
       });
+      if (data && data.success) {
+        setSubmitted(true);
+        setTimeout(() => setSubmitted(false), 3000);
+        setFormData({ name: '', email: '', subject: '', message: '' });
+      } else {
+        alert(data?.error || 'Failed to send message');
+      }
+    } catch (err) {
+      alert('Error: ' + (err.message || 'Failed to send message'));
+    }
   };
 
   return (

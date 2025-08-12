@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { motion } from 'framer-motion';
+const API_BASE_URL = (import.meta.env.VITE_API_URL || 'https://fitlife-backend.vercel.app').replace(/\/$/, '');
 
 const Register = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -220,29 +221,11 @@ const Register = () => {
         {/* OAuth Icons Row */}
         <div className="flex justify-center gap-4">
           <a 
-            href="https://accounts.google.com/o/oauth2/v2/auth?client_id=YOUR_GOOGLE_CLIENT_ID&redirect_uri=http://localhost:3000/auth/google/callback&response_type=code&scope=profile email"
+            href={`${API_BASE_URL}/api/v1/auth/google/start`}
             className="w-10 h-10 rounded-full bg-gray-500 hover:bg-[#DB4437] flex items-center justify-center transition"
             title="Sign up with Google"
           >
             <img src="https://img.icons8.com/ios-filled/20/ffffff/google-logo.png" alt="Google" className="w-5 h-5" />
-          </a>
-
-          <a 
-            href="https://www.facebook.com/v12.0/dialog/oauth?client_id=YOUR_FACEBOOK_APP_ID&redirect_uri=http://localhost:3000/auth/facebook/callback&scope=email,public_profile"
-            className="w-10 h-10 rounded-full bg-gray-500 hover:bg-[#1877F2] flex items-center justify-center transition"
-            title="Sign up with Facebook"
-          >
-            <img src="https://img.icons8.com/ios-filled/20/ffffff/facebook-new.png" alt="Facebook" className="w-5 h-5" />
-          </a>
-          
-          <a 
-            href="#" 
-            className="w-10 h-10 rounded-full bg-gray-500 hover:bg-gray-700 flex items-center justify-center transition"
-            title="More options"
-          >
-            <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24">
-              <circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/>
-            </svg>
           </a>
         </div>
 
