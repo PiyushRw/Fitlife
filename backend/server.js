@@ -61,7 +61,7 @@ const ensureDatabaseConnection = async (req, res, next) => {
     next(error);
   }
 };//done
-
+//yes
 // Initial connection attempt
 (async () => {
   try {
